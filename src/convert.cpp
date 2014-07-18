@@ -8,17 +8,16 @@
 namespace 
 {
 
+/*
 struct ConvertOption
 {
     std::string text_path, binary_path;
 };
 
-/*
 void convert_help()
 {
     printf("usage: libmf convert text_file [binary_file]\n");
 }
-*/
 
 std::shared_ptr<ConvertOption> parse_convert_option(
         int const argc, char const * const * const argv)
@@ -47,6 +46,7 @@ std::shared_ptr<ConvertOption> parse_convert_option(
     }
     return option;
 }
+*/
 
 bool convert(std::string const &text_path, std::string const &binary_path)
 {
@@ -114,13 +114,10 @@ RcppExport SEXP convert_wrapper(SEXP raw_file, SEXP bin_file)
 {
 BEGIN_RCPP
 
-    CharacterVector raw(raw_file);
-    CharacterVector bin(bin_file);
+    std::string raw_path = as<std::string>(raw_file);
+    std::string bin_path = as<std::string>(bin_file);
     
-    char *raw_ptr = raw[0];
-    char *bin_ptr = bin[0];
-    
-    bool res = convert(raw_ptr, bin_ptr);
+    bool res = convert(raw_path, bin_path);
 
     return wrap(res);
     

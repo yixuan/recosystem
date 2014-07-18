@@ -8,6 +8,7 @@
 namespace
 {
 
+/*
 enum FileType {kData, kModel};
 
 struct ViewOption
@@ -16,7 +17,6 @@ struct ViewOption
     FileType file_type;
 };
 
-/*
 void view_help()
 {
     printf(
@@ -25,7 +25,6 @@ void view_help()
     "-m: view a model file\n"
     );
 }
-*/
 
 std::shared_ptr<ViewOption> parse_view_option(
         int const argc, char const * const * const argv)
@@ -55,6 +54,7 @@ std::shared_ptr<ViewOption> parse_view_option(
     option->path = std::string(argv[1]);
     return option;
 }
+*/
 
 bool view_data(std::string const &path)
 {
