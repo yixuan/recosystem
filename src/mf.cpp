@@ -22,7 +22,7 @@ void Timer::reset(std::string const &msg)
 {
     // printf("%s", msg.c_str());
     // fflush(stdout);
-    Rcpp::Rcout << msg;
+    Rprintf("%s", msg.c_str());
     reset();
 }
 
@@ -35,7 +35,7 @@ void Timer::tic(std::string const &msg)
 {
     // printf("%s", msg.c_str());
     // fflush(stdout);
-    Rcpp::Rcout << msg;
+    Rprintf("%s", msg.c_str());
     tic();
 }
 
@@ -51,7 +51,7 @@ float Timer::toc(std::string const &msg)
     float duration_one = toc();
     // printf("%s  %.2f\n", msg.c_str(), duration_one);
     // fflush(stdout);
-    Rcpp::Rcout << msg << "  " << std::fixed << std::setprecision(2) << duration_one << std::endl;
+    Rprintf("%s  %.2f\n", msg.c_str(), duration_one);
     return duration_one;
 }
 
