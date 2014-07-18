@@ -7,6 +7,8 @@ RecoDat$methods(
     initialize = function()
     {
         .self$dir = tempdir()
+        .self$rawfile = ""
+        .self$binfile = ""
     }
 )
 
@@ -61,6 +63,12 @@ RecoDat$methods(
 RecoDat$methods(
     view = function()
     {
+        if(!file.exists(.self$binfile))
+        {
+            cat("Data file not set\n[Call $convert() method to set data]\n")
+            return(.self)
+        }
+        
         status = .Call("view_data_wrapper", .self$binfile,
                        PACKAGE = "Recosystem")
         
@@ -73,3 +81,9 @@ RecoDat$methods(
     }
 )
 
+RecoDat$methods(
+    show = function()
+    {
+        .self$view()
+    }
+)
