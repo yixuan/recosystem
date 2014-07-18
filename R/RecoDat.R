@@ -1,7 +1,8 @@
 RecoDat = setRefClass("RecoDat",
                       fields = list(dir = "character",
                                     rawfile = "character",
-                                    binfile = "character"))
+                                    binfile = "character",
+                                    type = "character"))
 
 RecoDat$methods(
     initialize = function()
@@ -9,6 +10,7 @@ RecoDat$methods(
         .self$dir = tempdir()
         .self$rawfile = ""
         .self$binfile = ""
+        .self$type = ""
     }
 )
 
@@ -65,7 +67,9 @@ RecoDat$methods(
     {
         if(!file.exists(.self$binfile))
         {
-            cat("Data file not set\n[Call $convert() method to set data]\n")
+            cat("Data file not set\n")
+            cat(sprintf("[Call $%s$convert() method to set data]\n",
+                        .self$type))
             return(.self)
         }
         
