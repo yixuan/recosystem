@@ -97,3 +97,24 @@ int convert(int const argc, const char * const * const argv)
 
     return EXIT_SUCCESS;
 }
+
+
+#include <Rcpp.h>
+using namespace Rcpp;
+
+RcppExport SEXP convert_wrapper(SEXP raw_file, SEXP bin_file)
+{
+BEGIN_RCPP
+
+    CharacterVector raw(raw_file);
+    CharacterVector bin(bin_file);
+    
+    char *raw_ptr = raw[0];
+    char *bin_ptr = bin[0];
+    
+    bool res = convert(raw_ptr, bin_ptr);
+
+    return wrap(res);
+END_RCPP
+}
+
