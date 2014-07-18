@@ -22,7 +22,7 @@ RecoModel$methods(
         
         status = .Call("view_model_wrapper", .self$binfile,
                        PACKAGE = "Recosystem")
-        
+        ## status: TRUE for success, FALSE for failure
         if(!status)
         {
             stop("viewing model file failed")

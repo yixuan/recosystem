@@ -49,11 +49,12 @@ RecoDat$methods(
         infile = path.expand(rawfile)
         status = .Call("convert_wrapper", infile, outfile,
                        PACKAGE = "Recosystem")
-        
+        ## status: TRUE for success, FALSE for failure
         if(!status)
         {
             stop("conversion of data file failed")
         }
+        cat(sprintf("binary file generated at %s\n", outfile));
         
         .self$rawfile = infile
         .self$binfile = outfile
