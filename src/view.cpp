@@ -127,3 +127,35 @@ int view(int const argc, char const * const * const argv)
 
     return EXIT_SUCCESS;
 }
+
+
+
+using namespace Rcpp;
+
+RcppExport SEXP view_data_wrapper(SEXP data_file)
+{
+BEGIN_RCPP
+
+    CharacterVector path(data_file);
+    char *path_ptr = path[0];
+    
+    bool res = view_data(path_ptr);
+
+    return wrap(res);
+END_RCPP
+}
+
+RcppExport SEXP view_model_wrapper(SEXP model_file)
+{
+BEGIN_RCPP
+
+    CharacterVector path(model_file);
+    char *path_ptr = path[0];
+    
+    bool res = view_model(path_ptr);
+
+    return wrap(res);
+END_RCPP
+}
+
+
