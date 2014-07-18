@@ -3,6 +3,8 @@
 #include <cstring>
 #include "mf.h"
 
+#include <Rcpp.h>
+
 namespace 
 {
 
@@ -49,7 +51,8 @@ bool convert(std::string const &text_path, std::string const &binary_path)
     FILE *f = fopen(text_path.c_str(), "r");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.", text_path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.", text_path.c_str());
+        Rcpp::stop("Cannot open " + text_path);
         return false;
     }
     Timer timer;
@@ -64,7 +67,8 @@ bool convert(std::string const &text_path, std::string const &binary_path)
             break;
         if(r.uid < 0 || r.iid <0)
         {
-            fprintf(stderr, "\nError: User ID and Item ID should not be smaller than zero.\n");
+            // fprintf(stderr, "\nError: User ID and Item ID should not be smaller than zero.\n");
+            Rcpp::stop("User ID and Item ID should not be smaller than zero");
             return false;
         }
         if(r.uid+1 > M.nr_users)
@@ -99,7 +103,7 @@ int convert(int const argc, const char * const * const argv)
 }
 
 
-#include <Rcpp.h>
+
 using namespace Rcpp;
 
 RcppExport SEXP convert_wrapper(SEXP raw_file, SEXP bin_file)
