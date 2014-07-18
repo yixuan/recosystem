@@ -79,7 +79,32 @@ RecoSys$methods(
 RecoSys$methods(
     predict = function(outfile)
     {
-        ## TODO
+        ## Check whether model have been trained
+        modelfile = .self$model$binfile
+        if(!file.exists(modelfile))
+        {
+            stop("Model not trained
+[Call $train() method to train model]")
+        }
+        
+        ## Check whether testing data have been converted
+        testfile = .self$testset$binfile
+        if(!file.exists(testfile))
+        {
+            stop("Testing data not set
+[Call $testset$convert() method to set data]")
+        }
+        
+        outfile = as.character(outfile)
+        
+        status = .Call("predict_wrapper", testfile, modelfile, outfile,
+                       PACKAGE = "Recosystem")
+        ## status: TRUE for success, FALSE for failure
+        if(!status)
+        {
+            stop("model predicting failed")
+        }
+        cat(sprintf("output file generated at %s\n", outfile));
         
         invisible(.self)
     }
