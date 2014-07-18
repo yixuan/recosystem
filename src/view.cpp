@@ -3,6 +3,8 @@
 #include <cstring>
 #include "mf.h"
 
+#include <Rcpp.h>
+
 namespace
 {
 
@@ -43,7 +45,8 @@ std::shared_ptr<ViewOption> parse_view_option(
     }
     else
     {
-        fprintf(stderr, "Error: invalid option %s\n", argv[0]);
+        // fprintf(stderr, "Error: invalid option %s\n", argv[0]);
+        Rcpp::stop(std::string("invalid option ") + argv[0]);
         return std::shared_ptr<ViewOption>(nullptr);
     }
 
@@ -56,10 +59,16 @@ bool view_data(std::string const &path)
     std::shared_ptr<Matrix> M = read_matrix_meta(path);
     if(!M)
         return false;
+    /*
     printf("number of users   = %d\n", M->nr_users);
     printf("number of items   = %d\n", M->nr_items);
     printf("number of ratings = %ld\n", M->nr_ratings);
     printf("average           = %f\n", M->avg);
+    */
+    Rprintf("number of users   = %d\n", M->nr_users);
+    Rprintf("number of items   = %d\n", M->nr_items);
+    Rprintf("number of ratings = %ld\n", M->nr_ratings);
+    Rprintf("average           = %f\n", M->avg);
     return true;
 }
 
@@ -68,6 +77,7 @@ bool view_model(std::string const &path)
     std::shared_ptr<Model> model = read_model_meta(path);
     if(!model)
         return false;
+    /*
     printf("number of users = %d\n", model->nr_users);
     printf("number of items = %d\n", model->nr_items);
     printf("dimensions      = %d\n", model->param.dim);
@@ -77,6 +87,16 @@ bool view_model(std::string const &path)
     printf("lambda ib       = %f\n", model->param.lib);
     printf("gamma           = %f\n", model->param.gamma);
     printf("average         = %f\n", model->avg);
+    */
+    Rprintf("number of users = %d\n", model->nr_users);
+    Rprintf("number of items = %d\n", model->nr_items);
+    Rprintf("dimensions      = %d\n", model->param.dim);
+    Rprintf("lambda p        = %f\n", model->param.lp);
+    Rprintf("lambda q        = %f\n", model->param.lq);
+    Rprintf("lambda ub       = %f\n", model->param.lub);
+    Rprintf("lambda ib       = %f\n", model->param.lib);
+    Rprintf("gamma           = %f\n", model->param.gamma);
+    Rprintf("average         = %f\n", model->avg);
     return true;
 }
 
