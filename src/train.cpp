@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include "mf.h"
 
+#include <Rcpp.h>
+
 #if defined NOSSE && defined USEAVX
 #error "NOSSE and USEAVX cannot be define simultaneously"
 #endif
@@ -1068,4 +1070,179 @@ int train(int const argc, char const * const * const argv)
     timer.toc("done.");
 
     return EXIT_SUCCESS;
+}
+
+
+
+using Rcpp::as;
+using Rcpp::wrap;
+using Rcpp::List;
+using Rcpp::CharacterVector;
+using Rcpp::NumericVector;
+using Rcpp::IntegerVector;
+
+std::shared_ptr<TrainOption> parse_train_option_wrapper(
+    List &opts, std::string &train_file, std::string &model_file)
+{
+    std::shared_ptr<TrainOption> option(new TrainOption);
+    option->nr_user_blocks = option->nr_item_blocks = 0;
+
+    option->param.dim = as<int>(opts["k"]);
+    if(option->param.dim <= 0)
+    {
+        Rcpp::stop("The number of dimensions should be greater than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    option->nr_iters = as<int>(opts["t"]);
+    if(option->nr_iters <= 0)
+    {
+        Rcpp::stop("The number of iterations should be greater than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    option->nr_threads = as<int>(opts["s"]);
+    if(option->nr_threads <= 0)
+    {
+        Rcpp::stop("The number of threads should be greater than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    option->param.lp = as<float>(opts["p"]);
+    if(option->param.lp < 0)
+    {
+        Rcpp::stop("The regularization cost for P should not be smaller than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    option->param.lq = as<float>(opts["q"]);
+    if(option->param.lq < 0)
+    {
+        Rcpp::stop("The regularization cost for Q should not be smaller than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    option->param.gamma = as<float>(opts["g"]);
+    if(option->param.gamma <= 0)
+    {
+        Rcpp::stop("The learning rate should be greater than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    CharacterVector v = opts["v"];
+    option->va_path = as<std::string>(v[0]);
+    
+    IntegerVector blk = opts["blk"];
+    option->nr_user_blocks = blk[0];
+    option->nr_item_blocks = blk[1];
+    if(option->nr_user_blocks <= 0 || option->nr_item_blocks <= 0)
+    {
+        Rcpp::stop("The number of blocks should be greater than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    
+    option->rand_shuffle = as<bool>(opts["rand_shuffle"]);
+    option->show_tr_rmse = as<bool>(opts["show_tr_rmse"]);
+    option->show_obj = as<bool>(opts["show_obj"]);
+    option->use_avg = as<bool>(opts["use_avg"]);
+    
+    option->param.lub = as<float>(opts["ub"]);
+    option->param.lib = as<float>(opts["ib"]);
+
+    if(option->nr_user_blocks == 0)
+        option->nr_user_blocks = 2*option->nr_threads;
+    if(option->nr_item_blocks == 0)
+        option->nr_item_blocks = 2*option->nr_threads;
+
+    if(option->nr_user_blocks <= option->nr_threads)
+    {
+        Rcpp::stop("The number of user blocks should be greater than number of threads");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+
+    if(option->nr_item_blocks <= option->nr_threads)
+    {
+        Rcpp::stop("The number of item blocks should be greater than number of threads");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+
+    option->tr_path = train_file;
+    option->model_path = model_file;
+
+    return option;
+}
+
+RcppExport SEXP train_wrapper(SEXP trainset, SEXP model, SEXP opts)
+{
+BEGIN_RCPP
+
+#if defined NOSSE
+    Rprintf("Warning: SSE is disabled.\n");
+#elif defined USEAVX
+    Rprintf("Warning: AVX is enabled.\n");
+#endif
+
+    std::string train_file = as<std::string>(trainset);
+    std::string model_file = as<std::string>(model);
+    List train_opts(opts);
+    
+    std::shared_ptr<const TrainOption> const
+        option = parse_train_option_wrapper(train_opts,
+                                            train_file,
+                                            model_file);
+    if (!option)
+        return wrap(false);
+
+    Timer timer;
+
+    std::shared_ptr<const Matrix> const
+        Tr_meta = read_matrix_meta(option->tr_path);
+    if(!Tr_meta)
+        return wrap(false);
+
+    std::vector<int> const user_map = gen_map(Tr_meta->nr_users,
+                                              option->rand_shuffle);
+    std::vector<int> const item_map = gen_map(Tr_meta->nr_items,
+                                              option->rand_shuffle);
+
+    timer.reset("Reading training data...");
+    std::shared_ptr<const GriddedMatrix> const
+        Tr = read_gridded_matrix(*option, user_map, item_map);
+    if(!Tr)
+        return wrap(false);
+    timer.toc("done.");
+
+    std::shared_ptr<Matrix> Va;
+    if(!option->va_path.empty())
+    {
+        timer.reset("Reading validation data...");
+        Va = read_matrix(option->va_path);
+        if(!Va)
+            return wrap(false);
+        timer.toc("done.");
+        if(Va->nr_users > Tr_meta->nr_users || Va->nr_items > Tr_meta->nr_items)
+        {
+            Rcpp::stop("Validation set out of range");
+            return wrap(false);
+        }
+        for (auto &r : Va->R)
+        {
+            r.uid = user_map[r.uid];
+            r.iid = item_map[r.iid];
+        }
+    }
+
+    Model model = fpsgd(*Tr, *Va, *option);
+
+    if(option->rand_shuffle)
+        inversely_shuffle_model(model, user_map, item_map);
+
+    timer.reset("Writing model...");
+    if(!write_model(model, option->model_path))
+        return wrap(false);
+    timer.toc("done.");
+
+    return wrap(true);
+
+END_RCPP
 }
