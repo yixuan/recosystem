@@ -42,6 +42,7 @@ struct TrainOption
     int nr_user_blocks, nr_item_blocks, nr_threads, nr_iters;
 };
 
+/*
 void train_help()
 {
     printf(
@@ -258,6 +259,7 @@ std::shared_ptr<TrainOption> parse_train_option(const int argc,
 
     return option;
 }
+*/
 
 struct GriddedMatrix
 {
@@ -366,7 +368,8 @@ void Monitor::print_header()
         sprintf(output+strlen(output), " %10s", "va_rmse");
     if(show_obj)
         sprintf(output+strlen(output), " %13s %13s %13s", "loss", "reg", "obj");
-    printf("%s\n", output);
+    // printf("%s\n", output);
+    Rprintf("%s\n", output);
 }
 
 void Monitor::print(int const iter, float const time, double const loss,
@@ -384,8 +387,9 @@ void Monitor::print(int const iter, float const time, double const loss,
         sprintf(output+strlen(output), " %13.3e %13.3e %13.3e", loss, reg,
                 loss+reg);
     }
-    printf("%s\n", output);
-    fflush(stdout);
+    // printf("%s\n", output);
+    // fflush(stdout);
+    Rprintf("%s\n", output);
 }
 
 double Monitor::calc_reg()
@@ -444,7 +448,8 @@ std::shared_ptr<GriddedMatrix> read_gridded_matrix(
     FILE *f = fopen(option.tr_path.c_str(), "rb");
     if (!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.\n", option.tr_path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.\n", option.tr_path.c_str());
+        Rcpp::stop("Cannot open " + option.tr_path);
         return std::shared_ptr<GriddedMatrix>(nullptr);
     }
     std::shared_ptr<Matrix> Tr_meta = read_matrix_meta(f);
@@ -1007,6 +1012,7 @@ void inversely_shuffle_model(Model &model, std::vector<int> const &user_map,
 
 } //namespace
 
+/*
 int train(int const argc, char const * const * const argv)
 {
 #if defined NOSSE
@@ -1071,6 +1077,7 @@ int train(int const argc, char const * const * const argv)
 
     return EXIT_SUCCESS;
 }
+*/
 
 
 

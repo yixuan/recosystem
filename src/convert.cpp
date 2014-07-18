@@ -13,17 +13,19 @@ struct ConvertOption
     std::string text_path, binary_path;
 };
 
+/*
 void convert_help()
 {
     printf("usage: libmf convert text_file [binary_file]\n");
 }
+*/
 
 std::shared_ptr<ConvertOption> parse_convert_option(
         int const argc, char const * const * const argv)
 {
     if((argc != 1) && (argc != 2))
     {
-        convert_help();
+        // convert_help();
         return std::shared_ptr<ConvertOption>(nullptr);
     }
 
@@ -90,6 +92,7 @@ bool convert(std::string const &text_path, std::string const &binary_path)
 
 } // namespace
 
+/*
 int convert(int const argc, const char * const * const argv)
 {
     std::shared_ptr<ConvertOption> option = parse_convert_option(argc, argv);
@@ -101,6 +104,7 @@ int convert(int const argc, const char * const * const argv)
 
     return EXIT_SUCCESS;
 }
+*/
 
 
 

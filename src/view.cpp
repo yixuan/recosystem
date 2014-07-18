@@ -16,6 +16,7 @@ struct ViewOption
     FileType file_type;
 };
 
+/*
 void view_help()
 {
     printf(
@@ -24,13 +25,14 @@ void view_help()
     "-m: view a model file\n"
     );
 }
+*/
 
 std::shared_ptr<ViewOption> parse_view_option(
         int const argc, char const * const * const argv)
 {
     if(argc != 2)
     {
-        view_help();
+        // view_help();
         return std::shared_ptr<ViewOption>(nullptr);
     }
     std::shared_ptr<ViewOption> option(new ViewOption);
@@ -102,6 +104,7 @@ bool view_model(std::string const &path)
 
 } //namespace
 
+/*
 int view(int const argc, char const * const * const argv)
 {
     if(argc == 0)
@@ -127,6 +130,7 @@ int view(int const argc, char const * const * const argv)
 
     return EXIT_SUCCESS;
 }
+*/
 
 
 

@@ -2,7 +2,9 @@
 #include <chrono>
 #include <vector>
 
-#define flag { printf("LINE: %d\n", __LINE__); fflush(stdout); }
+#include <Rcpp.h>
+
+// #define flag { printf("LINE: %d\n", __LINE__); fflush(stdout); }
 
 class Timer
 {
