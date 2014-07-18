@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include "mf.h"
 
+#include <Rcpp.h>
+#include <iomanip>
+
 Timer::Timer()
 {
     reset();
@@ -17,8 +20,9 @@ void Timer::reset()
 
 void Timer::reset(std::string const &msg)
 {
-    printf("%s", msg.c_str());
-    fflush(stdout);
+    // printf("%s", msg.c_str());
+    // fflush(stdout);
+    Rcpp::Rcout << msg;
     reset();
 }
 
@@ -29,8 +33,9 @@ void Timer::tic()
 
 void Timer::tic(std::string const &msg)
 {
-    printf("%s", msg.c_str());
-    fflush(stdout);
+    // printf("%s", msg.c_str());
+    // fflush(stdout);
+    Rcpp::Rcout << msg;
     tic();
 }
 
@@ -44,8 +49,9 @@ float Timer::toc()
 float Timer::toc(std::string const &msg)
 {
     float duration_one = toc();
-    printf("%s  %.2f\n", msg.c_str(), duration_one);
-    fflush(stdout);
+    // printf("%s  %.2f\n", msg.c_str(), duration_one);
+    // fflush(stdout);
+    Rcpp::Rcout << msg << "  " << std::fixed << std::setprecision(2) << duration_one << std::endl;
     return duration_one;
 }
 
@@ -64,7 +70,8 @@ std::shared_ptr<Matrix> read_matrix_meta(std::string const &path)
     FILE *f = fopen(path.c_str(), "rb");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        Rcpp::stop("Cannot open " + path);
         return std::shared_ptr<Matrix>(nullptr);
     }
     std::shared_ptr<Matrix> M = read_matrix_meta(f);
@@ -77,7 +84,8 @@ std::shared_ptr<Matrix> read_matrix(std::string const &path)
     FILE *f = fopen(path.c_str(), "rb");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        Rcpp::stop("Cannot open " + path);
         return std::shared_ptr<Matrix>(nullptr);
     }
     std::shared_ptr<Matrix> M = read_matrix_meta(f);
@@ -92,7 +100,8 @@ bool write_matrix(Matrix const &M, std::string const &path)
     FILE *f = fopen(path.c_str(), "wb");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        Rcpp::stop("Cannot open " + path);
         return false;
     }
     fwrite(&M.nr_users, sizeof(int), 1, f);
@@ -127,7 +136,8 @@ std::shared_ptr<Model> read_model_meta(std::string const &path)
     FILE *f = fopen(path.c_str(), "rb");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        Rcpp::stop("Cannot open " + path);
         return std::shared_ptr<Model>(nullptr);
     }
     std::shared_ptr<Model> model = read_model_meta(f);
@@ -140,7 +150,8 @@ std::shared_ptr<Model> read_model(std::string const &path)
     FILE *f = fopen(path.c_str(), "rb");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.\n", path.c_str());
+        Rcpp::stop("Cannot open " + path);
         return std::shared_ptr<Model>(nullptr);
     }
 
@@ -176,7 +187,8 @@ bool write_model(Model const &model, std::string const &path)
     FILE *f = fopen(path.c_str(), "wb");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.", path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.", path.c_str());
+        Rcpp::stop("Cannot open " + path);
         return false;
     }
     int const dim_aligned = get_aligned_dim(model.param.dim);
