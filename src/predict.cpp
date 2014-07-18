@@ -3,9 +3,12 @@
 #include <cstring>
 #include "mf.h"
 
+#include <Rcpp.h>
+
 namespace
 {
 
+/*
 struct PredictOption
 {
     std::string test_path, model_path, out_path;
@@ -21,7 +24,7 @@ std::shared_ptr<PredictOption> parse_predict_option(
 {
     if((argc != 2) && (argc != 3))
     {
-        predict_help();
+        // predict_help();
         return std::shared_ptr<PredictOption>(nullptr);
     }
 
@@ -44,6 +47,7 @@ std::shared_ptr<PredictOption> parse_predict_option(
     }
     return option;
 }
+*/
 
 bool predict(std::string const test_path, std::string const model_path,
              std::string const output_path)
@@ -51,7 +55,8 @@ bool predict(std::string const test_path, std::string const model_path,
     FILE *f = fopen(output_path.c_str(), "w");
     if(!f)
     {
-        fprintf(stderr, "\nError: Cannot open %s.", output_path.c_str());
+        // fprintf(stderr, "\nError: Cannot open %s.", output_path.c_str());
+        Rcpp::stop("Cannot open " + output_path);
         return false;
     }
 
@@ -76,7 +81,8 @@ bool predict(std::string const test_path, std::string const model_path,
     }
     timer.toc("done.");
 
-    printf("RMSE: %.3f\n", sqrt(loss/Te->nr_ratings));
+    // printf("RMSE: %.3f\n", sqrt(loss/Te->nr_ratings));
+    Rprintf("RMSE: %.3f\n", sqrt(loss/Te->nr_ratings));
     fclose(f);
 
     return true;
@@ -84,6 +90,7 @@ bool predict(std::string const test_path, std::string const model_path,
 
 } //namespace
 
+/*
 int predict(int const argc, char const * const * const argv)
 {
     std::shared_ptr<PredictOption> option = parse_predict_option(argc, argv);
@@ -94,4 +101,24 @@ int predict(int const argc, char const * const * const argv)
         return EXIT_FAILURE;
 
     return EXIT_SUCCESS;
+}
+*/
+
+
+
+using namespace Rcpp;
+
+RcppExport SEXP predict_wrapper(SEXP testset, SEXP model, SEXP out)
+{
+BEGIN_RCPP
+
+    std::string test_file = as<std::string>(testset);
+    std::string model_file = as<std::string>(model);
+    std::string out_file = as<std::string>(out);
+    
+    bool res = predict(test_file, model_file, out_file);
+
+    return wrap(res);
+    
+END_RCPP
 }
