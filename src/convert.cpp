@@ -119,6 +119,7 @@ BEGIN_RCPP
     bool res = convert(raw_ptr, bin_ptr);
 
     return wrap(res);
+    
 END_RCPP
 }
 

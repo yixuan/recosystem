@@ -142,6 +142,7 @@ BEGIN_RCPP
     bool res = view_data(path_ptr);
 
     return wrap(res);
+
 END_RCPP
 }
 
@@ -155,6 +156,7 @@ BEGIN_RCPP
     bool res = view_model(path_ptr);
 
     return wrap(res);
+
 END_RCPP
 }
 
