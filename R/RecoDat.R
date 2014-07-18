@@ -46,7 +46,7 @@ RecoDat$methods(
         status = .Call("convert_wrapper", infile, outfile,
                        PACKAGE = "Recosystem")
         
-        if(status)
+        if(!status)
         {
             stop("conversion of data file failed")
         }
