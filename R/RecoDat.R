@@ -61,7 +61,13 @@ RecoDat$methods(
 RecoDat$methods(
     view = function()
     {
-        ## TODO
+        status = .Call("view_data_wrapper", .self$binfile,
+                       PACKAGE = "Recosystem")
+        
+        if(!status)
+        {
+            stop("viewing data file failed")
+        }
         
         invisible(.self)
     }

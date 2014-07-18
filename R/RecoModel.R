@@ -13,7 +13,13 @@ RecoModel$methods(
 RecoModel$methods(
     view = function()
     {
-        ## TODO
+        status = .Call("view_model_wrapper", .self$binfile,
+                       PACKAGE = "Recosystem")
+        
+        if(!status)
+        {
+            stop("viewing model file failed")
+        }
         
         invisible(.self)
     }
