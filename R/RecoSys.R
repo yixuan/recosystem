@@ -49,7 +49,7 @@ RecoSys$methods(
                           cost.ub = -1, cost.ib = -1,
                           gamma = 0.001,
                           vaset = "",
-                          blocks = c(2L, 2L),
+                          blocks = c(0L, 0L),
                           rand_shuffle = TRUE,
                           show_tr_rmse = FALSE,
                           show_obj = FALSE,
@@ -95,7 +95,7 @@ RecoSys$methods(
 [Call $testset$convert() method to set data]")
         }
         
-        outfile = as.character(outfile)
+        outfile = path.expand(outfile)
         
         status = .Call("predict_wrapper", testfile, modelfile, outfile,
                        PACKAGE = "Recosystem")

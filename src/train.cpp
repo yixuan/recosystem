@@ -1142,9 +1142,23 @@ std::shared_ptr<TrainOption> parse_train_option_wrapper(
     IntegerVector blk = opts["blk"];
     option->nr_user_blocks = blk[0];
     option->nr_item_blocks = blk[1];
+    if(option->nr_user_blocks == 0)
+        option->nr_user_blocks = 2*option->nr_threads;
+    if(option->nr_item_blocks == 0)
+        option->nr_item_blocks = 2*option->nr_threads;
     if(option->nr_user_blocks <= 0 || option->nr_item_blocks <= 0)
     {
         Rcpp::stop("The number of blocks should be greater than zero");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    if(option->nr_user_blocks <= option->nr_threads)
+    {
+        Rcpp::stop("The number of user blocks should be greater than number of threads");
+        return std::shared_ptr<TrainOption>(nullptr);
+    }
+    if(option->nr_item_blocks <= option->nr_threads)
+    {
+        Rcpp::stop("The number of item blocks should be greater than number of threads");
         return std::shared_ptr<TrainOption>(nullptr);
     }
     
@@ -1155,23 +1169,6 @@ std::shared_ptr<TrainOption> parse_train_option_wrapper(
     
     option->param.lub = as<float>(opts["ub"]);
     option->param.lib = as<float>(opts["ib"]);
-
-    if(option->nr_user_blocks == 0)
-        option->nr_user_blocks = 2*option->nr_threads;
-    if(option->nr_item_blocks == 0)
-        option->nr_item_blocks = 2*option->nr_threads;
-
-    if(option->nr_user_blocks <= option->nr_threads)
-    {
-        Rcpp::stop("The number of user blocks should be greater than number of threads");
-        return std::shared_ptr<TrainOption>(nullptr);
-    }
-
-    if(option->nr_item_blocks <= option->nr_threads)
-    {
-        Rcpp::stop("The number of item blocks should be greater than number of threads");
-        return std::shared_ptr<TrainOption>(nullptr);
-    }
 
     option->tr_path = train_file;
     option->model_path = model_file;
