@@ -69,7 +69,7 @@ RecoDat$methods(
         if(!file.exists(.self$binfile))
         {
             cat("Data file not set\n")
-            cat(sprintf("[Call $%s$convert() method to set data]\n",
+            cat(sprintf("[Call $convert_%s() method to set data]\n",
                         .self$type))
             return(.self)
         }

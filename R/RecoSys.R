@@ -6,8 +6,21 @@ RecoSys = setRefClass("RecoSys",
 RecoSys$methods(
     initialize = function()
     {
-        .self$trainset$type = "trainset"
-        .self$testset$type = "testset"
+        .self$trainset$type = "train"
+        .self$testset$type = "test"
+    }
+)
+
+RecoSys$methods(
+    convert_train = function(rawfile, outdir)
+    {
+        .self$trainset$convert(rawfile, outdir)
+        invisible(.self)
+    },
+    convert_test = function(rawfile, outdir)
+    {
+        .self$testset$convert(rawfile, outdir)
+        invisible(.self)
     }
 )
 
@@ -19,7 +32,7 @@ RecoSys$methods(
         if(!file.exists(infile))
         {
             stop("Training data not set
-[Call $trainset$convert() method to set data]")
+[Call $convert_train() method to set data]")
         }
         
         ## Check and set output directory
@@ -92,7 +105,7 @@ RecoSys$methods(
         if(!file.exists(testfile))
         {
             stop("Testing data not set
-[Call $testset$convert() method to set data]")
+[Call $convert_test() method to set data]")
         }
         
         outfile = path.expand(outfile)
