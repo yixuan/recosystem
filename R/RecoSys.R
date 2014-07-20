@@ -144,10 +144,22 @@ RecoSys$methods(
 #' This function simply returns an object of class "\code{RecoSys}"
 #' that can be used to construct recommender model and conduct prediction.
 #' 
-#' @return \code{Reco()} returns an object of class "\code{RecoSys}" with
-#' methods \code{convert_train()}, \code{convert_test()},
-#' \code{train()} and \code{predict()}. See topics \code{\link{convert}},
-#' \code{\link{train}} and \code{\link{predict}} for details.
+#' @return \code{Reco()} returns an object of class "\code{RecoSys}"
+#' equipped with methods
+#' \code{$\link{convert_train}()}, \code{$\link{convert_train}()},
+#' \code{$\link{train}()} and \code{$\link{predict}()}, which describe
+#' the typical process of reading data, building model and
+#' predicting results. See their help documents for details.
+#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{predict}}
+#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
+#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
+#' 
+#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
+#' Technical report 2014.
+#' @export
+#' @keywords models
 Reco = function()
 {
     return(RecoSys$new())
@@ -181,6 +193,10 @@ Reco = function()
 #' rates 3 on the first item, the line will be
 #' \preformatted{0 0 3}
 #' 
+#' \bold{NOTE}: For testing data, the file also needs to contain three
+#' numbers each line. If the rating values are unknown, you can put any
+#' number as placeholders.
+#' \cr
 #' Example data files are contained in the \code{Recosystem/dat} directory.
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "Recosystem")
@@ -188,6 +204,14 @@ Reco = function()
 #' r$convert_train(trainset)
 #' r$convert_test(testset)
 #' print(r)
+#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @seealso \code{\link{train}}, \code{\link{predict}}
+#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
+#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
+#' 
+#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
+#' Technical report 2014.
 NULL
 
 
@@ -248,6 +272,14 @@ NULL
 #' r$convert_test(testset)
 #' r$train(opts = list(dim = 80, cost.p = 0.01, cost.q = 0.01))
 #' print(r)
+#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @seealso \code{\link{convert}}, \code{\link{predict}}
+#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
+#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
+#' 
+#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
+#' Technical report 2014.
 NULL
 
 
@@ -279,4 +311,12 @@ NULL
 #' ## with predicted ones
 #' print(read.table(testset, header = FALSE, sep = " ", nrows = 10)$V3)
 #' print(scan(outfile, n = 10))
+#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @seealso \code{\link{convert}}, \code{\link{train}}
+#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
+#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
+#' 
+#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
+#' Technical report 2014.
 NULL
