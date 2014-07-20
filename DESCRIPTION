@@ -10,12 +10,15 @@ Description: This package is an R wrapper of the libmf library
     (http://www.csie.ntu.edu.tw/~cjlin/libmf/) for recommender
     system using matrix factorization. It's typically used to
     approximate an incomplete matrix using the product of two
-    matrices in a latent space.
+    matrices in a latent space. Other common names for this task
+    include "collaborative filtering", "matrix completion",
+    "matrix recovery", etc.
 License: BSD_3_clause + file LICENSE
 OS_type: unix
 SystemRequirements: C++11
 Depends:
+    R (>= 3.1.0),
     methods
 Imports:
-    Rcpp (>= 0.11.2)
+    Rcpp (>= 0.11.0)
 LinkingTo: Rcpp
