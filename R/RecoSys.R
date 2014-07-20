@@ -152,3 +152,39 @@ Reco = function()
 {
     return(RecoSys$new())
 }
+
+
+#' Read data file and convert to binary format
+#' 
+#' These methods are member functions of class "\code{RecoSys}"
+#' that convert training and testing data files into binary format.
+#' The conversion is a preprocessing step prior to the model training part,
+#' since data with this binary format could be accessed more efficiently.
+#' 
+#' @name convert
+#' @usage reco_obj$convert_train(rawfile, outdir)
+#' reco_obj$convert_test(rawfile, outdir)
+#' @param reco_obj Object returned by \code{\link{Reco}}()
+#' @param rawfile Path of data file, see section 'Data format' for details
+#' @param outdir Directory in which the output binary file will be
+#'               generated. If missing, \code{tempdir()} will be used.
+#' @section Data format:
+#' The data file required by these methods takes the format of sparse matrix
+#' in triplet form, i.e., each line in the file contains three numbers
+#' \preformatted{row col value}
+#' representing a number in the rating matrix
+#' with its location. In real applications, it typically looks like
+#' \preformatted{user_id item_id rating}
+#' 
+#' \bold{NOTE}: \code{row} and \code{col} start from 0. So if the first user
+#' rates 3 on the first item, the line will be
+#' \preformatted{0 0 3}
+#' 
+#' Example data files are contained in the \code{Recosystem/dat} directory.
+#' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
+#' testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+#' r = Reco()
+#' r$convert_train(trainset)
+#' r$convert_test(testset)
+#' print(r)
+NULL
