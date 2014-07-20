@@ -139,6 +139,15 @@ RecoSys$methods(
     }
 )
 
+#' Construct a recommender system object
+#' 
+#' This function simply returns an object of class "\code{RecoSys}"
+#' that can be used to construct recommender model and conduct prediction.
+#' 
+#' @return \code{Reco()} returns an object of class "\code{RecoSys}" with
+#' methods \code{convert_train()}, \code{convert_test()},
+#' \code{train()} and \code{predict()}. See topics \code{\link{convert}},
+#' \code{\link{train}} and \code{\link{predict}} for details.
 Reco = function()
 {
     return(RecoSys$new())
