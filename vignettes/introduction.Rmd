@@ -5,14 +5,45 @@ date: "07/21/2014"
 output:
   html_document: default
   pdf_document: default
+references:
+- id: FPSG2014
+  title: A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems
+  author:
+  - family: Chin
+    given: Wei-Sheng
+  - family: Zhuang
+    given: Yong
+  - family: Juan
+    given: Yu-Chin
+  - family: Lin
+    given: Chih-Jen
+  container-title: Technical report
+  URL: 'http://www.csie.ntu.edu.tw/~cjlin/papers/libmf/libmf_journal.pdf'
+  issued:
+    year: 2014
+- id: LIBMF
+  title: "LIBMF: A Matrix-factorization Library for Recommender Systems"
+  author:
+  - family: Lin
+    given: Chih-Jen
+  - family: Juan
+    given: Yu-Chin
+  - family: Zhuang
+    given: Yong
+  - family: Chin
+    given: Wei-Sheng
+  URL: 'http://www.csie.ntu.edu.tw/~cjlin/libmf/'
+  issued:
+    year: 2014
 ---
 
 ## About Recosystem package
 
 `Recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
-([http://www.csie.ntu.edu.tw/~cjlin/libmf/](http://www.csie.ntu.edu.tw/~cjlin/libmf/)),
+(http://www.csie.ntu.edu.tw/~cjlin/libmf/),
 an open source library for recommender system using marix factorization.
+[@LIBMF]
 
 ## A quick view of recommender system
 
@@ -44,7 +75,7 @@ $v$-th column of $Q$, then the rating given by user $u$ on item $v$
 would be predicted as $p'_u q_v$.
 
 A typical solution for $P$ and $Q$ is given by the following optimization
-problem:
+problem [@FPSG2014]:
 
 $$\min_{P,Q} \sum_{(u,v)\in R} ((r_{u,v}-p'_u q_v)^2+\lambda_P ||p_u||^2+\lambda_Q ||q_v||^2)$$
 
@@ -54,7 +85,7 @@ to avoid overfitting.
 
 The `LIBMF` library which `Recosystem` is based on generalizes the formula
 above a little further, resulting in the following more general but more
-complicated optimiaztion problem:
+complicated optimiaztion problem [@FPSG2014]:
 
 $$\min_{P,Q,a,b} \sum_{(u,v)\in R} ((r_{u,v}-p'_u q_v-a_u-b_v-avg)^2+\lambda_P ||p_u||^2+\lambda_Q ||q_v||^2+\lambda_a||a||^2+\lambda_b||b||^2)$$
 
@@ -67,7 +98,7 @@ data, which has an effect of centering the data first.
 
 `LIBMF` itself is a parallelized library, meaning that users can take
 advantage of multicore CPUs to speed up the computation. It also utilizes 
-some advanced CPU features to further improve the performance.
+some advanced CPU features to further improve the performance. [@LIBMF]
 
 `Recosystem` is a complete wrapper of `LIBMF`, hence the features of `LIBMF`
 are all included in `Recosystem`. Also, unlike most other R packages for
@@ -184,3 +215,5 @@ PKG_CXXFLAGS = -DUSEAVX -mavx
 
 After editing the `Makevars` file, run `R CMD INSTALL Recosystem` on
 the package source directory to install `Recosystem`.
+
+## References
