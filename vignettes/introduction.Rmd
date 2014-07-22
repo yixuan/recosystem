@@ -37,6 +37,11 @@ references:
     year: 2014
 ---
 
+<!--
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{Recommender system with Recosystem package}
+-->
+
 ## About Recosystem package
 
 `Recosystem` is an R wrapper of the `LIBMF` library developed by

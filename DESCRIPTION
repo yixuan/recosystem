@@ -21,4 +21,7 @@ Depends:
     methods
 Imports:
     Rcpp (>= 0.11.0)
+Suggests:
+    knitr
 LinkingTo: Rcpp
+VignetteBuilder: knitr
