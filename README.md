@@ -181,17 +181,17 @@ effect on performance. It's strongly suggested to set proper flags
 according to your type of CPU before compiling the package, in order to
 achieve the best performance:
 
-1. If your CPU doesn't support SSE3 (typically very old CPUs), set
+- If your CPU doesn't support SSE3 (typically very old CPUs), set
 ```
 PKG_CXXFLAGS = -DNOSSE
 ```
 in the `src/Makevars` file.
-2. If SSE3 is supported
+- If SSE3 is supported
 ([a list of supported CPUs](http://en.wikipedia.org/wiki/SSE3)), set
 ```
 PKG_CXXFLAGS = -msse3
 ```
-3. If not only SSE3 is supported but also AVX
+- If not only SSE3 is supported but also AVX
 ([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), set
 ```
 PKG_CXXFLAGS = -DUSEAVX -mavx
