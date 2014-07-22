@@ -116,9 +116,9 @@ bool write_matrix(Matrix const &M, std::string const &path)
 Model::~Model()
 {
     if(P != nullptr)
-        free(P);
+        memfree_wrapper(P);
     if(Q != nullptr)
-        free(Q);
+        memfree_wrapper(Q);
 }
 
 std::shared_ptr<Model> read_model_meta(FILE *f)
@@ -158,12 +158,12 @@ std::shared_ptr<Model> read_model(std::string const &path)
     std::shared_ptr<Model> model = read_model_meta(f);
     int const dim_aligned = get_aligned_dim(model->param.dim);
 
-    posix_memalign((void**)&model->P, 32,
-                   model->nr_users*dim_aligned*sizeof(float));
+    memalign_wrapper((void**)&model->P, 32,
+                     model->nr_users*dim_aligned*sizeof(float));
     fread(model->P, sizeof(float), model->nr_users*dim_aligned, f);
 
-    posix_memalign((void**)&model->Q, 32,
-                   model->nr_items*dim_aligned*sizeof(float));
+    memalign_wrapper((void**)&model->Q, 32,
+                     model->nr_items*dim_aligned*sizeof(float));
     fread(model->Q, sizeof(float), model->nr_items*dim_aligned, f);
 
     if(model->param.lub >= 0)

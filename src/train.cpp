@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include "mf.h"
 
+#include "winrand.h"
 #include <Rcpp.h>
 
 #if defined NOSSE && defined USEAVX
@@ -289,10 +290,10 @@ Model generate_initial_model(Parameter const &param, int const nr_users,
     model.nr_users = nr_users;
     model.nr_items = nr_items;
     model.avg = avg;
-    posix_memalign((void**)&model.P, 32,
-                   model.nr_users*dim_aligned*sizeof(float));
-    posix_memalign((void**)&model.Q, 32,
-                   model.nr_items*dim_aligned*sizeof(float));
+    memalign_wrapper((void**)&model.P, 32,
+                     model.nr_users*dim_aligned*sizeof(float));
+    memalign_wrapper((void**)&model.Q, 32,
+                     model.nr_items*dim_aligned*sizeof(float));
 
     auto initialize = [&] (float *ptr, int const count)
     {

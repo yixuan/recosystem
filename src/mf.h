@@ -85,3 +85,23 @@ int train(int const argc, char const * const * const argv);
 int predict(int const argc, char const * const * const argv);
 
 int view(int const argc, char const * const * const argv);
+
+// wrapper of memory alignment function
+inline void memalign_wrapper(void **memptr, size_t alignment, size_t size)
+{
+#ifdef _WIN32
+    *memptr = _aligned_malloc(size, alignment);
+#else
+    posix_memalign(memptr, alignment, size);
+#endif
+}
+
+inline void memfree_wrapper(void *memblock)
+{
+#ifdef _WIN32
+    _aligned_free(memblock);
+#else
+    free(memblock);
+#endif
+}
+
