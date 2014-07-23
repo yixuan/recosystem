@@ -172,9 +172,10 @@ and `?Recosystem::predict`.
 ### Installation issue
 
 `LIBMF` utilizes some compiler and CPU features that may be unavailable
-in some systems. Currently `Recosystem` only supports UNIX-like operating
-systems, and to build `Recosystem` from source, one needs a C++
-compiler that supports C++11 standard.
+in some systems. Currently `Recosystem` mainly supports UNIX-like operating
+systems, with experimental support for Windows
+(See section **Precompiled packages**). To build `Recosystem`
+from source, one needs a C++ compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
 effect on performance. It's strongly suggested to set proper flags
@@ -199,3 +200,11 @@ PKG_CXXFLAGS = -DUSEAVX -mavx
 
 After editing the `Makevars` file, run `R CMD INSTALL Recosystem` on
 the package source directory to install `Recosystem`.
+
+### Precompiled packages
+
+Below are the links for some precompiled binary packages for testing:
+- [Recosystem 0.1 - Windows](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.1.zip)
+- [Recosystem 0.1 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.1_R_x86_64-pc-linux-gnu.tar.gz)
+- [Recosystem 0.1 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.1_R_x86_64-unknown-linux-gnu.tar.gz)
+
