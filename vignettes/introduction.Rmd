@@ -193,8 +193,8 @@ and `?Recosystem::predict`.
 ## Installation issue
 
 `LIBMF` utilizes some compiler and CPU features that may be unavailable
-in some systems. Currently `Recosystem` only supports UNIX-like operating
-systems, and to build `Recosystem` from source, one needs a C++
+in some systems. Currently `Recosystem` mainly supports UNIX-like operating
+systems, with experimental support for Windows. To build `Recosystem` from source, one needs a C++
 compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
