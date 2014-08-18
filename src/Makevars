@@ -4,14 +4,14 @@ CXX_STD = CXX11
 ##### Do not use SSE #####
 ## Uncomment the line below and comment others
 ## if your machine doesn't have SSE support
-#PKG_CXXFLAGS = -DNOSSE
+PKG_CXXFLAGS = -DNOSSE
 ##########################
 
 
 ######## Use SSE #########
 ## Uncomment the line below and comment others
 ## if your machine has SSE3 support but not AVX
-PKG_CXXFLAGS = -msse3
+#PKG_CXXFLAGS = -msse3
 ##########################
 
 
