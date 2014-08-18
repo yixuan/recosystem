@@ -2,11 +2,8 @@
 \name{train}
 \alias{train}
 \title{Train a recommender model}
-\usage{
-reco_obj$train(outdir, opts)
-}
 \arguments{
-\item{reco_obj}{Object returned by \code{\link{Reco}}()}
+\item{r}{Object returned by \code{\link{Reco}}()}
 
 \item{outdir}{Directory in which the model file will be
 generated. If missing, \code{tempdir()} will be used.}
@@ -21,6 +18,10 @@ in the specified directory, containing necessary information for
 prediction.
 Training data must have already been converted into binary form
 through \code{$\link{convert_train}()} before calling this method.
+
+The common usage of this method is
+\preformatted{r = Reco()
+r$train(outdir, opts)}
 }
 \section{Options and Parameters}{
 

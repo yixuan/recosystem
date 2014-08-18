@@ -2,11 +2,8 @@
 \name{predict}
 \alias{predict}
 \title{Recommender model predictions}
-\usage{
-reco_obj$predict(outfile)
-}
 \arguments{
-\item{reco_obj}{Object returned by \code{\link{Reco}}()}
+\item{r}{Object returned by \code{\link{Reco}}()}
 
 \item{outfile}{Name of the output file for prediction}
 }
@@ -18,6 +15,10 @@ Prior to calling this method, model needs to be trained by calling
 \code{$\link{convert_test}()}.
 Prediction results will be written into the specified file, one value
 per line, corresponding to the testing data.
+
+The common usage of this method is
+\preformatted{r = Reco()
+r$predict(outfile)}
 }
 \examples{
 trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")

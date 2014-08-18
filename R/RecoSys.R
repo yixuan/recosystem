@@ -168,16 +168,19 @@ Reco = function()
 
 #' Read data file and convert to binary format
 #' 
-#' These methods are member functions of class "\code{RecoSys}"
+#' @description These methods are member functions of class "\code{RecoSys}"
 #' that convert training and testing data files into binary format.
 #' The conversion is a preprocessing step prior to the model training part,
 #' since data with this binary format could be accessed more efficiently.
 #' 
+#' The common usage of these methods is
+#' \preformatted{r = Reco()
+#' r$convert_train(rawfile, outdir)
+#' r$convert_test(rawfile, outdir)}
+#' 
 #' @name convert
 #' @aliases convert_train convert_test
-#' @usage reco_obj$convert_train(rawfile, outdir)
-#' reco_obj$convert_test(rawfile, outdir)
-#' @param reco_obj Object returned by \code{\link{Reco}}()
+#' @param r Object returned by \code{\link{Reco}}()
 #' @param rawfile Path of data file, see section 'Data format' for details
 #' @param outdir Directory in which the output binary file will be
 #'               generated. If missing, \code{tempdir()} will be used.
@@ -217,16 +220,19 @@ NULL
 
 #' Train a recommender model
 #' 
-#' This method is a member function of class "\code{RecoSys}"
+#' @description This method is a member function of class "\code{RecoSys}"
 #' that trains a recommender model. It will create a model file
 #' in the specified directory, containing necessary information for
 #' prediction.
 #' Training data must have already been converted into binary form
 #' through \code{$\link{convert_train}()} before calling this method.
 #' 
+#' The common usage of this method is
+#' \preformatted{r = Reco()
+#' r$train(outdir, opts)}
+#' 
 #' @name train
-#' @usage reco_obj$train(outdir, opts)
-#' @param reco_obj Object returned by \code{\link{Reco}}()
+#' @param r Object returned by \code{\link{Reco}}()
 #' @param outdir Directory in which the model file will be
 #'               generated. If missing, \code{tempdir()} will be used.
 #' @param opts Various options and tuning parameters in the model training
@@ -285,7 +291,7 @@ NULL
 
 #' Recommender model predictions
 #' 
-#' This method is a member function of class "\code{RecoSys}"
+#' @description This method is a member function of class "\code{RecoSys}"
 #' that predicts unknown entries in the rating matrix.
 #' Prior to calling this method, model needs to be trained by calling
 #' \code{$\link{train}()}, and testing data also must be set through
@@ -293,9 +299,12 @@ NULL
 #' Prediction results will be written into the specified file, one value
 #' per line, corresponding to the testing data.
 #' 
+#' The common usage of this method is
+#' \preformatted{r = Reco()
+#' r$predict(outfile)}
+#' 
 #' @name predict
-#' @usage reco_obj$predict(outfile)
-#' @param reco_obj Object returned by \code{\link{Reco}}()
+#' @param r Object returned by \code{\link{Reco}}()
 #' @param outfile Name of the output file for prediction
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "Recosystem")

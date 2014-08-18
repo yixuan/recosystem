@@ -4,12 +4,8 @@
 \alias{convert_test}
 \alias{convert_train}
 \title{Read data file and convert to binary format}
-\usage{
-reco_obj$convert_train(rawfile, outdir)
-reco_obj$convert_test(rawfile, outdir)
-}
 \arguments{
-\item{reco_obj}{Object returned by \code{\link{Reco}}()}
+\item{r}{Object returned by \code{\link{Reco}}()}
 
 \item{rawfile}{Path of data file, see section 'Data format' for details}
 
@@ -21,6 +17,11 @@ These methods are member functions of class "\code{RecoSys}"
 that convert training and testing data files into binary format.
 The conversion is a preprocessing step prior to the model training part,
 since data with this binary format could be accessed more efficiently.
+
+The common usage of these methods is
+\preformatted{r = Reco()
+r$convert_train(rawfile, outdir)
+r$convert_test(rawfile, outdir)}
 }
 \section{Data format}{
 
