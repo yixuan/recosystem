@@ -450,7 +450,7 @@ std::shared_ptr<GriddedMatrix> read_gridded_matrix(
     if (!f)
     {
         // fprintf(stderr, "\nError: Cannot open %s.\n", option.tr_path.c_str());
-        Rcpp::stop("Cannot open " + option.tr_path);
+        Rcpp::stop("Cannot open %s", option.tr_path.c_str());
         return std::shared_ptr<GriddedMatrix>(nullptr);
     }
     std::shared_ptr<Matrix> Tr_meta = read_matrix_meta(f);
@@ -1177,7 +1177,7 @@ std::shared_ptr<TrainOption> parse_train_option_wrapper(
     return option;
 }
 
-RcppExport SEXP train_wrapper(SEXP trainset, SEXP model, SEXP opts)
+extern "C" SEXP train_wrapper(SEXP trainset, SEXP model, SEXP opts)
 {
 BEGIN_RCPP
 

@@ -1,7 +1,7 @@
 Package: Recosystem
 Type: Package
 Title: Recommender System using Matrix Factorization
-Version: 0.1
+Version: 0.2
 Date: 2014-07-17
 Author: Chih-Jen Lin, Yu-Chin Juan, Yong Zhuang, and Wei-Sheng Chin for
     the original C++ code, Yixuan Qiu for the R wrapper
@@ -19,9 +19,7 @@ SystemRequirements: C++11
 Depends:
     R (>= 3.1.0),
     methods
-Imports:
-    Rcpp (>= 0.11.0)
 Suggests:
     knitr
-LinkingTo: Rcpp
+LinkingTo: Rcpp11
 VignetteBuilder: knitr

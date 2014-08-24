@@ -136,28 +136,24 @@ int view(int const argc, char const * const * const argv)
 
 using namespace Rcpp;
 
-RcppExport SEXP view_data_wrapper(SEXP data_file)
+extern "C" SEXP view_data_wrapper(SEXP data_file)
 {
 BEGIN_RCPP
 
-    CharacterVector path(data_file);
-    char *path_ptr = path[0];
-    
-    bool res = view_data(path_ptr);
+    std::string data_path = as<std::string>(data_file);
+    bool res = view_data(data_path);
 
     return wrap(res);
 
 END_RCPP
 }
 
-RcppExport SEXP view_model_wrapper(SEXP model_file)
+extern "C" SEXP view_model_wrapper(SEXP model_file)
 {
 BEGIN_RCPP
 
-    CharacterVector path(model_file);
-    char *path_ptr = path[0];
-    
-    bool res = view_model(path_ptr);
+    std::string model_path = as<std::string>(model_file);
+    bool res = view_model(model_path);
 
     return wrap(res);
 

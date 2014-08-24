@@ -54,7 +54,7 @@ bool convert(std::string const &text_path, std::string const &binary_path)
     if(!f)
     {
         // fprintf(stderr, "\nError: Cannot open %s.", text_path.c_str());
-        Rcpp::stop("Cannot open " + text_path);
+        Rcpp::stop("Cannot open %s", text_path.c_str());
         return false;
     }
     Timer timer;
@@ -110,7 +110,7 @@ int convert(int const argc, const char * const * const argv)
 
 using namespace Rcpp;
 
-RcppExport SEXP convert_wrapper(SEXP raw_file, SEXP bin_file)
+extern "C" SEXP convert_wrapper(SEXP raw_file, SEXP bin_file)
 {
 BEGIN_RCPP
 

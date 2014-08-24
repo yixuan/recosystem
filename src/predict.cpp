@@ -56,7 +56,7 @@ bool predict(std::string const test_path, std::string const model_path,
     if(!f)
     {
         // fprintf(stderr, "\nError: Cannot open %s.", output_path.c_str());
-        Rcpp::stop("Cannot open " + output_path);
+        Rcpp::stop("Cannot open %s", output_path.c_str());
         return false;
     }
 
@@ -108,7 +108,7 @@ int predict(int const argc, char const * const * const argv)
 
 using namespace Rcpp;
 
-RcppExport SEXP predict_wrapper(SEXP testset, SEXP model, SEXP out)
+extern "C" SEXP predict_wrapper(SEXP testset, SEXP model, SEXP out)
 {
 BEGIN_RCPP
 
