@@ -178,7 +178,7 @@ systems, with experimental support for Windows
 from source, one needs a C++ compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
-effect on performance. It's strongly suggested to set proper flags
+effect on performance. It's **strongly suggested** to set proper flags
 according to your type of CPU before compiling the package, in order to
 achieve the best performance:
 
@@ -204,7 +204,8 @@ the package source directory to install `Recosystem`.
 ### Precompiled packages
 
 Below are the links for some precompiled binary packages for testing:
-- [Recosystem 0.1 - Windows](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.1.zip)
-- [Recosystem 0.1 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.1_R_x86_64-pc-linux-gnu.tar.gz)
-- [Recosystem 0.1 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.1_R_x86_64-unknown-linux-gnu.tar.gz)
+
+- [Recosystem 0.2 - Windows](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.2.zip)
+- [Recosystem 0.2 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.2_R_x86_64-pc-linux-gnu.tar.gz)
+- [Recosystem 0.2 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.2_R_x86_64-unknown-linux-gnu.tar.gz)
 

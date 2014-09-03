@@ -1,7 +1,7 @@
 ---
 title: "Recommender system with Recosystem package"
 author: "Yixuan Qiu"
-date: "07/21/2014"
+date: "09/03/2014"
 output:
   html_document: default
   pdf_document: default

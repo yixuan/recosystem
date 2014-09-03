@@ -2,7 +2,7 @@ Package: Recosystem
 Type: Package
 Title: Recommender System using Matrix Factorization
 Version: 0.2
-Date: 2014-07-17
+Date: 2014-09-03
 Author: Chih-Jen Lin, Yu-Chin Juan, Yong Zhuang, and Wei-Sheng Chin for
     the original C++ code, Yixuan Qiu for the R wrapper
 Maintainer: Yixuan Qiu <yixuan.qiu@cos.name>
@@ -12,7 +12,9 @@ Description: This package is an R wrapper of the libmf library
     approximate an incomplete matrix using the product of two
     matrices in a latent space. Other common names for this task
     include "collaborative filtering", "matrix completion",
-    "matrix recovery", etc.
+    "matrix recovery", etc. This package mainly supports UNIX-like
+    operating systems, with experimental support for Windows.
+    See README for the links of precompiled packages.
 License: BSD_3_clause + file LICENSE
 OS_type: unix
 SystemRequirements: C++11
