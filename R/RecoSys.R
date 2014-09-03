@@ -193,8 +193,8 @@ Reco = function()
 #' 
 #' The common usage of these methods is
 #' \preformatted{r = Reco()
-#' r$convert_train(rawfile, outdir)
-#' r$convert_test(rawfile, outdir)}
+#' r$convert_train(rawfile, outdir, verbose = TRUE)
+#' r$convert_test(rawfile, outdir, verbose = TRUE)}
 #' 
 #' @name convert
 #' @aliases convert_train convert_test
@@ -202,6 +202,7 @@ Reco = function()
 #' @param rawfile Path of data file, see section 'Data format' for details
 #' @param outdir Directory in which the output binary file will be
 #'               generated. If missing, \code{tempdir()} will be used.
+#' @param verbose Whether to show detailed information. Default is \code{TRUE}.
 #' @section Data format:
 #' The data file required by these methods takes the format of sparse matrix
 #' in triplet form, i.e., each line in the file contains three numbers
@@ -247,7 +248,7 @@ NULL
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$train(outdir, opts)}
+#' r$train(outdir, opts, verbose = TRUE)}
 #' 
 #' @name train
 #' @param r Object returned by \code{\link{Reco}}()
@@ -255,6 +256,7 @@ NULL
 #'               generated. If missing, \code{tempdir()} will be used.
 #' @param opts Various options and tuning parameters in the model training
 #'             procedure. See section "Options and Parameters" for details.
+#' @param verbose Whether to show detailed information. Default is \code{TRUE}.
 #' @section Options and Parameters:
 #' The \code{opts} argument is a list that can supply any of the
 #' following parameters:
@@ -319,11 +321,12 @@ NULL
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$predict(outfile)}
+#' r$predict(outfile, verbose = TRUE)}
 #' 
 #' @name predict
 #' @param r Object returned by \code{\link{Reco}}()
 #' @param outfile Name of the output file for prediction
+#' @param verbose Whether to show detailed information. Default is \code{TRUE}.
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "Recosystem")
 #' r = Reco()

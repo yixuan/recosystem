@@ -11,6 +11,8 @@
 
 \item{outdir}{Directory in which the output binary file will be
 generated. If missing, \code{tempdir()} will be used.}
+
+\item{verbose}{Whether to show detailed information. Default is \code{TRUE}.}
 }
 \description{
 These methods are member functions of class "\code{RecoSys}"
@@ -20,8 +22,8 @@ since data with this binary format could be accessed more efficiently.
 
 The common usage of these methods is
 \preformatted{r = Reco()
-r$convert_train(rawfile, outdir)
-r$convert_test(rawfile, outdir)}
+r$convert_train(rawfile, outdir, verbose = TRUE)
+r$convert_test(rawfile, outdir, verbose = TRUE)}
 }
 \section{Data format}{
 

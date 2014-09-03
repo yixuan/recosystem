@@ -10,6 +10,8 @@ generated. If missing, \code{tempdir()} will be used.}
 
 \item{opts}{Various options and tuning parameters in the model training
 procedure. See section "Options and Parameters" for details.}
+
+\item{verbose}{Whether to show detailed information. Default is \code{TRUE}.}
 }
 \description{
 This method is a member function of class "\code{RecoSys}"
@@ -21,7 +23,7 @@ through \code{$\link{convert_train}()} before calling this method.
 
 The common usage of this method is
 \preformatted{r = Reco()
-r$train(outdir, opts)}
+r$train(outdir, opts, verbose = TRUE)}
 }
 \section{Options and Parameters}{
 

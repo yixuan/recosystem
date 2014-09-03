@@ -1,9 +1,10 @@
 \name{NEWS}
-\title{News for Package 'Recosystem'}
+\title{News for Package "Recosystem"}
 
 \section{Changes in Recosystem version 0.2}{
   \itemize{
-    \item Linking to Rcpp11.
+    \item Now linking to Rcpp11.
+    \item A new parameter \code{verbose} to control output information.
   }
 }
 

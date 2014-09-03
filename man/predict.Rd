@@ -6,6 +6,8 @@
 \item{r}{Object returned by \code{\link{Reco}}()}
 
 \item{outfile}{Name of the output file for prediction}
+
+\item{verbose}{Whether to show detailed information. Default is \code{TRUE}.}
 }
 \description{
 This method is a member function of class "\code{RecoSys}"
@@ -18,7 +20,7 @@ per line, corresponding to the testing data.
 
 The common usage of this method is
 \preformatted{r = Reco()
-r$predict(outfile)}
+r$predict(outfile, verbose = TRUE)}
 }
 \examples{
 trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
