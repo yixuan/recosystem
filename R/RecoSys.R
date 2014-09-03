@@ -12,20 +12,20 @@ RecoSys$methods(
 )
 
 RecoSys$methods(
-    convert_train = function(rawfile, outdir)
+    convert_train = function(rawfile, outdir, verbose = TRUE)
     {
-        .self$trainset$convert(rawfile, outdir)
+        .self$trainset$convert(rawfile, outdir, verbose)
         invisible(.self)
     },
-    convert_test = function(rawfile, outdir)
+    convert_test = function(rawfile, outdir, verbose = TRUE)
     {
-        .self$testset$convert(rawfile, outdir)
+        .self$testset$convert(rawfile, outdir, verbose)
         invisible(.self)
     }
 )
 
 RecoSys$methods(
-    train = function(outdir, opts = list())
+    train = function(outdir, opts = list(), verbose = TRUE)
     {
         ## Check whether training data have been converted
         infile = .self$trainset$binfile
@@ -74,14 +74,23 @@ RecoSys$methods(
                        "show_obj", "use_avg")
         names(opts.train) = opts_cname
         
-        status = .Call("train_wrapper", infile, outfile, opts.train,
-                       PACKAGE = "Recosystem")
+        if(!verbose)  sink(tmpf <- tempfile())
+        status = tryCatch(
+            .Call("train_wrapper", infile, outfile, opts.train,
+                       PACKAGE = "Recosystem"),
+            error = function(e) {
+                if(sink.number())  sink()
+                stop(e$message)
+            })
         ## status: TRUE for success, FALSE for failure
         if(!status)
         {
+            if(sink.number())  sink()
             stop("training model failed")
         }
         cat(sprintf("model file generated at %s\n", outfile));
+        if(sink.number())  sink()
+        if(!verbose)  unlink(tmpf)
         
         .self$model$binfile = outfile
         
@@ -90,7 +99,7 @@ RecoSys$methods(
 )
 
 RecoSys$methods(
-    predict = function(outfile)
+    predict = function(outfile, verbose = TRUE)
     {
         ## Check whether model have been trained
         modelfile = .self$model$binfile
@@ -110,14 +119,23 @@ RecoSys$methods(
         
         outfile = path.expand(outfile)
         
-        status = .Call("predict_wrapper", testfile, modelfile, outfile,
-                       PACKAGE = "Recosystem")
+        if(!verbose)  sink(tmpf <- tempfile())
+        status = tryCatch(
+            .Call("predict_wrapper", testfile, modelfile, outfile,
+                       PACKAGE = "Recosystem"),
+            error = function(e) {
+                if(sink.number())  sink()
+                stop(e$message)
+            })
         ## status: TRUE for success, FALSE for failure
         if(!status)
         {
+            if(sink.number())  sink()
             stop("model predicting failed")
         }
         cat(sprintf("output file generated at %s\n", outfile));
+        if(sink.number())  sink()
+        if(!verbose)  unlink(tmpf)
         
         invisible(.self)
     }

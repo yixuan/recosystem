@@ -15,7 +15,7 @@ RecoDat$methods(
 )
 
 RecoDat$methods(
-    convert = function(rawfile, outdir)
+    convert = function(rawfile, outdir, verbose = TRUE)
     {
         ## Check if rawfile exists
         if(!file.exists(rawfile))
@@ -47,14 +47,23 @@ RecoDat$methods(
                             paste(basename(rawfile), "bin", sep = "."))
         
         infile = path.expand(rawfile)
-        status = .Call("convert_wrapper", infile, outfile,
-                       PACKAGE = "Recosystem")
+        if(!verbose)  sink(tmpf <- tempfile())
+        status = tryCatch(
+            .Call("convert_wrapper", infile, outfile,
+                       PACKAGE = "Recosystem"),
+            error = function(e) {
+                if(sink.number())  sink()
+                stop(e$message)
+            })
         ## status: TRUE for success, FALSE for failure
         if(!status)
         {
+            if(sink.number())  sink()
             stop("conversion of data file failed")
         }
         cat(sprintf("binary file generated at %s\n", outfile));
+        if(sink.number())  sink()
+        if(!verbose)  unlink(tmpf)
         
         .self$rawfile = infile
         .self$binfile = outfile
