@@ -450,7 +450,7 @@ std::shared_ptr<GriddedMatrix> read_gridded_matrix(
     if (!f)
     {
         // fprintf(stderr, "\nError: Cannot open %s.\n", option.tr_path.c_str());
-        Rcpp::stop("Cannot open %s", option.tr_path.c_str());
+        Rcpp::stop("Cannot open " + option.tr_path);
         return std::shared_ptr<GriddedMatrix>(nullptr);
     }
     std::shared_ptr<Matrix> Tr_meta = read_matrix_meta(f);

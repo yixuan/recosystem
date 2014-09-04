@@ -56,7 +56,7 @@ bool predict(std::string const test_path, std::string const model_path,
     if(!f)
     {
         // fprintf(stderr, "\nError: Cannot open %s.", output_path.c_str());
-        Rcpp::stop("Cannot open %s", output_path.c_str());
+        Rcpp::stop("Cannot open " + output_path);
         return false;
     }
 

@@ -54,7 +54,7 @@ bool convert(std::string const &text_path, std::string const &binary_path)
     if(!f)
     {
         // fprintf(stderr, "\nError: Cannot open %s.", text_path.c_str());
-        Rcpp::stop("Cannot open %s", text_path.c_str());
+        Rcpp::stop("Cannot open " + text_path);
         return false;
     }
     Timer timer;

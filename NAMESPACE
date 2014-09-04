@@ -1,3 +1,4 @@
 useDynLib(recosystem)
 import(methods)
+import(Rcpp)
 export(Reco)
