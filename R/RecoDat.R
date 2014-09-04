@@ -50,7 +50,7 @@ RecoDat$methods(
         if(!verbose)  sink(tmpf <- tempfile())
         status = tryCatch(
             .Call("convert_wrapper", infile, outfile,
-                       PACKAGE = "Recosystem"),
+                       PACKAGE = "recosystem"),
             error = function(e) {
                 if(sink.number())  sink()
                 stop(e$message)
@@ -84,7 +84,7 @@ RecoDat$methods(
         }
         
         status = .Call("view_data_wrapper", .self$binfile,
-                       PACKAGE = "Recosystem")
+                       PACKAGE = "recosystem")
         
         if(!status)
         {

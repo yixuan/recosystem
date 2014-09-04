@@ -21,7 +21,7 @@ RecoModel$methods(
         }
         
         status = .Call("view_model_wrapper", .self$binfile,
-                       PACKAGE = "Recosystem")
+                       PACKAGE = "recosystem")
         ## status: TRUE for success, FALSE for failure
         if(!status)
         {

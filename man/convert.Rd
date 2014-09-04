@@ -42,11 +42,11 @@ rates 3 on the first item, the line will be
 numbers each line. If the rating values are unknown, you can put any
 number as placeholders.
 \cr
-Example data files are contained in the \code{Recosystem/dat} directory.
+Example data files are contained in the \code{recosystem/dat} directory.
 }
 \examples{
-trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
 r$convert_train(trainset)
 r$convert_test(testset)

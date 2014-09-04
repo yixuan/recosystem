@@ -1,8 +1,8 @@
-## Recommender system with Recosystem package
+## Recommender system with recosystem package
 
 ### About this package
 
-`Recosystem` is an R wrapper of the `LIBMF` library developed by
+`recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
 (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
 an open source library for recommender system using marix factorization.
@@ -27,25 +27,25 @@ item, while those marked with question marks are unknown ratings that need
 to be predicted. In some other literatures, this problem may be given other
 names, e.g. collaborative filtering, matrix completion, matrix recovery, etc.
 
-### Features of LIBMF and Recosystem
+### Features of LIBMF and recosystem
 
 `LIBMF` itself is a parallelized library, meaning that users can take
 advantage of multicore CPUs to speed up the computation. It also utilizes 
 some advanced CPU features to further improve the performance.
 
-`Recosystem` is a complete wrapper of `LIBMF`, hence the features of `LIBMF`
-are all included in `Recosystem`. Also, unlike most other R packages for
+`recosystem` is a complete wrapper of `LIBMF`, hence the features of `LIBMF`
+are all included in `recosystem`. Also, unlike most other R packages for
 statistical modeling which store the whole dataset into memory,
-`LIBMF` (and hence `Recosystem`) is much hard-disk-based. The dataset
+`LIBMF` (and hence `recosystem`) is much hard-disk-based. The dataset
 is not loaded into memory at one time, but rather converted into a
 temporary binary file. Similarly, the constructed model which contains
 information for prediction is stored in the hard disk. Finally,
 prediction result is also not in memory but written into a file.
-That is to say, `Recosystem` will have a comparatively small memory usage.
+That is to say, `recosystem` will have a comparatively small memory usage.
 
-### Usage of Recosystem
+### Usage of recosystem
 
-The usage of `Recosystem` is quite simple, mainly consisting of four steps:
+The usage of `recosystem` is quite simple, mainly consisting of four steps:
 
 1. Create a model object by calling `Reco()`.
 2. Call methods `convert_train()` and `convert_test()` to convert data
@@ -59,9 +59,9 @@ Below is an example on some simulated data:
 
 
 ```r
-library(Recosystem)
-trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+library(recosystem)
+trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
 r$convert_train(trainset)
 ```
@@ -166,15 +166,15 @@ print(scan(outfile, n = 10))
 ```
 
 Detailed help document for each function is available in topics
-`?Recosystem::Reco`, `?Recosystem::convert`, `?Recosystem::train`
-and `?Recosystem::predict`.
+`?recosystem::Reco`, `?recosystem::convert`, `?recosystem::train`
+and `?recosystem::predict`.
 
 ### Installation issue
 
 `LIBMF` utilizes some compiler and CPU features that may be unavailable
-in some systems. Currently `Recosystem` mainly supports UNIX-like operating
+in some systems. Currently `recosystem` mainly supports UNIX-like operating
 systems, with experimental support for Windows
-(See section **Precompiled packages**). To build `Recosystem`
+(See section **Precompiled packages**). To build `recosystem`
 from source, one needs a C++ compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
@@ -198,14 +198,14 @@ PKG_CXXFLAGS = -msse3
 PKG_CXXFLAGS = -DUSEAVX -mavx
 ```
 
-After editing the `Makevars` file, run `R CMD INSTALL Recosystem` on
-the package source directory to install `Recosystem`.
+After editing the `Makevars` file, run `R CMD INSTALL recosystem` on
+the package source directory to install `recosystem`.
 
 ### Precompiled packages
 
 Below are the links for some precompiled binary packages for testing:
 
-- [Recosystem 0.2 - Windows](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.2.zip)
-- [Recosystem 0.2 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.2_R_x86_64-pc-linux-gnu.tar.gz)
-- [Recosystem 0.2 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/Recosystem_0.2_R_x86_64-unknown-linux-gnu.tar.gz)
+- [recosystem 0.2.1 - Windows (32-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.1.zip)
+- [recosystem 0.2.1 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.1_R_x86_64-pc-linux-gnu.tar.gz)
+- [recosystem 0.2.1 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.1_R_x86_64-unknown-linux-gnu.tar.gz)
 

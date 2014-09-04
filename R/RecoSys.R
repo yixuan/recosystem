@@ -77,7 +77,7 @@ RecoSys$methods(
         if(!verbose)  sink(tmpf <- tempfile())
         status = tryCatch(
             .Call("train_wrapper", infile, outfile, opts.train,
-                       PACKAGE = "Recosystem"),
+                       PACKAGE = "recosystem"),
             error = function(e) {
                 if(sink.number())  sink()
                 stop(e$message)
@@ -122,7 +122,7 @@ RecoSys$methods(
         if(!verbose)  sink(tmpf <- tempfile())
         status = tryCatch(
             .Call("predict_wrapper", testfile, modelfile, outfile,
-                       PACKAGE = "Recosystem"),
+                       PACKAGE = "recosystem"),
             error = function(e) {
                 if(sink.number())  sink()
                 stop(e$message)
@@ -219,9 +219,9 @@ Reco = function()
 #' numbers each line. If the rating values are unknown, you can put any
 #' number as placeholders.
 #' \cr
-#' Example data files are contained in the \code{Recosystem/dat} directory.
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+#' Example data files are contained in the \code{recosystem/dat} directory.
+#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
 #' r$convert_train(trainset)
 #' r$convert_test(testset)
@@ -291,8 +291,8 @@ NULL
 #' \item{\code{use_avg}}{Logical, whether to use training data average.
 #'                       Default is \code{FALSE}.}
 #' }
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
 #' r$convert_train(trainset)
 #' r$convert_test(testset)
@@ -327,8 +327,8 @@ NULL
 #' @param r Object returned by \code{\link{Reco}}()
 #' @param outfile Name of the output file for prediction
 #' @param verbose Whether to show detailed information. Default is \code{TRUE}.
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
 #' r$convert_train(trainset)
 #' r$convert_test(testset)

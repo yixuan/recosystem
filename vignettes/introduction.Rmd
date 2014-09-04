@@ -1,5 +1,5 @@
 ---
-title: "Recommender system with Recosystem package"
+title: "Recommender system with recosystem package"
 author: "Yixuan Qiu"
 date: "09/03/2014"
 output:
@@ -39,12 +39,12 @@ references:
 
 <!--
 %\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{Recommender system with Recosystem package}
+%\VignetteIndexEntry{Recommender system with recosystem package}
 -->
 
-## About Recosystem package
+## About recosystem package
 
-`Recosystem` is an R wrapper of the `LIBMF` library developed by
+`recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
 (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
 an open source library for recommender system using marix factorization.
@@ -88,7 +88,7 @@ where $(u,v)$ are locations of observed entries in $R$, $r_{u,v}$ is
 the observed rating, and $\lambda_P,\lambda_Q$ are penalty parameters
 to avoid overfitting.
 
-The `LIBMF` library which `Recosystem` is based on generalizes the formula
+The `LIBMF` library which `recosystem` is based on generalizes the formula
 above a little further, resulting in the following more general but more
 complicated optimiaztion problem [@FPSG2014]:
 
@@ -99,21 +99,21 @@ vector respectively, with $\lambda_a$ and $\lambda_b$ being their
 corresponding penalty parameters. $avg$ is the average rating in training
 data, which has an effect of centering the data first.
 
-## Features of LIBMF and Recosystem
+## Features of LIBMF and recosystem
 
 `LIBMF` itself is a parallelized library, meaning that users can take
 advantage of multicore CPUs to speed up the computation. It also utilizes 
 some advanced CPU features to further improve the performance. [@LIBMF]
 
-`Recosystem` is a complete wrapper of `LIBMF`, hence the features of `LIBMF`
-are all included in `Recosystem`. Also, unlike most other R packages for
+`recosystem` is a complete wrapper of `LIBMF`, hence the features of `LIBMF`
+are all included in `recosystem`. Also, unlike most other R packages for
 statistical modeling which store the whole dataset into memory,
-`LIBMF` (and hence `Recosystem`) is much hard-disk-based. The dataset
+`LIBMF` (and hence `recosystem`) is much hard-disk-based. The dataset
 is not loaded into memory at one time, but rather converted into a
 temporary binary file. Similarly, the constructed model which contains
 information for prediction is stored in the hard disk. Finally,
 prediction result is also not in memory but written into a file.
-That is to say, `Recosystem` will have a comparatively small memory usage.
+That is to say, `recosystem` will have a comparatively small memory usage.
 
 ## Data format
 
@@ -151,9 +151,9 @@ Since ratings for testing data are unknown, we put zeros as placeholders.
 However if their values are really given, the testing data will serve as
 a validation set on which RMSE of prediction can be calculated.
 
-## Usage of Recosystem
+## Usage of recosystem
 
-The usage of `Recosystem` is quite simple, mainly consisting of four steps:
+The usage of `recosystem` is quite simple, mainly consisting of four steps:
 
 1. Create a model object by calling `Reco()`.
 2. Call methods `convert_train()` and `convert_test()` to convert data
@@ -166,9 +166,9 @@ into hard disk.
 Below is an example on some simulated data:
 
 ```{r}
-library(Recosystem)
-trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+library(recosystem)
+trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
 r$convert_train(trainset)
 r$convert_test(testset)
@@ -187,14 +187,14 @@ print(scan(outfile, n = 10))
 ```
 
 Detailed help document for each function is available in topics
-`?Recosystem::Reco`, `?Recosystem::convert`, `?Recosystem::train`
-and `?Recosystem::predict`.
+`?recosystem::Reco`, `?recosystem::convert`, `?recosystem::train`
+and `?recosystem::predict`.
 
 ## Installation issue
 
 `LIBMF` utilizes some compiler and CPU features that may be unavailable
-in some systems. Currently `Recosystem` mainly supports UNIX-like operating
-systems, with experimental support for Windows. To build `Recosystem` from source, one needs a C++
+in some systems. Currently `recosystem` mainly supports UNIX-like operating
+systems, with experimental support for Windows. To build `recosystem` from source, one needs a C++
 compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
@@ -218,7 +218,7 @@ PKG_CXXFLAGS = -msse3
 PKG_CXXFLAGS = -DUSEAVX -mavx
 ```
 
-After editing the `Makevars` file, run `R CMD INSTALL Recosystem` on
-the package source directory to install `Recosystem`.
+After editing the `Makevars` file, run `R CMD INSTALL recosystem` on
+the package source directory to install `recosystem`.
 
 ## References

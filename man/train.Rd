@@ -62,8 +62,8 @@ following parameters:
 }
 }
 \examples{
-trainset = system.file("dat", "smalltrain.txt", package = "Recosystem")
-testset = system.file("dat", "smalltest.txt", package = "Recosystem")
+trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
 r$convert_train(trainset)
 r$convert_test(testset)
