@@ -12,8 +12,8 @@
 #include <cstdlib>
 #include "mf.h"
 
-#include "winrand.h"
 #include <Rcpp.h>
+#include "pseudorand.h"
 
 #if defined NOSSE && defined USEAVX
 #error "NOSSE and USEAVX cannot be define simultaneously"
@@ -270,13 +270,15 @@ struct GriddedMatrix
     std::vector<Matrix> GM;
 };
 
+int pseudo_random(int i) { return pseudo::rand() % i; }
+
 std::vector<int> gen_map(int const size, bool const shuffle)
 {
     std::vector<int> map(size, 0);
     for(int i = 0; i < size; i++)
         map[i] = i;
     if(shuffle)
-        std::random_shuffle(map.begin(), map.end());
+        std::random_shuffle(map.begin(), map.end(), pseudo_random);
     return map;
 }
 
@@ -297,12 +299,12 @@ Model generate_initial_model(Parameter const &param, int const nr_users,
 
     auto initialize = [&] (float *ptr, int const count)
     {
-        srand48(0L);
+        pseudo::srand48(0L);
         for(int i = 0; i < count; i++)
         {
             int d = 0;
             for(; d < param.dim; d++, ptr++)
-                *ptr = 0.1*drand48();
+                *ptr = 0.1*pseudo::drand48();
             for(; d < dim_aligned; d++, ptr++)
                 *ptr = 0;
         }
@@ -603,7 +605,7 @@ int Scheduler::get_job()
             }
         }
     }
-    int const best_jid = candidates[rand()%(int)candidates.size()];
+    int const best_jid = candidates[pseudo::rand()%(int)candidates.size()];
     blocked_u[best_jid/nr_item_blocks] = 1;
     blocked_i[best_jid%nr_item_blocks] = 1;
     counts[best_jid]++;

@@ -1,6 +1,11 @@
-// srand48() and drand48() for Windows
+// implementation of srand48() and drand48()
 // https://gist.github.com/mortennobel/8665258
-#ifdef _WIN32
+#include <cmath>
+
+namespace pseudo
+{
+
+
 #define RAND48_SEED_0 (0x330e)
 #define RAND48_SEED_1 (0xabcd)
 #define RAND48_SEED_2 (0x1234)
@@ -39,7 +44,7 @@ inline void _dorand48(unsigned short xseed[3])
     xseed[2] = (unsigned short)accu;
 }
 
-inline double erand48_win(unsigned short xseed[3])
+inline double erand48(unsigned short xseed[3])
 {
     _dorand48(xseed);
     return ldexp((double) xseed[0], -48) +
@@ -47,14 +52,13 @@ inline double erand48_win(unsigned short xseed[3])
         ldexp((double) xseed[2], -16);
 }
 
-#ifndef drand48
-inline double drand48(){
-    return erand48_win(_rand48_seed);
+inline double drand48()
+{
+    return erand48(_rand48_seed);
 }
-#endif
 
-#ifndef srand48
-inline void srand48(long seed){
+inline void srand48(long seed)
+{
     _rand48_seed[0] = RAND48_SEED_0;
     _rand48_seed[1] = (unsigned short)seed;
     _rand48_seed[2] = (unsigned short)(seed >> 16);
@@ -63,7 +67,16 @@ inline void srand48(long seed){
     _rand48_mult[2] = RAND48_MULT_2;
     _rand48_add = RAND48_ADD;
 }
-#endif
 
-#endif // _WIN32
+// implementation of rand()
+// http://stackoverflow.com/questions/4768180/rand-implementation
+unsigned long int next = 1;
 
+inline int rand(void) // RAND_MAX assumed to be 32767
+{
+    next = next * 1103515245 + 12345;
+    return (unsigned int)(next/65536) % 32768;
+}
+
+
+} // namespace pseudo
