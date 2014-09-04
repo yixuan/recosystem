@@ -62,6 +62,7 @@ following parameters:
 }
 }
 \examples{
+set.seed(123) # this is a randomized algorithm
 trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()

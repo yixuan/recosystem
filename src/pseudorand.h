@@ -1,6 +1,8 @@
 // implementation of srand48() and drand48()
 // https://gist.github.com/mortennobel/8665258
+#include <Rcpp.h>
 #include <cmath>
+#include <cstdlib>
 
 namespace pseudo
 {
@@ -68,14 +70,12 @@ inline void srand48(long seed)
     _rand48_add = RAND48_ADD;
 }
 
-// implementation of rand()
-// http://stackoverflow.com/questions/4768180/rand-implementation
-unsigned long int next = 1;
-
+// mimic the behaviour of a genuine rand()
 inline int rand(void) // RAND_MAX assumed to be 32767
 {
-    next = next * 1103515245 + 12345;
-    return (unsigned int)(next/65536) % 32768;
+    Rcpp::RNGScope scp;
+    double res = R::unif_rand() * RAND_MAX;
+    return (int)res;
 }
 
 

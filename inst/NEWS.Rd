@@ -3,13 +3,16 @@
 
 \section{Changes in recosystem version 0.2.1}{
   \itemize{
+    \item Roll back to \pkg{Rcpp} due to a NOTE in \code{R CMD check}.
     \item Change package name from \pkg{Recosystem} to \pkg{recosystem}.
+    \item Now using R to generate random numbers in the algorithm, so
+    the result is reproducible by setting seeds inside R.
   }
 }
 
 \section{Changes in recosystem version 0.2}{
   \itemize{
-    \item Now linking to Rcpp11.
+    \item Now linking to \pkg{Rcpp11}.
     \item A new parameter \code{verbose} to control output information.
   }
 }

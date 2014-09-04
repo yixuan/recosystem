@@ -291,7 +291,8 @@ NULL
 #' \item{\code{use_avg}}{Logical, whether to use training data average.
 #'                       Default is \code{FALSE}.}
 #' }
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples set.seed(123) # this is a randomized algorithm
+#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
 #' r$convert_train(trainset)
@@ -327,7 +328,8 @@ NULL
 #' @param r Object returned by \code{\link{Reco}}()
 #' @param outfile Name of the output file for prediction
 #' @param verbose Whether to show detailed information. Default is \code{TRUE}.
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples set.seed(123) # this is a randomized algorithm
+#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
 #' r$convert_train(trainset)
