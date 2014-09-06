@@ -100,12 +100,11 @@ inline void memalign_wrapper(void **memptr, size_t alignment, size_t size)
     if(!mem)
         Rcpp::stop("allocation of aligned memory failed");
     *memptr = mem;
-#elif defined(posix_memalign22)
+#elif defined(posix_memalign)
     int res = posix_memalign(memptr, alignment, size);
     if(res)
         Rcpp::stop("allocation of aligned memory failed");
 #else
-Rprintf(">>\n");
     void *mem = pseudo::malloc_aligned(alignment, size);
     if(!mem)
         Rcpp::stop("allocation of aligned memory failed");
@@ -117,7 +116,7 @@ inline void memfree_wrapper(void *memblock)
 {
 #ifdef _WIN32
     _aligned_free(memblock);
-#elif defined(posix_memalign22)
+#elif defined(posix_memalign)
     free(memblock)
 #else
     pseudo::free_aligned(memblock);
