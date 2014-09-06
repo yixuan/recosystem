@@ -270,7 +270,7 @@ struct GriddedMatrix
     std::vector<Matrix> GM;
 };
 
-int pseudo_random(int i) { return pseudo::rand() % i; }
+
 
 std::vector<int> gen_map(int const size, bool const shuffle)
 {
@@ -278,7 +278,7 @@ std::vector<int> gen_map(int const size, bool const shuffle)
     for(int i = 0; i < size; i++)
         map[i] = i;
     if(shuffle)
-        std::random_shuffle(map.begin(), map.end(), pseudo_random);
+        std::random_shuffle(map.begin(), map.end(), pseudo::pseudo_random);
     return map;
 }
 

@@ -78,5 +78,8 @@ inline int rand(void) // RAND_MAX assumed to be 32767
     return (int)res;
 }
 
+// used in train.cpp => gen_map()
+inline int pseudo_random(int i) { return pseudo::rand() % i; }
+
 
 } // namespace pseudo
