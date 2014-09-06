@@ -205,7 +205,7 @@ the package source directory to install `recosystem`.
 
 Below are the links for some precompiled binary packages for testing:
 
-- [recosystem 0.2.1 - Windows (32-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.1.zip)
-- [recosystem 0.2.1 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.1_R_x86_64-pc-linux-gnu.tar.gz)
-- [recosystem 0.2.1 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.1_R_x86_64-unknown-linux-gnu.tar.gz)
+- [recosystem 0.2.2 - Windows (32-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.2.zip)
+- [recosystem 0.2.2 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.2_R_x86_64-pc-linux-gnu.tar.gz)
+- [recosystem 0.2.2 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.2_R_x86_64-unknown-linux-gnu.tar.gz)
 
