@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.2.2}{
+  \itemize{
+    \item (Internal) Use portable code to allocate aligned memory.
+  }
+}
+
 \section{Changes in recosystem version 0.2.1}{
   \itemize{
     \item Roll back to \pkg{Rcpp} due to a NOTE in \code{R CMD check}.
