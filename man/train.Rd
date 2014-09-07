@@ -9,7 +9,8 @@
 generated. If missing, \code{tempdir()} will be used.}
 
 \item{opts}{Various options and tuning parameters in the model training
-procedure. See section "Options and Parameters" for details.}
+procedure. See section \strong{Options and Parameters}
+for details.}
 
 \item{verbose}{Whether to show detailed information. Default is \code{TRUE}.}
 }
@@ -47,8 +48,8 @@ following parameters:
 \item{\code{gamma}}{Positive real number, the learning rate for parallel
                     SGD. Default is 0.001.}
 \item{\code{blocks}}{Integer vector of length 2, the number of blocks for
-                     parallel SGD. Default is \code{c(2 * nthread,
-                     2 * nthread)}}
+                     parallel SGD. Default is \code{c(2*nthread,
+                     2*nthread)}}
 \item{\code{rand_shuffle}}{Logical, whether to enable random shuffle.
                            This should be enabled when data are
                            imbalanced. Default is \code{TRUE}.}
