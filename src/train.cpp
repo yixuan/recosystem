@@ -3,10 +3,16 @@
 #include <vector>
 #include <memory>
 #include <limits>
-#include <condition_variable>
 #include <queue>
 #include <algorithm>
+
+#ifdef USE_PTHREADS
+#include <pthread.h>
+#else
+#include <condition_variable>
 #include <thread>
+#endif
+
 #include <cstring>
 #include <cassert>
 #include <cstdlib>
@@ -543,6 +549,9 @@ class Scheduler
 public:
     Scheduler(int const nr_user_blocks, int const nr_item_blocks,
               int const nr_threads);
+#ifdef USE_PTHREADS
+    ~Scheduler();
+#endif
     int get_job();
     void put_job(int const jid, double const loss);
     double get_loss();
@@ -559,8 +568,13 @@ private:
     bool paused, terminated;
     std::vector<int> counts, order_u, order_i, blocked_u, blocked_i;
     std::vector<double> losses;
+#ifdef USE_PTHREADS
+    pthread_mutex_t mtx;
+    pthread_cond_t cond_var;
+#else
     std::mutex mtx;
     std::condition_variable cond_var;
+#endif
 };
 
 Scheduler::Scheduler(int const nr_user_blocks, int const nr_item_blocks,
@@ -576,14 +590,31 @@ Scheduler::Scheduler(int const nr_user_blocks, int const nr_item_blocks,
         order_u[u] = u;
     for(int i = 0; i < nr_item_blocks; i++)
         order_i[i] = i;
+#ifdef USE_PTHREADS
+    pthread_mutex_init(&mtx, NULL);
+    pthread_cond_init(&cond_var, NULL);
+#endif
 }
+
+#ifdef USE_PTHREADS
+Scheduler::~Scheduler()
+{
+    pthread_mutex_destroy(&mtx);
+    pthread_cond_destroy(&cond_var);
+}
+#endif
+
 
 int Scheduler::get_job()
 {
     int min_count = std::numeric_limits<int>::max();
     std::vector<int> candidates;
     candidates.reserve(nr_blocks);
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+#else
     std::lock_guard<std::mutex> lock(mtx);
+#endif
     for(int u = 0; u < nr_user_blocks; u++)
     {
         if(blocked_u[u] == 1)
@@ -609,11 +640,23 @@ int Scheduler::get_job()
     blocked_u[best_jid/nr_item_blocks] = 1;
     blocked_i[best_jid%nr_item_blocks] = 1;
     counts[best_jid]++;
+#ifdef USE_PTHREADS
+    pthread_mutex_unlock(&mtx);
+#endif
     return best_jid;
 }
 
 void Scheduler::put_job(int const jid, double const loss)
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    blocked_u[jid/nr_item_blocks] = 0;
+    blocked_i[jid%nr_item_blocks] = 0;
+    losses[jid] = loss;
+    total_jobs++;
+    pthread_cond_broadcast(&cond_var); // actually only tells the master
+    pthread_mutex_unlock(&mtx);
+#else
     {
         std::lock_guard<std::mutex> lock(mtx);
         blocked_u[jid/nr_item_blocks] = 0;
@@ -622,33 +665,82 @@ void Scheduler::put_job(int const jid, double const loss)
         total_jobs++;
         cond_var.notify_all();
     }
+#endif
     pause_if_needed();
 }
 
 double Scheduler::get_loss()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    double res = std::accumulate(losses.begin(), losses.end(), 0.0);
+    pthread_mutex_unlock(&mtx);
+    return res;
+#else
     std::lock_guard<std::mutex> lock(mtx);
     return std::accumulate(losses.begin(), losses.end(), 0.0);
+#endif
 }
 
 void Scheduler::wait_for_jobs_done(int const nr_jobs)
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    while(total_jobs < nr_jobs)
+    {
+        pthread_cond_wait(&cond_var, &mtx);
+    }
+    pthread_mutex_unlock(&mtx);
+#else
     std::unique_lock<std::mutex> lock(mtx);
     cond_var.wait(lock, [&]{return total_jobs >= nr_jobs;});
+#endif
 }
 
 void Scheduler::pause()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    paused = true;
+    while(nr_paused_thrs < nr_threads)
+    {
+        pthread_cond_wait(&cond_var, &mtx);
+    }
+    pthread_mutex_unlock(&mtx);
+#else
     {
         std::lock_guard<std::mutex> lock(mtx);
         paused = true;
     }
     std::unique_lock<std::mutex> lock(mtx);
     cond_var.wait(lock, [&]{return nr_paused_thrs == nr_threads;});
+#endif
 }
 
 void Scheduler::pause_if_needed()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    if(!paused)
+    {
+        pthread_mutex_unlock(&mtx);
+        return;
+    }
+    nr_paused_thrs++;
+    pthread_cond_broadcast(&cond_var); // signals master in pause()
+    pthread_mutex_unlock(&mtx);
+    
+    pthread_mutex_lock(&mtx);
+    while(paused)
+    {
+        pthread_cond_wait(&cond_var, &mtx);
+    }
+    pthread_mutex_unlock(&mtx);
+    
+    pthread_mutex_lock(&mtx);
+    nr_paused_thrs--;
+    pthread_mutex_unlock(&mtx);
+#else
     {
         std::lock_guard<std::mutex> lock(mtx);
         if(!paused)
@@ -666,27 +758,48 @@ void Scheduler::pause_if_needed()
         std::lock_guard<std::mutex> lock(mtx);
         nr_paused_thrs--;
     }
+#endif
 }
 
 void Scheduler::resume()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    paused = false;
+    pthread_mutex_unlock(&mtx);
+    pthread_cond_broadcast(&cond_var);
+#else
     {
         std::lock_guard<std::mutex> lock(mtx);
         paused = false;
     }
     cond_var.notify_all();
+#endif
 }
 
 void Scheduler::terminate()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    terminated = true;
+    pthread_mutex_unlock(&mtx);
+#else
     std::lock_guard<std::mutex> lock(mtx);
     terminated = true;
+#endif
 }
 
 bool Scheduler::is_terminated()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    bool res = terminated;
+    pthread_mutex_unlock(&mtx);
+    return res;
+#else
     std::lock_guard<std::mutex> lock(mtx);
     return terminated;
+#endif
 }
 
 void sgd(GriddedMatrix const * const Tr, Model * const model,
