@@ -1,23 +1,25 @@
 CXX_STD = CXX11
 
-PKG_CXXFLAGS = -pthread
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS)
+PKG_LIBS = $(SHLIB_PTHREAD_FLAGS)
 
 ##### Do not use SSE #####
 ## Uncomment the line below and comment others
 ## if your machine doesn't have SSE support
-PKG_CXXFLAGS += -DNOSSE
+PKG_CPPFLAGS += -DNOSSE
 ##########################
 
 
 ######## Use SSE #########
 ## Uncomment the line below and comment others
 ## if your machine has SSE3 support but not AVX
-#PKG_CXXFLAGS += -msse3
+#PKG_CXXFLAGS = -msse3
 ##########################
 
 
 ######## Use AVX #########
-## Uncomment the line below and comment others
+## Uncomment the lines below and comment others
 ## if your machine has AVX support
-#PKG_CXXFLAGS += -DUSEAVX -mavx
+#PKG_CXXFLAGS = -mavx
+#PKG_CPPFLAGS += -DUSEAVX
 ##########################

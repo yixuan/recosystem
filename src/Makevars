@@ -4,7 +4,7 @@ CXX_STD = CXX11
 ##### Do not use SSE #####
 ## Uncomment the line below and comment others
 ## if your machine doesn't have SSE support
-PKG_CXXFLAGS = -DNOSSE
+PKG_CPPFLAGS = -DNOSSE
 ##########################
 
 
@@ -16,7 +16,8 @@ PKG_CXXFLAGS = -DNOSSE
 
 
 ######## Use AVX #########
-## Uncomment the line below and comment others
+## Uncomment the lines below and comment others
 ## if your machine has AVX support
-#PKG_CXXFLAGS = -DUSEAVX -mavx
+#PKG_CXXFLAGS = -mavx
+#PKG_CPPFLAGS = -DUSEAVX
 ##########################
