@@ -5,6 +5,10 @@
 #include <limits>
 #include <queue>
 #include <algorithm>
+#include <cstring>
+#include <cassert>
+#include <cstdlib>
+#include "mf.h"
 
 #ifdef USE_PTHREADS
 #include <pthread.h>
@@ -12,11 +16,6 @@
 #include <condition_variable>
 #include <thread>
 #endif
-
-#include <cstring>
-#include <cassert>
-#include <cstdlib>
-#include "mf.h"
 
 #include <Rcpp.h>
 #include "pseudorand.h"
