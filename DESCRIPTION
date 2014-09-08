@@ -1,15 +1,18 @@
 Package: recosystem
 Type: Package
 Title: Recommender System using Matrix Factorization
-Version: 0.2.2
-Date: 2014-09-06
+Version: 0.2.3
+Date: 2014-09-07
 Authors@R: c(person(given = "Yixuan", family = "Qiu", role = c("aut", "cre"),
-    email = "yixuan.qiu@cos.name"), person(given = "Chih-Jen", family = "Lin",
-    role = c("aut","cph"), comment = "original C++ code"), person(given =
-    "Yu-Chin", family = "Juan", role = c("aut","cph"), comment = "original C++
-    code"), person(given = "Yong", family = "Zhuang", role = c("aut","cph"),
-    comment = "original C++ code"), person(given = "Wei-Sheng", family =
-    "Chin", role = c("aut","cph"), comment = "original C++ code"))
+                    email = "yixuan.qiu@cos.name"),
+             person(given = "Chih-Jen", family = "Lin", role = c("aut","cph"),
+                    comment = "original C++ code"),
+             person(given = "Yu-Chin", family = "Juan", role = c("aut","cph"),
+                    comment = "original C++ code"),
+             person(given = "Yong", family = "Zhuang", role = c("aut","cph"),
+                    comment = "original C++ code"),
+             person(given = "Wei-Sheng", family = "Chin", role = c("aut","cph"),
+                    comment = "original C++ code"))
 Maintainer: Yixuan Qiu <yixuan.qiu@cos.name>
 Description: This package is an R wrapper of the libmf library
     (http://www.csie.ntu.edu.tw/~cjlin/libmf/) for recommender
@@ -22,7 +25,6 @@ License: BSD_3_clause + file LICENSE
 Copyright: see file COPYRIGHTS
 URL: https://github.com/yixuan/recosystem
 BugReports: https://github.com/yixuan/recosystem/issues
-OS_type: unix
 SystemRequirements: C++11
 Depends:
     methods
