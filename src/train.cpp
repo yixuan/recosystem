@@ -1051,6 +1051,24 @@ void sgd(GriddedMatrix const * const Tr, Model * const model,
 #endif
 }
 
+#ifdef USE_PTHREADS
+typedef struct
+{
+    GriddedMatrix const * const Tr;
+    Model * const model;
+    Scheduler * const scheduler;
+} PthreadData;
+
+void *sgd_wrapper(void *data)
+{
+    PthreadData *pdata = (PthreadData *)data;
+    sgd(pdata->Tr, pdata->model, pdata->scheduler);
+    pthread_exit(NULL);
+    
+    return NULL; // should never reach
+}
+#endif
+
 Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
             TrainOption const &option)
 {
@@ -1065,9 +1083,20 @@ Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
 
     Scheduler scheduler(option.nr_user_blocks, option.nr_item_blocks,
                         option.nr_threads);
+#ifdef USE_PTHREADS
+    pthread_t *threads = new pthread_t[option.nr_threads];
+    PthreadData pdata = {&Tr, &model, &scheduler};
+    for(int tx = 0; tx < option.nr_threads; tx++)
+    {
+        int err = pthread_create(&threads[tx], NULL, sgd_wrapper, &pdata);
+        if(err)
+            Rcpp::stop("creating new thread failed");
+    }
+#else
     std::vector<std::thread> threads;
     for(int tx = 0; tx < option.nr_threads; tx++)
         threads.push_back(std::thread(sgd, &Tr, &model, &scheduler));
+#endif
     monitor.print_header();
 
     timer.reset();
@@ -1084,8 +1113,14 @@ Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
     }
 
     scheduler.terminate();
+#ifdef USE_PTHREADS
+    for(int tx = 0; tx < option.nr_threads; tx++)
+        pthread_join(threads[tx], NULL);
+    delete [] threads;
+#else
     for(auto thread = threads.begin(); thread != threads.end(); thread++)
         thread->join();
+#endif
 
     return model;
 }
