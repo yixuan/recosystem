@@ -172,19 +172,17 @@ and `?recosystem::predict`.
 ### Installation issue
 
 `LIBMF` utilizes some compiler and CPU features that may be unavailable
-in some systems. Currently `recosystem` mainly supports UNIX-like operating
-systems, with experimental support for Windows
-(See section **Precompiled packages**). To build `recosystem`
-from source, one needs a C++ compiler that supports C++11 standard.
+in some systems. To build `recosystem` from source, one needs a C++
+compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
-effect on performance. It's **strongly suggested** to set proper flags
+effect on performance. It is **strongly suggested** to set proper flags
 according to your type of CPU before compiling the package, in order to
 achieve the best performance:
 
 - If your CPU doesn't support SSE3 (typically very old CPUs), set
 ```
-PKG_CXXFLAGS = -DNOSSE
+PKG_CPPFLAGS = -DNOSSE
 ```
 in the `src/Makevars` file.
 - If SSE3 is supported
@@ -195,17 +193,9 @@ PKG_CXXFLAGS = -msse3
 - If not only SSE3 is supported but also AVX
 ([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), set
 ```
-PKG_CXXFLAGS = -DUSEAVX -mavx
+PKG_CXXFLAGS = -mavx
+PKG_CPPFLAGS = -DUSEAVX
 ```
 
 After editing the `Makevars` file, run `R CMD INSTALL recosystem` on
 the package source directory to install `recosystem`.
-
-### Precompiled packages
-
-Below are the links for some precompiled binary packages for testing:
-
-- [recosystem 0.2.2 - Windows (32-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.2.zip)
-- [recosystem 0.2.2 - Ubuntu 14.04 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.2_R_x86_64-pc-linux-gnu.tar.gz)
-- [recosystem 0.2.2 - Fedora 20 (64-bit)](https://bitbucket.org/yixuan/cn/downloads/recosystem_0.2.2_R_x86_64-unknown-linux-gnu.tar.gz)
-

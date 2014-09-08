@@ -1,7 +1,7 @@
 ---
 title: "Recommender system with recosystem package"
 author: "Yixuan Qiu"
-date: "09/03/2014"
+date: "09/08/2014"
 output:
   html_document: default
   pdf_document: default
@@ -198,13 +198,13 @@ in some systems. To build `recosystem` from source, one needs a C++
 compiler that supports C++11 standard.
 
 Also, there are some flags in file `src/Makevars` that may have influential
-effect on performance. It's strongly suggested to set proper flags
+effect on performance. It is strongly suggested to set proper flags
 according to your type of CPU before compiling the package, in order to
 achieve the best performance:
 
 1. If your CPU doesn't support SSE3 (typically very old CPUs), set
 ```
-PKG_CXXFLAGS = -DNOSSE
+PKG_CPPFLAGS = -DNOSSE
 ```
 in the `src/Makevars` file.
 2. If SSE3 is supported
@@ -215,7 +215,8 @@ PKG_CXXFLAGS = -msse3
 3. If not only SSE3 is supported but also AVX
 ([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), set
 ```
-PKG_CXXFLAGS = -DUSEAVX -mavx
+PKG_CXXFLAGS = -mavx
+PKG_CPPFLAGS = -DUSEAVX
 ```
 
 After editing the `Makevars` file, run `R CMD INSTALL recosystem` on
