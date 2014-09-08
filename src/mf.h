@@ -123,3 +123,7 @@ inline void memfree_wrapper(void *memblock)
 #endif
 }
 
+// whether we should use pthreads (mainly for Windows) or not
+#ifdef _WIN32
+    #define USE_PTHREADS
+#endif
