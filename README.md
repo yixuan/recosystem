@@ -5,7 +5,7 @@
 `recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
 (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
-an open source library for recommender system using marix factorization.
+an open source library for recommender system using matrix factorization.
 
 A more detailed introduction can be found in the vignette of this package.
 
