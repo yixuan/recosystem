@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.2.4}{
+  \itemize{
+    \item (Internal) Avoid using C RNG.
+    \item Fix UBSAN runtime errors with thanks to Prof. Brian Ripley.
+  }
+}
+
 \section{Changes in recosystem version 0.2.3}{
   \itemize{
     \item (Internal) Use pthreads on Windows to support multithreading.
