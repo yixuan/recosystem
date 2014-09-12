@@ -13,7 +13,7 @@ inline int rand(void)
 }
 
 // used in train.cpp => gen_map()
-inline int rand_less_than(int i) { return pseudo::rand() % i; }
+inline int rand_less_than(int i) { return Rand::rand() % i; }
 
 
-} // namespace pseudo
+} // namespace Rand
