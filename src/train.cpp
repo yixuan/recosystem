@@ -1069,7 +1069,7 @@ void *sgd_wrapper(void *data)
 }
 #endif
 
-Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
+Model fpsgd(GriddedMatrix const &Tr, Matrix const *Va,
             TrainOption const &option)
 {
     Timer timer;
@@ -1078,7 +1078,7 @@ Model fpsgd(GriddedMatrix const &Tr, Matrix const &Va,
                                          option.use_avg? Tr.avg : 0);
     timer.toc("done.");
 
-    Monitor monitor(Tr, &Va, &model, option.show_tr_rmse,
+    Monitor monitor(Tr, Va, &model, option.show_tr_rmse,
                     option.show_obj);
 
     Scheduler scheduler(option.nr_user_blocks, option.nr_item_blocks,
@@ -1386,7 +1386,7 @@ BEGIN_RCPP
         }
     }
 
-    Model model = fpsgd(*Tr, *Va, *option);
+    Model model = fpsgd(*Tr, Va.get(), *option);
 
     if(option->rand_shuffle)
         inversely_shuffle_model(model, user_map, item_map);
