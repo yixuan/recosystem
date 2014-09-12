@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-namespace pseudo
+namespace MemAlign
 {
 
 void *malloc_aligned(size_t align, size_t len)
@@ -53,4 +53,4 @@ void free_aligned(void *ptr)
 }
 
 
-} // namespace pseudo
+} // namespace MemAlign

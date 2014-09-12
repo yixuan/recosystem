@@ -87,7 +87,7 @@ int predict(int const argc, char const * const * const argv);
 int view(int const argc, char const * const * const argv);
 
 // wrapper of memory alignment function
-namespace pseudo
+namespace MemAlign
 {
 void *malloc_aligned(size_t align, size_t len);
 void free_aligned(void *ptr);
@@ -105,7 +105,7 @@ inline void memalign_wrapper(void **memptr, size_t alignment, size_t size)
     if(res)
         Rcpp::stop("allocation of aligned memory failed");
 #else
-    void *mem = pseudo::malloc_aligned(alignment, size);
+    void *mem = MemAlign::malloc_aligned(alignment, size);
     if(!mem)
         Rcpp::stop("allocation of aligned memory failed");
     *memptr = mem;
@@ -119,7 +119,7 @@ inline void memfree_wrapper(void *memblock)
 #elif defined(posix_memalign)
     free(memblock)
 #else
-    pseudo::free_aligned(memblock);
+    MemAlign::free_aligned(memblock);
 #endif
 }
 
