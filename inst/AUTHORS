@@ -6,4 +6,5 @@ The original authors of LIBMF are:
 
 The code in file src/memalign.cpp is based on an answer in
 Stack Overflow: http://stackoverflow.com/a/6563989/3152208
-Credit goes to the author of this answer.
+Credit goes to the author of this answer, "Node"
+(http://stackoverflow.com/users/754373/node).
