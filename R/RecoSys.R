@@ -126,7 +126,7 @@ RecoSys$methods(
 )
 
 RecoSys$methods(
-    predict = function(outfile, verbose = TRUE)
+    predict = function(outfile = file.path(tempdir(), "predict.txt"), verbose = TRUE)
     {
         ## Check whether model have been trained
         modelfile = .self$model$binfile
@@ -350,7 +350,7 @@ NULL
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$predict(outfile, verbose = TRUE)}
+#' r$predict(outfile = file.path(tempdir(), "predict.txt"), verbose = TRUE)}
 #' 
 #' @name predict
 #' @param r Object returned by \code{\link{Reco}}()
