@@ -184,7 +184,7 @@ RecoSys$methods(
     }
 )
 
-#' Construct a recommender system object
+#' Construct a Recommender System Object
 #' 
 #' This function simply returns an object of class "\code{RecoSys}"
 #' that can be used to construct recommender model and conduct prediction.
@@ -211,7 +211,7 @@ Reco = function()
 }
 
 
-#' Read data file and convert to binary format
+#' Read Data File and Convert to Binary Format
 #' 
 #' @description These methods are member functions of class "\code{RecoSys}"
 #' that convert training and testing data files into binary format.
@@ -264,7 +264,7 @@ Reco = function()
 NULL
 
 
-#' Train a recommender model
+#' Train a Recommender Model
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that trains a recommender model. It will create a model file
@@ -338,7 +338,7 @@ NULL
 NULL
 
 
-#' Recommender model predictions
+#' Recommender Model Predictions
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that predicts unknown entries in the rating matrix.
