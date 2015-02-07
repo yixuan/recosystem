@@ -171,13 +171,13 @@ RecoSys$methods(
 RecoSys$methods(
     show = function(outfile)
     {
-        cat(">>> Training set >>>\n\n")
+        cat("[=== Training set ===]\n\n")
         .self$trainset$show()
         cat("\n")
-        cat(">>> Testing set >>>\n\n")
+        cat("[=== Testing set ===]\n\n")
         .self$testset$show()
         cat("\n")
-        cat(">>> Model >>>\n\n")
+        cat("[=== Model ===]\n\n")
         .self$model$show()
         
         invisible(.self)
