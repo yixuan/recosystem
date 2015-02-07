@@ -119,7 +119,7 @@ RecoSys$methods(
             cat(sprintf("P matrix generated at %s\n", out_P))
         
         if(length(out_Q))
-            cat(sprintf("P matrix generated at %s\n", out_Q))
+            cat(sprintf("Q matrix generated at %s\n", out_Q))
         
         invisible(.self)
     }
@@ -192,11 +192,12 @@ RecoSys$methods(
 #' @return \code{Reco()} returns an object of class "\code{RecoSys}"
 #' equipped with methods
 #' \code{$\link{convert_train}()}, \code{$\link{convert_train}()},
-#' \code{$\link{train}()} and \code{$\link{predict}()}, which describe
-#' the typical process of reading data, building model and
+#' \code{$\link{train}()}, \code{$\link{output}()} and \code{$\link{predict}()},
+#' which describe the typical process of reading data, building model and
 #' predicting results. See their help documents for details.
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{predict}}
+#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{output}},
+#' \code{\link{predict}}
 #' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
 #' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
 #' 
@@ -254,7 +255,7 @@ Reco = function()
 #' r$convert_test(testset)
 #' print(r)
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{train}}, \code{\link{predict}}
+#' @seealso \code{\link{train}}, \code{\link{output}}, \code{\link{predict}}
 #' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
 #' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
 #' 
@@ -328,7 +329,57 @@ NULL
 #' r$train(opts = list(dim = 80, cost.p = 0.01, cost.q = 0.01))
 #' print(r)
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{convert}}, \code{\link{predict}}
+#' @seealso \code{\link{convert}}, \code{\link{output}}, \code{\link{predict}}
+#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
+#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
+#' 
+#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
+#' Technical report 2014.
+NULL
+
+
+#' Output Factorization Matrices
+#' 
+#' @description This method is a member function of class "\code{RecoSys}"
+#' that could write the user score matrix \eqn{P} and item score matrix \eqn{Q}
+#' to text files.
+#' 
+#' Prior to calling this method, model needs to be trained by calling
+#' \code{$\link{train}()}.
+#' 
+#' The common usage of this method is
+#' \preformatted{r = Reco()
+#' r$output(out_P = file.path(tempdir(), "mat_P.txt"),
+#'          out_Q = file.path(tempdir(), "mat_Q.txt"))}
+#' 
+#' @name output
+#' @param r Object returned by \code{\link{Reco}()}
+#' @param out_P Filename of the output user score matrix. Note that this contains
+#'              the \strong{transpose} of the \eqn{P} matrix, hence each row in
+#'              the file stands for a user, and each column stands for a latent
+#'              factor. Values are space seperated.
+#' @param out_Q Filename of the output item score matrix. Note that this contains
+#'              the \strong{transpose} of the \eqn{Q} matrix, hence each row in
+#'              the file stands for an item, and each column stands for a latent
+#'              factor. Values are space seperated.
+#' 
+#' @examples set.seed(123) # this is a randomized algorithm
+#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
+#' r = Reco()
+#' r$convert_train(trainset)
+#' r$convert_test(testset)
+#' r$train(opts = list(dim = 10))
+#' P = tempfile()
+#' Q = tempfile()
+#' r$output(P, Q)
+#' 
+#' ## Inspect these two matrices
+#' head(read.table(P, header = FALSE, sep = " "))
+#' head(read.table(Q, header = FALSE, sep = " "))
+#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{predict}}
 #' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
 #' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
 #' 
@@ -353,7 +404,7 @@ NULL
 #' r$predict(outfile = file.path(tempdir(), "predict.txt"), verbose = TRUE)}
 #' 
 #' @name predict
-#' @param r Object returned by \code{\link{Reco}}()
+#' @param r Object returned by \code{\link{Reco}()}
 #' @param outfile Name of the output file for prediction
 #' @param verbose Whether to show detailed information. Default is \code{TRUE}.
 #' @examples set.seed(123) # this is a randomized algorithm
@@ -372,7 +423,7 @@ NULL
 #' print(read.table(testset, header = FALSE, sep = " ", nrows = 10)$V3)
 #' print(scan(outfile, n = 10))
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{convert}}, \code{\link{train}}
+#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{output}}
 #' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
 #' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
 #' 
