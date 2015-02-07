@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.2.5}{
+  \itemize{
+    \item New member function \code{$output()} to output factorization matrices.
+  }
+}
+
 \section{Changes in recosystem version 0.2.4}{
   \itemize{
     \item (Internal) Avoid using C RNG.
