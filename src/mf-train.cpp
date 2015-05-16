@@ -7,153 +7,74 @@
 #include <algorithm>
 #include <vector>
 
+#include <Rcpp.h>
+
 #include "mf.h"
 
 using namespace std;
 using namespace mf;
 
-struct Option
+struct TrainOption
 {
-    Option() : param(mf_get_default_param()), nr_folds(1), do_cv(false) {}
+    TrainOption() : param(mf_get_default_param()), nr_folds(1), do_cv(false) {}
     string tr_path, va_path, model_path;
     mf_parameter param;
     mf_int nr_folds;
     bool do_cv;
 };
 
-string train_help()
+TrainOption parse_train_option(Rcpp::CharacterVector train_path,
+                               Rcpp::CharacterVector model_path,
+                               Rcpp::List opts)
 {
-    return string(
-"usage: mf-train [options] training_set_file [model_file]\n"
-"\n"
-"options:\n"
-"-l <lambda>: set regularization parameter (default 0.1)\n"
-"-k <dimensions>: set number of dimensions (default 8)\n"
-"-t <iter>: set number of iterations (default 20)\n"
-"-r <eta>: set learning rate (default 0.1)\n"
-"-s <threads>: set number of threads (default 1)\n"
-"-p <path>: set path to the validation set\n"
-"-v <fold>: set number of folds for cross validation\n"
-"--quiet: quiet mode (no outputs)\n"
-"--nmf: perform non-negative matrix factorization\n");
-}
+    TrainOption option;
 
-Option parse_option(int argc, char **argv)
-{
-    vector<string> args;
-    for(int i = 0; i < argc; i++)
-        args.push_back(string(argv[i]));
+    // Regularization parameter
+    option.param.lambda = Rcpp::as<mf_float>(opts["cost"]);
+    if(option.param.lambda < 0)
+        throw invalid_argument("regularization parameter should not be smaller than zero");
 
-    if(argc == 1)
-        throw invalid_argument(train_help());
+    // Dimension
+    option.param.k = Rcpp::as<mf_int>(opts["dim"]);
+    if(option.param.k <= 0)
+        throw invalid_argument("number of factors should be greater than zero");
 
-    Option option;
+    // Number of iterations
+    option.param.nr_iters = Rcpp::as<mf_int>(opts["niter"]);
+    if(option.param.nr_iters <= 0)
+        throw invalid_argument("number of iterations should be greater than zero");
 
-    mf_int i;
-    for(i = 1; i < argc; i++)
-    {
-        if(args[i].compare("-l") == 0)
-        {
-            if((i+1) >= argc)
-                throw invalid_argument("need to specify lambda after -l");
-            i++;
-            option.param.lambda = stof(args[i]);
-            if(option.param.lambda < 0)
-                throw invalid_argument("regularization parameter should not be smaller than zero");
-        }
-        else if(args[i].compare("-k") == 0)
-        {
-            if((i+1) >= argc)
-                throw invalid_argument("need to specify number of factors after -k");
-            i++;
-            option.param.k = stoi(args[i]);
-            if(option.param.k <= 0)
-                throw invalid_argument("number of factors should be greater than zero");
-        }
-        else if(args[i].compare("-t") == 0)
-        {
-            if((i+1) >= argc)
-                throw invalid_argument("need to specify number of iterations after -t");
-            i++;
-            option.param.nr_iters = stoi(args[i]);
-            if(option.param.nr_iters <= 0)
-                throw invalid_argument("number of iterations should be greater than zero");
-        }
-        else if(args[i].compare("-r") == 0)
-        {
-            if((i+1) >= argc)
-                throw invalid_argument("need to specify eta after -r");
-            i++;
-            option.param.eta = stof(args[i]);
-            if(option.param.eta <= 0)
-                throw invalid_argument("learning rate should be greater than zero");
-        }
-        else if(args[i].compare("-s") == 0)
-        {
-            if((i+1) >= argc)
-                throw invalid_argument("need to specify number of threads after -s");
-            i++;
-            option.param.nr_threads = stoi(args[i]);
-            if(option.param.nr_threads <= 0)
-                throw invalid_argument("number of threads should be greater than zero");
-        }
-        else if(args[i].compare("-p") == 0)
-        {
-            if(i == argc-1)
-                throw invalid_argument("need to specify path after -p");
-            i++;
-            option.va_path = string(args[i]);
-        }
-        else if(args[i].compare("-v") == 0)
-        {
-            if(i == argc-1)
-                throw invalid_argument("need to specify number of folds after -v");
-            i++;
-            option.nr_folds = stoi(args[i]);
-            if(option.nr_folds <= 1)
-                throw invalid_argument("number of folds should be larger than 1");
-            option.do_cv = true;
-        }
-        else if(args[i].compare("--nmf") == 0)
-        {
-            option.param.do_nmf = true;
-        }
-        else if(args[i].compare("--quiet") == 0)
-        {
-            option.param.quiet = true;
-        }
-        else
-        {
-            break;
-        }
-    }
+    // Learning rate
+    option.param.eta = Rcpp::as<mf_float>(opts["lrate"]);
+    if(option.param.eta <= 0)
+        throw invalid_argument("learning rate should be greater than zero");
 
-    if(option.nr_folds > 1 && !option.va_path.empty())
-        throw invalid_argument("cannot specify -p and -v simultaneously");
+    // Number of threads
+    option.param.nr_threads = Rcpp::as<mf_int>(opts["nthread"]);
+    if(option.param.nr_threads <= 0)
+        throw invalid_argument("number of threads should be greater than zero");
 
-    if(i >= argc)
-        throw invalid_argument("training data not specified");
+    // Whether perform NMF or not
+    option.param.do_nmf = Rcpp::as<mf_int>(opts["nmf"]);
 
-    option.tr_path = string(args[i++]);
+    // Verbose or not
+    option.param.quiet = !(Rcpp::as<bool>(opts["verbose"]));
 
-    if(i < argc)
-    {
-        option.model_path = string(args[i]);
-    }
-    else if(i == argc)
-    {
-        const char *ptr = strrchr(&*option.tr_path.begin(), '/');
-        if(!ptr)
-            ptr = option.tr_path.c_str();
-        else
-            ++ptr;
-        option.model_path = string(ptr) + ".model";
-    }
-    else
-    {
-        throw invalid_argument("invalid argument");
-    }
+    // Path of validation set if specified, otherwise an empty string
+    option.va_path = Rcpp::as<string>(opts["valid_set"]);
 
+    // If validation set is unspecified, use cross validation
+    option.nr_folds = Rcpp::as<mf_int>(opts["nfold"]);
+    if(option.nr_folds > 1)
+        option.do_cv = true;
+
+    // Path to training set
+    option.tr_path = Rcpp::as<string>(train_path);
+
+    // Path to model file
+    option.model_path = Rcpp::as<string>(model_path);
+
+    // Whether to copy data matrix or not
     option.param.copy_data = false;
 
     return option;
@@ -200,30 +121,17 @@ mf_problem read_problem(string path)
     return prob;
 }
 
-int main(int argc, char **argv)
+RcppExport SEXP reco_train(Rcpp::CharacterVector train_path,
+                           Rcpp::CharacterVector model_path,
+                           Rcpp::List opts)
 {
-    Option option;
-    try
-    {
-        option = parse_option(argc, argv);
-    }
-    catch(invalid_argument &e)
-    {
-        cout << e.what() << endl;
-        return 1;
-    }
+BEGIN_RCPP
+
+    TrainOption option = parse_train_option(train_path, model_path, opts);
 
     mf_problem tr, va;
-    try
-    {
-        tr = read_problem(option.tr_path);
-        va = read_problem(option.va_path);
-    }
-    catch(runtime_error &e)
-    {
-        cout << e.what() << endl;
-        return 1;
-    }
+    tr = read_problem(option.tr_path);
+    va = read_problem(option.va_path);
 
     if(option.do_cv)
     {
@@ -231,25 +139,26 @@ int main(int argc, char **argv)
     }
     else
     {
-        mf_model *model = 
+        mf_model *model =
             mf_train_with_validation(&tr, &va, option.param);
 
         // use the following function if you do not have a validation set
 
-        // mf_model model = 
+        // mf_model model =
         //     mf_train_with_validation(&tr, option.fpsg_command.c_str());
 
         mf_int status = mf_save_model(model, option.model_path.c_str());
 
         if(status != 0)
         {
-            cout << "cannot save model to " << option.model_path << endl;
+            // cout << "cannot save model to " << option.model_path << endl;
+            ::Rf_warning("cannot save model to %s", option.model_path.c_str());
 
             delete[] tr.R;
             delete[] va.R;
             mf_destroy_model(&model);
 
-            return 1;
+            return Rcpp::wrap(1L);
         }
 
         mf_destroy_model(&model);
@@ -258,5 +167,7 @@ int main(int argc, char **argv)
     delete[] tr.R;
     delete[] va.R;
 
-    return 0;
+    return Rcpp::wrap(0L);
+
+END_RCPP
 }
