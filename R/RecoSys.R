@@ -5,7 +5,7 @@ RecoSys$methods(
     train = function(train_path, model_path, opts = list())
     {
         ## Check whether training set file exists
-        train_path = as.character(train_path)
+        train_path = path.expand(train_path)
         if(!file.exists(train_path))
         {
             stop(sprintf("%s does not exist", train_path))
@@ -14,9 +14,9 @@ RecoSys$methods(
         ## Use the default file name if model path is not set
         if(missing(model_path))
         {
-            model_path = sprintf("%s.model", train_path)
+            model_path = sprintf("%s.model", tempfile())
         }
-        model_path = as.character(model_path)
+        model_path = path.expand(model_path)
         
         ## Parse options
         opts_train = list(dim = 8L, niter = 20L, nthread = 1L,
