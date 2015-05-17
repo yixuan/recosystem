@@ -1,40 +1,31 @@
 RecoModel = setRefClass("RecoModel",
-                        fields = list(dir = "character",
-                                      binfile = "character"))
+                        fields = list(path = "character",
+                                      nuser = "integer",
+                                      nitem = "integer",
+                                      nfac = "integer",
+                                      tr_rmse = "numeric",
+                                      va_rmse = "numeric"))
 
 RecoModel$methods(
     initialize = function()
     {
-        .self$dir = tempdir()
-        .self$binfile = ""
-    }
-)
-
-
-RecoModel$methods(
-    view = function()
-    {
-        if(!file.exists(.self$binfile))
-        {
-            cat("Model not trained\n[Call $train() method to train model]\n")
-            return(.self)
-        }
-        
-        status = .Call("view_model_wrapper", .self$binfile,
-                       PACKAGE = "recosystem")
-        ## status: TRUE for success, FALSE for failure
-        if(!status)
-        {
-            stop("viewing model file failed")
-        }
-        
-        invisible(.self)
+        .self$path = ""
+        .self$nuser = 0L
+        .self$nitem = 0L
+        .self$nfac = 0L
+        .self$tr_rmse = NA_real_
+        .self$va_rmse = NA_real_
     }
 )
 
 RecoModel$methods(
     show = function()
     {
-        .self$view()
+        cat("Path to model file  =", ' "', .self$path, '"\n', sep = "")
+        cat("Number of users     =", .self$nuser, "\n")
+        cat("Number of items     =", .self$nitem, "\n")
+        cat("Number of factors   =", .self$nfac, "\n")
+        cat("Training set RMSE   =", .self$tr_rmse, "\n")
+        cat("Validation set RMSE =", .self$va_rmse, "\n")
     }
 )
