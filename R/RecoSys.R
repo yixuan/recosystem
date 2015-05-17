@@ -1,98 +1,42 @@
 RecoSys = setRefClass("RecoSys",
-                      fields = list(trainset = "RecoDat",
-                                    testset = "RecoDat",
-                                    model = "RecoModel"))
+                      fields = list(model = "RecoModel"))
 
 RecoSys$methods(
-    initialize = function()
+    train = function(train_path, model_path, opts = list())
     {
-        .self$trainset$type = "train"
-        .self$testset$type = "test"
-    }
-)
-
-RecoSys$methods(
-    convert_train = function(rawfile, outdir, verbose = TRUE)
-    {
-        .self$trainset$convert(rawfile, outdir, verbose)
-        invisible(.self)
-    },
-    convert_test = function(rawfile, outdir, verbose = TRUE)
-    {
-        .self$testset$convert(rawfile, outdir, verbose)
-        invisible(.self)
-    }
-)
-
-RecoSys$methods(
-    train = function(outdir, opts = list(), verbose = TRUE)
-    {
-        ## Check whether training data have been converted
-        infile = .self$trainset$binfile
-        if(!file.exists(infile))
+        train_path = as.character(train_path)
+        model_path = as.character(model_path)
+        
+        ## Check whether training set file exists
+        if(!file.exists(train_path))
         {
-            stop("Training data not set
-[Call $convert_train() method to set data]")
+            stop(sprintf("%s does not exist", train_path))
         }
         
-        ## Check and set output directory
-        if(missing(outdir))
+        ## Use the default file name if model path is not set
+        if(missing(model_path))
         {
-            outdir = .self$model$dir;
+            model_path = sprintf("%s.model", train_path)
         }
-        ## Check validity of outdir argument
-        if(file.exists(outdir))
-        {
-            if(file.info(outdir)$isdir) {
-                .self$model$dir = path.expand(outdir)
-            } else {
-                stop("outdir: not a directory")
-            }
-        } else {
-            stop("outdir: directory doesn't exist")
-        }
-        
-        ## Path of the model file to be written
-        outfile = file.path(.self$model$dir,
-                            paste(basename(infile), "model", sep = "."))
         
         ## Parse options
-        opts.train = list(dim = 40L, niter = 40L, nthread = 1L,
-                          cost.p = 1, cost.q = 1,
-                          cost.ub = -1, cost.ib = -1,
-                          gamma = 0.001,
-                          vaset = "",
-                          blocks = c(0L, 0L),
-                          rand_shuffle = TRUE,
-                          show_tr_rmse = FALSE,
-                          show_obj = FALSE,
-                          use_avg = FALSE)
-        opts.common = intersect(names(opts), names(opts.train))
-        opts.train[opts.common] = opts[opts.common]
-        opts_cname = c("k", "t", "s", "p", "q", "ub", "ib", "g", "v",
-                       "blk", "rand_shuffle", "show_tr_rmse",
-                       "show_obj", "use_avg")
-        names(opts.train) = opts_cname
+        opts_train = list(dim = 8L, niter = 20L, nthread = 1L,
+                          cost = 0.1, lrate = 0.1,
+                          nmf = FALSE, verbose = TRUE)
+        opts_common = intersect(names(opts), names(opts_train))
+        opts_train[opts_common] = opts[opts_common]
         
-        if(!verbose)  sink(tmpf <- tempfile())
-        status = tryCatch(
-            .Call("train_wrapper", infile, outfile, opts.train,
-                       PACKAGE = "recosystem"),
-            error = function(e) {
-                if(sink.number())  sink()
-                stop(e$message)
-            })
-        ## status: TRUE for success, FALSE for failure
-        if(!status)
-        {
-            if(sink.number())  sink()
-            stop("training model failed")
-        }
-        cat(sprintf("model file generated at %s\n", outfile));
-        if(sink.number())  sink()
-        if(!verbose)  unlink(tmpf)
+        ## Additional parameters to be passed to libmf but not set by users here
+        opts_train$nfold = 1L;
+        opts_train$va_path = "";
         
-        .self$model$binfile = outfile
+        model_param = .Call("reco_train", train_path, model_path, opts_train,
+                            package = "recosystem")
+        
+        .self$model$path = model_path
+        .self$model$nuser = model_param$nuser
+        .self$model$nitem = model_param$nitem
+        .self$model$nfac = model_param$nfac
         
         invisible(.self)
     }
