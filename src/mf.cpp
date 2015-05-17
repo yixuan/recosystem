@@ -14,6 +14,9 @@
 #include <string>
 #include <memory>
 
+// For changing cout to Rcout
+#include <Rcpp.h>
+
 #include "mf.h"
 
 #if defined USESSE
@@ -32,6 +35,7 @@ namespace mf
 {
 
 using namespace std;
+using Rcpp::Rcout;
 
 namespace
 {
@@ -975,18 +979,18 @@ shared_ptr<mf_model> fpsg(
 
     if(!param.quiet)
     {
-        cout.width(4);
-        cout << "iter";
-        cout.width(10);
-        cout << "tr_rmse";
+        Rcout.width(4);
+        Rcout << "iter";
+        Rcout.width(10);
+        Rcout << "tr_rmse";
         if(va->nnz != 0)
         {
-            cout.width(10);
-            cout << "va_rmse";
+            Rcout.width(10);
+            Rcout << "va_rmse";
         }
-        cout.width(13);
-        cout << "obj";
-        cout << "\n";
+        Rcout.width(13);
+        Rcout << "obj";
+        Rcout << "\n";
     }
 
     for(mf_int iter = 0; iter < param.nr_iters; iter++)
@@ -1002,19 +1006,19 @@ shared_ptr<mf_model> fpsg(
 
             mf_double tr_rmse = sqrt(tr_loss/tr->nnz);
             
-            cout.width(4);
-            cout << iter;
-            cout.width(10);
-            cout << fixed << setprecision(4) << tr_rmse;
+            Rcout.width(4);
+            Rcout << iter;
+            Rcout.width(10);
+            Rcout << fixed << setprecision(4) << tr_rmse;
             if(va->nnz != 0)
             {
                 mf_double va_rmse = calc_rmse(*va, *model)*std_dev;
-                cout.width(10);
-                cout << fixed << setprecision(4) << va_rmse;
+                Rcout.width(10);
+                Rcout << fixed << setprecision(4) << va_rmse;
             }
-            cout.width(13);
-            cout << fixed << setprecision(4) << scientific << reg+tr_loss;
-            cout << "\n" << flush;
+            Rcout.width(13);
+            Rcout << fixed << setprecision(4) << scientific << reg+tr_loss;
+            Rcout << "\n" << flush;
         }
 
         if(iter == 0) 
@@ -1030,7 +1034,7 @@ shared_ptr<mf_model> fpsg(
     mf_double loss = calc_loss(tr->R, tr->nnz, *model)*std_dev*std_dev;
 
     if(!param.quiet)
-        cout << "real tr_rmse = " << fixed << setprecision(4) << sqrt(loss/tr->nnz) << endl;
+        Rcout << "real tr_rmse = " << fixed << setprecision(4) << sqrt(loss/tr->nnz) << endl;
 
     if(cv_loss != nullptr && cv_count != nullptr)
     {
@@ -1114,11 +1118,11 @@ mf_float mf_cross_validation(
 
     if(!quiet)
     {
-        cout.width(4);
-        cout << "fold";
-        cout.width(10);
-        cout << "rmse";
-        cout << endl;
+        Rcout.width(4);
+        Rcout << "fold";
+        Rcout.width(10);
+        Rcout << "rmse";
+        Rcout << endl;
     }
 
     mf_double loss = 0;
@@ -1141,11 +1145,11 @@ mf_float mf_cross_validation(
 
         if(!quiet)
         {
-            cout.width(4);
-            cout << fold;
-            cout.width(10);
-            cout << fixed << setprecision(4) << rmse1;
-            cout << endl;
+            Rcout.width(4);
+            Rcout << fold;
+            Rcout.width(10);
+            Rcout << fixed << setprecision(4) << rmse1;
+            Rcout << endl;
         }
 
         loss += loss1;
@@ -1155,15 +1159,15 @@ mf_float mf_cross_validation(
 
     if(!quiet)
     {
-        cout.width(14);
-        cout.fill('=');
-        cout << "" << endl;
-        cout.fill(' ');
-        cout.width(4);
-        cout << "avg";
-        cout.width(10);
-        cout << fixed << setprecision(4) << rmse;
-        cout << endl;
+        Rcout.width(14);
+        Rcout.fill('=');
+        Rcout << "" << endl;
+        Rcout.fill(' ');
+        Rcout.width(4);
+        Rcout << "avg";
+        Rcout.width(10);
+        Rcout << fixed << setprecision(4) << rmse;
+        Rcout << endl;
     }
     
     return rmse;
