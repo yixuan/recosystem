@@ -23,10 +23,14 @@ struct TrainOption
     bool do_cv;
 };
 
-TrainOption parse_train_option(Rcpp::CharacterVector train_path,
-                               Rcpp::CharacterVector model_path,
-                               Rcpp::List opts)
+TrainOption parse_train_option(SEXP train_path_,
+                               SEXP model_path_,
+                               SEXP opts_)
 {
+    Rcpp::CharacterVector train_path(train_path_);
+    Rcpp::CharacterVector model_path(model_path_);
+    Rcpp::List opts(opts_);
+    
     TrainOption option;
 
     // Regularization parameter
@@ -121,9 +125,7 @@ mf_problem read_problem(string path)
     return prob;
 }
 
-RcppExport SEXP reco_train(Rcpp::CharacterVector train_path,
-                           Rcpp::CharacterVector model_path,
-                           Rcpp::List opts)
+RcppExport SEXP reco_train(SEXP train_path, SEXP model_path, SEXP opts)
 {
 BEGIN_RCPP
 
