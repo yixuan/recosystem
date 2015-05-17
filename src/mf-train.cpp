@@ -61,7 +61,7 @@ TrainOption parse_train_option(Rcpp::CharacterVector train_path,
     option.param.quiet = !(Rcpp::as<bool>(opts["verbose"]));
 
     // Path of validation set if specified, otherwise an empty string
-    option.va_path = Rcpp::as<string>(opts["valid_set"]);
+    option.va_path = Rcpp::as<string>(opts["va_path"]);
 
     // If validation set is unspecified, use cross validation
     option.nr_folds = Rcpp::as<mf_int>(opts["nfold"]);
@@ -133,41 +133,32 @@ BEGIN_RCPP
     tr = read_problem(option.tr_path);
     va = read_problem(option.va_path);
 
-    if(option.do_cv)
+    mf_model *model = mf_train_with_validation(&tr, &va, option.param);
+    mf_int status = mf_save_model(model, option.model_path.c_str());
+
+    if(status != 0)
     {
-        mf_cross_validation(&tr, option.nr_folds, option.param);
-    }
-    else
-    {
-        mf_model *model =
-            mf_train_with_validation(&tr, &va, option.param);
-
-        // use the following function if you do not have a validation set
-
-        // mf_model model =
-        //     mf_train_with_validation(&tr, option.fpsg_command.c_str());
-
-        mf_int status = mf_save_model(model, option.model_path.c_str());
-
-        if(status != 0)
-        {
-            // cout << "cannot save model to " << option.model_path << endl;
-            ::Rf_warning("cannot save model to %s", option.model_path.c_str());
-
-            delete[] tr.R;
-            delete[] va.R;
-            mf_destroy_model(&model);
-
-            return Rcpp::wrap(1L);
-        }
-
         mf_destroy_model(&model);
+
+        delete[] tr.R;
+        delete[] va.R;
+
+        string msg = "cannot save model to " + option.model_path;
+        Rcpp::stop(msg.c_str());
     }
+
+    Rcpp::List model_param = Rcpp::List::create(
+        Rcpp::Named("nuser") = Rcpp::wrap(model->m),
+        Rcpp::Named("nitem") = Rcpp::wrap(model->n),
+        Rcpp::Named("nfac") = Rcpp::wrap(model->k)
+    );
+
+    mf_destroy_model(&model);
 
     delete[] tr.R;
     delete[] va.R;
 
-    return Rcpp::wrap(0L);
+    return model_param;
 
 END_RCPP
 }
