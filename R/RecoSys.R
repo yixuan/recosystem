@@ -53,6 +53,14 @@ RecoSys$methods(
 [Call $train() method to train model]")
         }
         
+        ## If both are NULL, return P and Q matrices in memory
+        if(is.null(out_P) & is.null(out_Q))
+        {
+            res = .Call("reco_output_memory", model_path)
+            return(list(P = matrix(res$Pdata, .self$model$nuser, byrow = TRUE),
+                        Q = matrix(res$Qdata, .self$model$nitem, byrow = TRUE)))
+        }
+        
         out_P = path.expand(as.character(out_P))
         out_Q = path.expand(as.character(out_Q))
         
