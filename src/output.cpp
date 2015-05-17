@@ -1,73 +1,72 @@
 #include <Rcpp.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "mf.h"
 
-using Rcpp::as;
-using Rcpp::wrap;
-using Rcpp::CharacterVector;
+using namespace mf;
 
-RcppExport SEXP output(SEXP model, SEXP P, SEXP Q)
+RcppExport SEXP reco_output(SEXP model, SEXP P, SEXP Q)
 {
 BEGIN_RCPP
 
-    std::string model_path = as<std::string>(model);
-    CharacterVector P_path(P);
-    CharacterVector Q_path(Q);
+    std::string model_path = Rcpp::as<std::string>(model);
+    std::string P_path = Rcpp::as<std::string>(P);
+    std::string Q_path = Rcpp::as<std::string>(Q);
 
-    std::shared_ptr<Model> model = read_model(model_path);
-    if(!model)
-        Rcpp::stop("Unable to read model file");
-    
-    int const dim = model->param.dim;
-    int const dim_aligned = get_aligned_dim(dim);
-    
-    FILE *f;
-    float *reader;
-    
-    if(P_path.length())
+    std::ifstream f(model_path.c_str());
+    if(!f.is_open())
+        Rcpp::stop("cannot open " + model_path);
+
+    // Get dimensions
+    std::string line;
+    mf_int m, n, k;
+    std::getline(f, line);
+    m = std::stoi(line.substr(line.find(' ') + 1));
+    std::getline(f, line);
+    n = std::stoi(line.substr(line.find(' ') + 1));
+    std::getline(f, line);
+    k = std::stoi(line.substr(line.find(' ') + 1));
+
+    // Writing P matrix
+    if(!P_path.empty())
     {
-        std::string P = as<std::string>(P_path);
-        f = fopen(P.c_str(), "w");
-        if(!f)
+        std::ofstream fp(P_path);
+        if(!fp.is_open())
+            Rcpp::stop("cannot write " + P_path);
+
+        for(mf_int i = 0; i < m; i++)
         {
-            fclose(f);
-            Rcpp::stop("Cannot write " + P);
+            std::getline(f, line);
+            std::size_t pos = line.find(' ');
+            fp << line.substr(pos + 1) << std::endl;
         }
-        
-        for(int irow = 0; irow < model->nr_users; irow++)
-        {
-            reader = model->P + irow * dim_aligned;
-            for(int icol = 0; icol < dim - 1; icol++, reader++)
-            {
-                fprintf(f, "%f ", *reader);
-            }
-            fprintf(f, "%f\n", *reader);
-        }
-        fclose(f);
+
+        fp.close();
+    } else {
+        // Skip m lines
+        for(mf_int i = 0; i < m; i++)
+            f.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-    
-    if(Q_path.length())
+
+    // Writing Q matrix
+    if(!Q_path.empty())
     {
-        std::string Q = as<std::string>(Q_path);
-        f = fopen(Q.c_str(), "w");
-        if(!f)
+        std::ofstream fq(Q_path);
+        if(!fq.is_open())
+            Rcpp::stop("cannot write " + Q_path);
+
+        for(mf_int i = 0; i < n; i++)
         {
-            fclose(f);
-            Rcpp::stop("Cannot write " + Q);
+            std::getline(f, line);
+            std::size_t pos = line.find(' ');
+            fq << line.substr(pos + 1) << std::endl;
         }
-        
-        for(int irow = 0; irow < model->nr_items; irow++)
-        {
-            reader = model->Q + irow * dim_aligned;
-            for(int icol = 0; icol < dim - 1; icol++, reader++)
-            {
-                fprintf(f, "%f ", *reader);
-            }
-            fprintf(f, "%f\n", *reader);
-        }
-        fclose(f);
+
+        fq.close();
     }
 
     return R_NilValue;
-    
+
 END_RCPP
 }

@@ -46,22 +46,22 @@ RecoSys$methods(
                       out_Q = file.path(tempdir(), "mat_Q.txt"))
     {
         ## Check whether model have been trained
-        modelfile = .self$model$binfile
-        if(!file.exists(modelfile))
+        model_path = .self$model$path
+        if(!file.exists(model_path))
         {
-            stop("Model not trained
+            stop("model not trained yet
 [Call $train() method to train model]")
         }
         
         out_P = path.expand(as.character(out_P))
         out_Q = path.expand(as.character(out_Q))
         
-        .Call("output", modelfile, out_P, out_Q, PACKAGE = "recosystem")
+        .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
         
-        if(length(out_P))
+        if(nchar(out_P))
             cat(sprintf("P matrix generated at %s\n", out_P))
         
-        if(length(out_Q))
+        if(nchar(out_Q))
             cat(sprintf("Q matrix generated at %s\n", out_Q))
         
         invisible(.self)
