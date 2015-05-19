@@ -2,21 +2,16 @@ RecoSys = setRefClass("RecoSys",
                       fields = list(model = "RecoModel"))
 
 RecoSys$methods(
-    train = function(train_path, model_path, opts = list())
+    train = function(train_path, out = file.path(tempdir(), "model.txt"), opts = list())
     {
         ## Check whether training set file exists
-        train_path = path.expand(train_path)
+        train_path = path.expand(as.character(train_path))
         if(!file.exists(train_path))
         {
             stop(sprintf("%s does not exist", train_path))
         }
         
-        ## Use the default file name if model path is not set
-        if(missing(model_path))
-        {
-            model_path = sprintf("%s.model", tempfile())
-        }
-        model_path = path.expand(model_path)
+        model_path = path.expand(as.character(out))
         
         ## Parse options
         opts_train = list(dim = 8L, niter = 20L, nthread = 1L,
@@ -27,7 +22,7 @@ RecoSys$methods(
         
         ## Additional parameters to be passed to libmf but not set by users here
         opts_train$nfold = 1L;
-        opts_train$va_path = "";
+        opts_train$va_path = ""
         
         model_param = .Call("reco_train", train_path, model_path, opts_train,
                             package = "recosystem")
@@ -80,7 +75,7 @@ RecoSys$methods(
     predict = function(test_path, out = file.path(tempdir(), "predict.txt"))
     {
         ## Check whether testing set file exists
-        test_path = path.expand(test_path)
+        test_path = path.expand(as.character(test_path))
         if(!file.exists(test_path))
         {
             stop(sprintf("%s does not exist", test_path))
