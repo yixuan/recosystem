@@ -5,13 +5,13 @@ RecoSys$methods(
     train = function(train_path, out = file.path(tempdir(), "model.txt"), opts = list())
     {
         ## Check whether training set file exists
-        train_path = path.expand(as.character(train_path))
+        train_path = path.expand(train_path)
         if(!file.exists(train_path))
         {
             stop(sprintf("%s does not exist", train_path))
         }
         
-        model_path = path.expand(as.character(out))
+        model_path = path.expand(out)
         
         ## Parse options
         opts_train = list(dim = 8L, niter = 20L, nthread = 1L,
@@ -56,8 +56,8 @@ RecoSys$methods(
                         Q = matrix(res$Qdata, .self$model$nitem, byrow = TRUE)))
         }
         
-        out_P = path.expand(as.character(out_P))
-        out_Q = path.expand(as.character(out_Q))
+        out_P = path.expand(out_P)
+        out_Q = path.expand(out_Q)
         
         .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
         
@@ -75,7 +75,7 @@ RecoSys$methods(
     predict = function(test_path, out = file.path(tempdir(), "predict.txt"))
     {
         ## Check whether testing set file exists
-        test_path = path.expand(as.character(test_path))
+        test_path = path.expand(test_path)
         if(!file.exists(test_path))
         {
             stop(sprintf("%s does not exist", test_path))
