@@ -45,7 +45,7 @@ RecoSys$methods(
     output = function(out_P = file.path(tempdir(), "mat_P.txt"),
                       out_Q = file.path(tempdir(), "mat_Q.txt"))
     {
-        ## Check whether model have been trained
+        ## Check whether model has been trained
         model_path = .self$model$path
         if(!file.exists(model_path))
         {
@@ -77,43 +77,35 @@ RecoSys$methods(
 )
 
 RecoSys$methods(
-    predict = function(outfile = file.path(tempdir(), "predict.txt"), verbose = TRUE)
+    predict = function(test_path, out = file.path(tempdir(), "predict.txt"))
     {
-        ## Check whether model have been trained
-        modelfile = .self$model$binfile
-        if(!file.exists(modelfile))
+        ## Check whether testing set file exists
+        test_path = path.expand(test_path)
+        if(!file.exists(test_path))
         {
-            stop("Model not trained
+            stop(sprintf("%s does not exist", test_path))
+        }
+        
+        ## Check whether model has been trained
+        model_path = .self$model$path
+        if(!file.exists(model_path))
+        {
+            stop("model not trained yet
 [Call $train() method to train model]")
         }
         
-        ## Check whether testing data have been converted
-        testfile = .self$testset$binfile
-        if(!file.exists(testfile))
+        ## If out is NULL, return prediction in memory
+        if(is.null(out))
         {
-            stop("Testing data not set
-[Call $convert_test() method to set data]")
+            res = .Call("reco_predict_memory", test_path, model_path)
+            return(res)
         }
         
-        outfile = path.expand(outfile)
+        out_path = path.expand(out)
         
-        if(!verbose)  sink(tmpf <- tempfile())
-        status = tryCatch(
-            .Call("predict_wrapper", testfile, modelfile, outfile,
-                       PACKAGE = "recosystem"),
-            error = function(e) {
-                if(sink.number())  sink()
-                stop(e$message)
-            })
-        ## status: TRUE for success, FALSE for failure
-        if(!status)
-        {
-            if(sink.number())  sink()
-            stop("model predicting failed")
-        }
-        cat(sprintf("output file generated at %s\n", outfile))
-        if(sink.number())  sink()
-        if(!verbose)  unlink(tmpf)
+        .Call("reco_predict", test_path, model_path, out_path, PACKAGE = "recosystem")
+        
+        cat(sprintf("prediction output generated at %s\n", out_path))
         
         invisible(.self)
     }
