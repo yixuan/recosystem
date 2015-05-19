@@ -27,6 +27,14 @@
 #include <immintrin.h>
 #endif
 
+// _OPENMP will be defined if OpenMP is enabled,
+// so we can detect this automatically
+#ifdef _OPENMP
+  #ifndef USEOMP
+    #define USEOMP
+  #endif
+#endif
+
 #if defined USEOMP
 #include <omp.h>
 #endif
@@ -93,24 +101,24 @@ private:
     condition_variable cond_var;
     default_random_engine generator;
     uniform_real_distribution<mf_float> distribution;
-    priority_queue<pair<mf_float, mf_int>, 
-                   vector<pair<mf_float, mf_int>>, 
+    priority_queue<pair<mf_float, mf_int>,
+                   vector<pair<mf_float, mf_int>>,
                    greater<pair<mf_float, mf_int>>> pq;
 };
 
 Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads, vector<mf_int> cv_blocks)
-    : nr_bins(nr_bins), 
-      nr_threads(nr_threads), 
-      nr_done_jobs(0), 
+    : nr_bins(nr_bins),
+      nr_threads(nr_threads),
+      nr_done_jobs(0),
       target(nr_bins*nr_bins),
-      nr_paused_threads(0), 
-      terminated(false), 
-      counts(nr_bins*nr_bins, 0), 
-      busy_p_blocks(nr_bins, 0), 
-      busy_q_blocks(nr_bins, 0), 
+      nr_paused_threads(0),
+      terminated(false),
+      counts(nr_bins*nr_bins, 0),
+      busy_p_blocks(nr_bins, 0),
+      busy_q_blocks(nr_bins, 0),
       cv_blocks(cv_blocks.begin(), cv_blocks.end()),
       block_losses(nr_bins*nr_bins, 0),
-      distribution(0.0, 1.0) 
+      distribution(0.0, 1.0)
 {
     for(mf_int i = 0; i < nr_bins*nr_bins; i++)
         if(this->cv_blocks.find(i) == this->cv_blocks.end())
@@ -122,7 +130,7 @@ mf_int Scheduler::get_job()
     lock_guard<mutex> lock(mtx);
     vector<pair<mf_float, mf_int>> locked_blocks;
 
-    while(true) 
+    while(true)
     {
         pair<mf_float, mf_int> block = pq.top();
         pq.pop();
@@ -169,7 +177,7 @@ void Scheduler::put_job(mf_int block_idx, mf_double loss)
     }
 }
 
-mf_double Scheduler::get_loss() 
+mf_double Scheduler::get_loss()
 {
     lock_guard<mutex> lock(mtx);
     return accumulate(block_losses.begin(), block_losses.end(), 0.0);
@@ -201,7 +209,7 @@ void Scheduler::terminate()
     terminated = true;
 }
 
-bool Scheduler::is_terminated() 
+bool Scheduler::is_terminated()
 {
     lock_guard<mutex> lock(mtx);
     return terminated;
@@ -219,7 +227,7 @@ mf_float* malloc_aligned_float(mf_long size)
     if(status != 0)
         throw bad_alloc();
 #endif
-    
+
     return (mf_float*)ptr;
 }
 
@@ -244,7 +252,7 @@ mf_model* init_model(mf_int m, mf_int n, mf_int k_real, mf_int k_aligned)
     catch(bad_alloc const &e)
     {
         mf_destroy_model(&model);
-        throw; 
+        throw;
     }
 
     auto init1 = [&] (mf_float *ptr, mf_int count)
@@ -288,9 +296,9 @@ mf_float calc_std_dev(mf_problem &prob)
 
 #if defined USESSE
 inline void sg_update(
-    mf_float *p, 
-    mf_float *q, 
-    mf_float *pG, 
+    mf_float *p,
+    mf_float *q,
+    mf_float *pG,
     mf_float *qG,
     mf_int d_begin,
     mf_int d_end,
@@ -302,9 +310,9 @@ inline void sg_update(
 {
     __m128 XMMpG = _mm_load1_ps(pG);
     __m128 XMMqG = _mm_load1_ps(qG);
-    __m128 XMMeta_p = 
+    __m128 XMMeta_p =
         _mm_mul_ps(XMMeta, _mm_rsqrt_ps(XMMpG));
-    __m128 XMMeta_q = 
+    __m128 XMMeta_q =
         _mm_mul_ps(XMMeta, _mm_rsqrt_ps(XMMqG));
     __m128 XMMpG1 = _mm_setzero_ps();
     __m128 XMMqG1 = _mm_setzero_ps();
@@ -348,9 +356,9 @@ inline void sg_update(
 }
 #elif defined USEAVX
 inline void sg_update(
-    mf_float *p, 
-    mf_float *q, 
-    mf_float *pG, 
+    mf_float *p,
+    mf_float *q,
+    mf_float *pG,
     mf_float *qG,
     mf_int d_begin,
     mf_int d_end,
@@ -362,9 +370,9 @@ inline void sg_update(
 {
     __m256 XMMpG = _mm256_broadcast_ss(pG);
     __m256 XMMqG = _mm256_broadcast_ss(qG);
-    __m256 XMMeta_p = 
+    __m256 XMMeta_p =
         _mm256_mul_ps(XMMeta, _mm256_rsqrt_ps(XMMpG));
-    __m256 XMMeta_q = 
+    __m256 XMMeta_q =
         _mm256_mul_ps(XMMeta, _mm256_rsqrt_ps(XMMqG));
     __m256 XMMpG1 = _mm256_setzero_ps();
     __m256 XMMqG1 = _mm256_setzero_ps();
@@ -379,9 +387,9 @@ inline void sg_update(
         __m256 XMMqg = _mm256_sub_ps(_mm256_mul_ps(XMMlambda, XMMq),
                                   _mm256_mul_ps(XMMe, XMMp));
 
-        XMMpG1 = 
+        XMMpG1 =
             _mm256_add_ps(XMMpG1, _mm256_mul_ps(XMMpg, XMMpg));
-        XMMqG1 = 
+        XMMqG1 =
             _mm256_add_ps(XMMqG1, _mm256_mul_ps(XMMqg, XMMqg));
 
         XMMp = _mm256_sub_ps(XMMp, _mm256_mul_ps(XMMeta_p, XMMpg));
@@ -424,9 +432,9 @@ float qrsqrt(float x)
 }
 
 inline void sg_update(
-    mf_float *p, 
-    mf_float *q, 
-    mf_float *pG, 
+    mf_float *p,
+    mf_float *q,
+    mf_float *pG,
     mf_float *qG,
     mf_int d_begin,
     mf_int d_end,
@@ -452,7 +460,7 @@ inline void sg_update(
 
         p[d] -= eta_p*gp;
         q[d] -= eta_q*gq;
-        
+
         if(do_nmf)
         {
             p[d] = max(p[d], (mf_float)0.0);
@@ -465,7 +473,7 @@ inline void sg_update(
 }
 #endif
 
-void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched, 
+void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
         mf_parameter param, bool &slow_only, mf_float *PG, mf_float *QG)
 {
     mf_float * P = model.P;
@@ -494,10 +502,10 @@ void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
             XMMe = _mm_hadd_ps(XMMe, XMMe);
             XMMe = _mm_hadd_ps(XMMe, XMMe);
             XMMe = _mm_sub_ps(_mm_set1_ps(N->r), XMMe);
-            XMMloss = _mm_add_pd(XMMloss, 
+            XMMloss = _mm_add_pd(XMMloss,
                       _mm_cvtps_pd(_mm_mul_ps(XMMe, XMMe)));
 
-            sg_update(p, q, pG, qG, 0, kALIGN, XMMeta, XMMlambda, 
+            sg_update(p, q, pG, qG, 0, kALIGN, XMMeta, XMMlambda,
                       XMMe, XMMrk_slow, param.do_nmf);
 
             if(slow_only)
@@ -505,7 +513,7 @@ void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
 
             pG++;
             qG++;
-            sg_update(p, q, pG, qG, kALIGN, model.k, XMMeta, XMMlambda, 
+            sg_update(p, q, pG, qG, kALIGN, model.k, XMMeta, XMMlambda,
                       XMMe, XMMrk_fast, param.do_nmf);
         }
         mf_double loss;
@@ -538,11 +546,11 @@ void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
             XMMe = _mm256_hadd_ps(XMMe, XMMe);
             XMMe = _mm256_hadd_ps(XMMe, XMMe);
             XMMe = _mm256_sub_ps(_mm256_broadcast_ss(&N->r), XMMe);
-            XMMloss = _mm_add_pd(XMMloss, 
+            XMMloss = _mm_add_pd(XMMloss,
                       _mm_cvtps_pd(_mm256_castps256_ps128(
                       _mm256_mul_ps(XMMe, XMMe))));
 
-            sg_update(p, q, pG, qG, 0, kALIGN, XMMeta, XMMlambda, 
+            sg_update(p, q, pG, qG, 0, kALIGN, XMMeta, XMMlambda,
                       XMMe, XMMrk_slow, param.do_nmf);
 
             if(slow_only)
@@ -550,7 +558,7 @@ void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
 
             pG++;
             qG++;
-            sg_update(p, q, pG, qG, kALIGN, model.k, XMMeta, XMMlambda, 
+            sg_update(p, q, pG, qG, kALIGN, model.k, XMMeta, XMMlambda,
                       XMMe, XMMrk_fast, param.do_nmf);
         }
         mf_double loss;
@@ -578,7 +586,7 @@ void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
                 error -= p[d]*q[d];
             loss += error*error;
 
-            sg_update(p, q, pG, qG, 0, kALIGN, param.eta, 
+            sg_update(p, q, pG, qG, 0, kALIGN, param.eta,
                       param.lambda, error, rk_slow, param.do_nmf);
 
             if(slow_only)
@@ -587,7 +595,7 @@ void sg(vector<mf_node*> &ptrs, mf_model &model, Scheduler &sched,
             pG++;
             qG++;
 
-            sg_update(p, q, pG, qG, kALIGN, model.k, param.eta, 
+            sg_update(p, q, pG, qG, kALIGN, model.k, param.eta,
                       param.lambda, error, rk_fast, param.do_nmf);
 
         }
@@ -673,7 +681,7 @@ mf_double calc_reg(mf_model &model, vector<mf_int> &omega_p, vector<mf_int> &ome
         return reg;
     };
 
-    return calc_reg1(model.P, model.m, omega_p) + 
+    return calc_reg1(model.P, model.m, omega_p) +
            calc_reg1(model.Q, model.n, omega_q);
 }
 
@@ -703,8 +711,8 @@ mf_double calc_rmse(mf_problem &prob, mf_model &model)
 }
 
 void shuffle_problem(
-    mf_problem &prob, 
-    vector<mf_int> &p_map, 
+    mf_problem &prob,
+    vector<mf_int> &p_map,
     vector<mf_int> &q_map)
 {
 #if defined USEOMP
@@ -812,8 +820,8 @@ vector<mf_int> gen_inv_map(vector<mf_int> &map)
 }
 
 void shuffle_model(
-    mf_model &model, 
-    vector<mf_int> &p_map, 
+    mf_model &model,
+    vector<mf_int> &p_map,
     vector<mf_int> &q_map)
 {
     auto inv_shuffle1 = [] (mf_float *vec, vector<mf_int> &map,
@@ -893,24 +901,24 @@ mf_problem* copy_problem(mf_problem const *prob, bool copy_data)
     }
     else
     {
-        new_prob->R = prob->R; 
+        new_prob->R = prob->R;
     }
 
     return new_prob;
 }
 
 shared_ptr<mf_model> fpsg(
-    mf_problem const *tr_, 
-    mf_problem const *va_, 
-    mf_parameter param, 
+    mf_problem const *tr_,
+    mf_problem const *va_,
+    mf_parameter param,
     vector<mf_int> cv_blocks=vector<mf_int>(),
-    mf_double *cv_loss=nullptr, 
+    mf_double *cv_loss=nullptr,
     mf_long *cv_count=nullptr)
 {
 #if defined USESSE || defined USEAVX
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #endif
-    
+
 #if defined USEOMP
     mf_int old_nr_threads = omp_get_num_threads();
     omp_set_num_threads(param.nr_threads);
@@ -949,7 +957,7 @@ shared_ptr<mf_model> fpsg(
 
     mf_int k_aligned = (mf_int)ceil(mf_double(param.k)/kALIGN)*kALIGN;
 
-    shared_ptr<mf_model> model(init_model(tr->m, tr->n, param.k, k_aligned), 
+    shared_ptr<mf_model> model(init_model(tr->m, tr->n, param.k, k_aligned),
                                [] (mf_model *ptr) { mf_destroy_model(&ptr); });
 
     mf_float std_dev = calc_std_dev(*tr);
@@ -974,7 +982,7 @@ shared_ptr<mf_model> fpsg(
 
     vector<thread> threads;
     for(mf_int i = 0; i < param.nr_threads; i++)
-        threads.emplace_back(sg, ref(ptrs), ref(*model), ref(sched), param, 
+        threads.emplace_back(sg, ref(ptrs), ref(*model), ref(sched), param,
                              ref(slow_only), PG.data(), QG.data());
 
     if(!param.quiet)
@@ -1005,7 +1013,7 @@ shared_ptr<mf_model> fpsg(
             mf_double tr_loss = sched.get_loss()*std_dev*std_dev;
 
             mf_double tr_rmse = sqrt(tr_loss/tr->nnz);
-            
+
             Rcout.width(4);
             Rcout << iter;
             Rcout.width(10);
@@ -1021,13 +1029,13 @@ shared_ptr<mf_model> fpsg(
             Rcout << "\n" << flush;
         }
 
-        if(iter == 0) 
+        if(iter == 0)
             slow_only = false;
 
         sched.resume();
     }
     sched.terminate();
-    
+
     for(auto &thread : threads)
         thread.join();
 
@@ -1073,8 +1081,8 @@ shared_ptr<mf_model> fpsg(
 } // unnamed namespace
 
 mf_model* mf_train_with_validation(
-    mf_problem const *tr, 
-    mf_problem const *va, 
+    mf_problem const *tr,
+    mf_problem const *va,
     mf_parameter param)
 {
     shared_ptr<mf_model> model = fpsg(tr, va, param);
@@ -1100,8 +1108,8 @@ mf_model* mf_train(mf_problem const *prob, mf_parameter param)
 }
 
 mf_float mf_cross_validation(
-    mf_problem const *prob, 
-    mf_int nr_folds, 
+    mf_problem const *prob,
+    mf_int nr_folds,
     mf_parameter param)
 {
     bool quiet = param.quiet;
@@ -1133,7 +1141,7 @@ mf_float mf_cross_validation(
         mf_int begin = fold*nr_blocks_per_fold;
         mf_int end= min((fold+1)*nr_blocks_per_fold, nr_bins*nr_bins);
 
-        vector<mf_int> cv_blocks1(cv_blocks.begin()+begin, 
+        vector<mf_int> cv_blocks1(cv_blocks.begin()+begin,
                                   cv_blocks.begin()+end);
 
         mf_double loss1 = 0;
@@ -1169,7 +1177,7 @@ mf_float mf_cross_validation(
         Rcout << fixed << setprecision(4) << rmse;
         Rcout << endl;
     }
-    
+
     return rmse;
 }
 
