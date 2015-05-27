@@ -2,6 +2,60 @@ RecoSys = setRefClass("RecoSys",
                       fields = list(model = "RecoModel"))
 
 RecoSys$methods(
+    tune = function(train_path, opts = list(dim = c(10L, 15L),
+                                            cost = c(0.01, 0.1),
+                                            lrate = c(0.1, 0.2)))
+    {
+        ## Check whether training set file exists
+        train_path = path.expand(train_path)
+        if(!file.exists(train_path))
+        {
+            stop(sprintf("%s does not exist", train_path))
+        }
+        
+        ## Tuning parameters: dim, cost, lrate
+        ## First set up default values
+        opts_tune = list(dim   = c(10L, 15L),
+                         cost  = c(0.01, 0.1),
+                         lrate = c(0.1, 0.2))
+        ## Update opts_tune from opts
+        if("dim" %in% names(opts))
+        {
+            opts_tune$dim = as.integer(opts$dim)
+        }
+        if("cost" %in% names(opts))
+        {
+            opts_tune$cost = as.numeric(opts$cost)
+        }
+        if("lrate" %in% names(opts))
+        {
+            opts_tune$lrate = as.numeric(opts$lrate)
+        }
+        ## Expand combinations
+        opts_tune = expand.grid(opts_tune)
+        
+        ## Other options
+        opts_train = list(nfold = 5L, niter = 20L, nthread = 1L,
+                          nmf = FALSE, verbose = FALSE)
+        opts_common = intersect(names(opts), names(opts_train))
+        opts_train[opts_common] = opts[opts_common]
+        
+        rmse = .Call("reco_tune", train_path, opts_tune, opts_train,
+                            package = "recosystem")
+        
+        opts_tune$rmse = rmse
+        opts_tune = na.omit(opts_tune)
+        if(!nrow(opts_tune))
+            stop("results are all NA/NaN")
+
+        tune_min = opts_tune[which.min(rmse), ]
+        opts_min = list(dim = tune_min$dim, cost = tune_min$cost, lrate = tune_min$lrate)
+        
+        return(list(min = c(opts_min, opts_train), res = opts_tune))
+    }
+)
+
+RecoSys$methods(
     train = function(train_path, out = file.path(tempdir(), "model.txt"), opts = list())
     {
         ## Check whether training set file exists
@@ -14,8 +68,8 @@ RecoSys$methods(
         model_path = path.expand(out)
         
         ## Parse options
-        opts_train = list(dim = 8L, niter = 20L, nthread = 1L,
-                          cost = 0.1, lrate = 0.1,
+        opts_train = list(dim = 10L, cost = 0.1, lrate = 0.1,
+                          niter = 20L, nthread = 1L,
                           nmf = FALSE, verbose = TRUE)
         opts_common = intersect(names(opts), names(opts_train))
         opts_train[opts_common] = opts[opts_common]
