@@ -170,26 +170,28 @@ RecoSys$methods(
     }
 )
 
-#' Construct a Recommender System Object
+#' Constructing a Recommender System Object
 #' 
 #' This function simply returns an object of class "\code{RecoSys}"
 #' that can be used to construct recommender model and conduct prediction.
 #' 
 #' @return \code{Reco()} returns an object of class "\code{RecoSys}"
 #' equipped with methods
-#' \code{$\link{convert_train}()}, \code{$\link{convert_train}()},
-#' \code{$\link{train}()}, \code{$\link{output}()} and \code{$\link{predict}()},
-#' which describe the typical process of reading data, building model and
+#' \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()}
+#' and \code{$\link{predict}()}, which describe the typical process of
+#' building and tuning model, outputing coefficients, and
 #' predicting results. See their help documents for details.
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{output}},
+#' @seealso \code{\link{tune}}, \code{\link{train}}, \code{\link{output}},
 #' \code{\link{predict}}
-#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
-#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
-#' 
-#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
-#' Technical report 2014.
+#' ACM TIST, 2015.
+#' 
+#' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
+#' PAKDD, 2015. 
+#' 
 #' @export
 #' @keywords models
 Reco = function()
@@ -198,7 +200,7 @@ Reco = function()
 }
 
 
-#' Read Data File and Convert to Binary Format
+#' Tuning Recommender Model Parameters
 #' 
 #' @description These methods are member functions of class "\code{RecoSys}"
 #' that convert training and testing data files into binary format.
@@ -251,7 +253,7 @@ Reco = function()
 NULL
 
 
-#' Train a Recommender Model
+#' Training a Recommender Model
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that trains a recommender model. It will create a model file
@@ -325,7 +327,7 @@ NULL
 NULL
 
 
-#' Output Factorization Matrices
+#' Outputing Factorization Matrices
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that could write the user score matrix \eqn{P} and item score matrix \eqn{Q}
