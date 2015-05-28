@@ -56,7 +56,8 @@ RecoSys$methods(
 )
 
 RecoSys$methods(
-    train = function(train_path, out = file.path(tempdir(), "model.txt"), opts = list())
+    train = function(train_path, out_model = file.path(tempdir(), "model.txt"),
+                     opts = list())
     {
         ## Check whether training set file exists
         train_path = path.expand(train_path)
@@ -65,7 +66,7 @@ RecoSys$methods(
             stop(sprintf("%s does not exist", train_path))
         }
         
-        model_path = path.expand(out)
+        model_path = path.expand(out_model)
         
         ## Parse options
         opts_train = list(dim = 10L, cost = 0.1, lrate = 0.1,
@@ -213,7 +214,8 @@ Reco = function()
 #' )}
 #' 
 #' @name tune
-#' @param r Object returned by \code{\link{Reco}}()
+#' 
+#' @param r Object returned by \code{\link{Reco}}().
 #' @param train_path Path to the traning data file, same as the one in
 #'                   \code{$\link{train}()}. See the help page there for the
 #'                   details about the data format.
@@ -265,6 +267,7 @@ Reco = function()
 #' 
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
+#' set.seed(123)
 #' res = r$tune(
 #'     trainset,
 #'     opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2), nthread = 2)
@@ -272,7 +275,7 @@ Reco = function()
 #' r$train(trainset, opts = res$min)
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{train}}, \code{\link{output}}, \code{\link{predict}}
+#' @seealso \code{$\link{train}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
 #' ACM TIST, 2015.
@@ -287,61 +290,43 @@ NULL
 #' Training a Recommender Model
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
-#' that trains a recommender model. It will create a model file
-#' in the specified directory, containing necessary information for
-#' prediction.
-#' Training data must have already been converted into binary form
-#' through \code{$\link{convert_train}()} before calling this method.
+#' that trains a recommender model. It will read a training data file and
+#' create a model file at the specified locations. The model file contains
+#' necessary information for prediction.
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$train(outdir, opts, verbose = TRUE)}
+#' r$train(train_path, out_model = file.path(tempdir(), "model.txt"),
+#'         opts = list())}
 #' 
 #' @name train
-#' @param r Object returned by \code{\link{Reco}}()
-#' @param outdir Directory in which the model file will be
-#'               generated. If missing, \code{tempdir()} will be used.
-#' @param opts Various options and tuning parameters in the model training
-#'             procedure. See section \strong{Options and Parameters}
-#'             for details.
-#' @param verbose Whether to show detailed information. Default is \code{TRUE}.
-#' @section Options and Parameters:
-#' The \code{opts} argument is a list that can supply any of the
-#' following parameters:
+#' 
+#' @param r Object returned by \code{\link{Reco}}().
+#' @param train_path Path to the traning data file. See section \strong{Data Format}
+#'                   for the details about the data format.
+#' @param out_model Path to the model file that will be created.
+#' @param opts A number of parameters and options for the model training.
+#'             See section \strong{Parameters and Options} for details.
+#'             
+#' @section Parameters and Options:
+#' The \code{opts} argument is a list that can supply any of the following parameters:
 #'
 #' \describe{
-#' \item{\code{dim}}{Integer, the width of the factorized matrix, i.e.,
-#'                   the number of latent factors. Default is 40.}
-#' \item{\code{niter}}{Integer, the number of iterations. Default is 40.}
+#' \item{\code{dim}}{Integer, the number of latent factors. Default is 10.}
+#' \item{\code{cost}}{Numeric, the regularization cost for latent factors. Default is 0.1.}
+#' \item{\code{lrate}}{Numeric, the learning rate, which can be thought
+#'                     of as the step size in gradient descent. Default is 0.1.}
+#' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 #' \item{\code{nthread}}{Integer, the number of threads for parallel
 #'                       computing. Default is 1.}
-#' \item{\code{cost.p}}{Nonnegative real number, the regularization cost
-#'                      for P. Default is 1.}
-#' \item{\code{cost.q}}{Nonnegative real number, the regularization cost
-#'                      for Q. Default is 1.}
-#' \item{\code{cost.ub}}{Real number, the regularization cost for user bias.
-#'                       Set <0 to disable. Default is -1.}
-#' \item{\code{cost.ib}}{Real number, The regularization cost for item bias.
-#'                       Set <0 to disable. Default is -1.}
-#' \item{\code{gamma}}{Positive real number, the learning rate for parallel
-#'                     SGD. Default is 0.001.}
-#' \item{\code{blocks}}{Integer vector of length 2, the number of blocks for
-#'                      parallel SGD. Default is \code{c(2*nthread,
-#'                      2*nthread)}}
-#' \item{\code{rand_shuffle}}{Logical, whether to enable random shuffle.
-#'                            This should be enabled when data are
-#'                            imbalanced. Default is \code{TRUE}.}
-#' \item{\code{show_tr_rmse}}{Logical, whether to show RMSE on training
-#'                            data. Default is \code{FALSE}.}
-#' \item{\code{show_obj}}{Logical, whether to show the objective value.
-#'                        This option may slow down the training procedure.
-#'                        Default is \code{FALSE}.}
-#' \item{\code{use_avg}}{Logical, whether to use training data average.
-#'                       Default is \code{FALSE}.}
+#' \item{\code{nmf}}{Logical, whether to perform non-negative matrix factorization.
+#'                   Default is \code{FALSE}.}
+#' \item{\code{verbose}}{Logical, whether to show detailed information. Default is
+#'                       \code{TRUE}.}
 #' }
 #' 
 #' @section Data format:
-#' The data file required by these methods takes the format of sparse matrix
+#' The training data file takes the format of sparse matrix
 #' in triplet form, i.e., each line in the file contains three numbers
 #' \preformatted{row col value}
 #' representing a number in the rating matrix
@@ -352,28 +337,22 @@ NULL
 #' rates 3 on the first item, the line will be
 #' \preformatted{0 0 3}
 #' 
-#' \bold{NOTE}: For testing data, the file also needs to contain three
-#' numbers each line. If the rating values are unknown, you can put any
-#' number as placeholders.
-#' \cr
 #' Example data files are contained in the \code{recosystem/dat} directory.
 #' 
-#' @examples set.seed(123) # this is a randomized algorithm
+#' @examples set.seed(123) # This is a randomized algorithm
 #' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
-#' r$convert_train(trainset)
-#' r$convert_test(testset)
-#' r$train(opts = list(dim = 80, cost.p = 0.01, cost.q = 0.01))
-#' print(r)
-#' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{convert}}, \code{\link{output}}, \code{\link{predict}}
-#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
-#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
+#' r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))]
 #' 
-#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @seealso \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
+#' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
-#' Technical report 2014.
+#' ACM TIST, 2015.
+#' 
+#' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
+#' PAKDD, 2015. 
 NULL
 
 
