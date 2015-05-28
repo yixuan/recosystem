@@ -98,7 +98,7 @@ Reco = function()
 #' 
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
-#' set.seed(123)
+#' set.seed(123) # This is a randomized algorithm
 #' res = r$tune(
 #'     trainset,
 #'     opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2), nthread = 2)
@@ -225,9 +225,9 @@ RecoSys$methods(
 #' 
 #' Example data files are contained in the \code{recosystem/dat} directory.
 #' 
-#' @examples set.seed(123) # This is a randomized algorithm
-#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
+#' set.seed(123) # This is a randomized algorithm
 #' r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))]
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
@@ -294,38 +294,51 @@ RecoSys$methods(
 #'          out_Q = file.path(tempdir(), "mat_Q.txt"))}
 #' 
 #' @name output
+#' 
 #' @param r Object returned by \code{\link{Reco}()}
 #' @param out_P Filename of the output user score matrix. Note that this contains
 #'              the \strong{transpose} of the \eqn{P} matrix, hence each row in
 #'              the file stands for a user, and each column stands for a latent
-#'              factor. Values are space seperated.
+#'              factor. Values are space seperated. If \code{out_P} is an empty
+#'              string (\code{""}), the \eqn{P} matrix will not be output.
 #' @param out_Q Filename of the output item score matrix. Note that this contains
 #'              the \strong{transpose} of the \eqn{Q} matrix, hence each row in
 #'              the file stands for an item, and each column stands for a latent
-#'              factor. Values are space seperated.
+#'              factor. Values are space seperated. If \code{out_Q} is an empty
+#'              string (\code{""}), the \eqn{Q} matrix will not be output. If both
+#'              \code{out_P} and \code{out_Q} are \code{NULL}, this function will
+#'              return a list containing the \eqn{P} and \eqn{Q} matrices in memory,
+#'              and no files will be created.
 #' 
-#' @examples set.seed(123) # this is a randomized algorithm
-#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
+#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
-#' r$convert_train(trainset)
-#' r$convert_test(testset)
-#' r$train(opts = list(dim = 10))
-#' P = tempfile()
-#' Q = tempfile()
-#' r$output(P, Q)
+#' set.seed(123) # This is a randomized algorithm
+#' r$train(trainset, opts = list(dim = 10, nmf = TRUE))]
+#' P_path = tempfile()
+#' Q_path = tempfile()
 #' 
-#' ## Inspect these two matrices
-#' head(read.table(P, header = FALSE, sep = " "))
-#' head(read.table(Q, header = FALSE, sep = " "))
+#' ## Write P and Q matrices to files
+#' r$output(P_path, Q_path)
+#' head(read.table(P_path, header = FALSE, sep = " "))
+#' head(read.table(Q_path, header = FALSE, sep = " "))
+#' 
+#' ## Skip P and only output Q
+#' r$output("", Q_path)
+#' 
+#' ## Return P and Q in memory
+#' res = r$output(NULL, NULL)
+#' head(res$P)
+#' head(res$Q)
+#'
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{convert}}, \code{\link{train}}, \code{\link{predict}}
-#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
-#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
-#' 
-#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' @seealso \code{$\link{train}()}, \code{$\link{predict}()}
+#' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
-#' Technical report 2014.
+#' ACM TIST, 2015.
+#' 
+#' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
+#' PAKDD, 2015. 
 NULL
 
 RecoSys$methods(
@@ -362,7 +375,6 @@ RecoSys$methods(
         invisible(.self)
     }
 )
-
 
 
 
