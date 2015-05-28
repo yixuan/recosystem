@@ -1,25 +1,24 @@
-// http://stackoverflow.com/questions/6563120/what-does-posix-memalign-memalign-do
-
 #include <cstdlib>
 
-namespace MemAlign
+namespace Reco
 {
 
-void *malloc_aligned(size_t align, size_t len)
+// http://stackoverflow.com/questions/6563120/what-does-posix-memalign-memalign-do
+inline void *malloc_aligned(size_t align, size_t len)
 {
     // align == 0, or not a power of 2
     if(align == 0 || (align & (align - 1)))
         return (void *)0;
-    
+
     // align is not a multiple of sizeof(void *)
     if(align % sizeof(void *))
         return (void *)0;
-    
+
     // len + align - 1 to guarantee the length with alignment,
     // sizeof(size_t) to record the start position
     const size_t total = len + align - 1 + sizeof(size_t);
     char *data = (char *)malloc(total);
-    
+
     if(data)
     {
         // the start location of "data"", used to free the memory
@@ -37,11 +36,11 @@ void *malloc_aligned(size_t align, size_t len)
         // write "start" to recorder
         *recorder = (size_t)start;
     }
-    
+
     return (void *)data;
 }
 
-void free_aligned(void *ptr)
+inline void free_aligned(void *ptr)
 {
     if(ptr)
     {
@@ -53,4 +52,4 @@ void free_aligned(void *ptr)
 }
 
 
-} // namespace MemAlign
+} // namespace Reco
