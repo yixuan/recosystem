@@ -51,28 +51,6 @@ namespace
 mf_int const kALIGNByte = 32;
 mf_int const kALIGN = kALIGNByte/sizeof(mf_float);
 
-vector<string> tokenize(string str)
-{
-    vector<string> tokens;
-
-    if(str.empty())
-        return tokens;
-
-    basic_string<char>::size_type begin = 0, end = 0;
-    while((end = str.find_first_of(" ", begin)) != string::npos)
-    {
-        string token = str.substr(begin, end-begin);
-        if(token.size() != 0)
-            tokens.push_back(token);
-        begin = end + 1;
-    }
-    string tail = str.substr(begin);
-    if(tail.size() != 0)
-        tokens.push_back(tail);
-
-    return tokens;
-}
-
 class Scheduler
 {
 public:
@@ -116,8 +94,8 @@ Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads, vector<mf_int> cv_blocks
       counts(nr_bins*nr_bins, 0),
       busy_p_blocks(nr_bins, 0),
       busy_q_blocks(nr_bins, 0),
-      cv_blocks(cv_blocks.begin(), cv_blocks.end()),
       block_losses(nr_bins*nr_bins, 0),
+      cv_blocks(cv_blocks.begin(), cv_blocks.end()),
       distribution(0.0, 1.0)
 {
     for(mf_int i = 0; i < nr_bins*nr_bins; i++)
@@ -1134,7 +1112,6 @@ mf_float mf_cross_validation(
     }
 
     mf_double loss = 0;
-    mf_int idx = 0;
     mf_long count = 0;
     for(mf_int fold = 0; fold < nr_folds; fold++)
     {
