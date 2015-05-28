@@ -67,7 +67,8 @@ BEGIN_RCPP
         {
             std::getline(f, line);
             std::size_t pos = line.find(' ');
-            fp << line.substr(pos + 1) << std::endl;
+            // Remove the beginning pos+1 characters, and the space at the tail
+            fp << line.substr(pos + 1, line.length() - pos - 2) << std::endl;
         }
 
         fp.close();
@@ -88,7 +89,8 @@ BEGIN_RCPP
         {
             std::getline(f, line);
             std::size_t pos = line.find(' ');
-            fq << line.substr(pos + 1) << std::endl;
+            // Remove the beginning pos+1 characters, and the space at the tail
+            fq << line.substr(pos + 1, line.length() - pos - 2) << std::endl;
         }
 
         fq.close();
