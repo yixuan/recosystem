@@ -153,6 +153,7 @@ RecoSys$methods(
         ## Other options
         opts_train = list(nfold = 5L, niter = 20L, nthread = 1L,
                           nmf = FALSE, verbose = FALSE)
+        opts = as.list(opts)
         opts_common = intersect(names(opts), names(opts_train))
         opts_train[opts_common] = opts[opts_common]
         
@@ -258,6 +259,7 @@ RecoSys$methods(
         opts_train = list(dim = 10L, cost = 0.1, lrate = 0.1,
                           niter = 20L, nthread = 1L,
                           nmf = FALSE, verbose = TRUE)
+        opts = as.list(opts)
         opts_common = intersect(names(opts), names(opts_train))
         opts_train[opts_common] = opts[opts_common]
         
