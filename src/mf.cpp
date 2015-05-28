@@ -79,8 +79,6 @@ private:
     unordered_set<mf_int> cv_blocks;
     mutex mtx;
     condition_variable cond_var;
-    default_random_engine generator;
-    uniform_real_distribution<mf_float> distribution;
     priority_queue<pair<mf_float, mf_int>,
                    vector<pair<mf_float, mf_int>>,
                    greater<pair<mf_float, mf_int>>> pq;
@@ -97,12 +95,11 @@ Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads, vector<mf_int> cv_blocks
       busy_p_blocks(nr_bins, 0),
       busy_q_blocks(nr_bins, 0),
       block_losses(nr_bins*nr_bins, 0),
-      cv_blocks(cv_blocks.begin(), cv_blocks.end()),
-      distribution(0.0, 1.0)
+      cv_blocks(cv_blocks.begin(), cv_blocks.end())
 {
     for(mf_int i = 0; i < nr_bins*nr_bins; i++)
         if(this->cv_blocks.find(i) == this->cv_blocks.end())
-            pq.emplace(distribution(generator), i);
+            pq.emplace(mf_float(Reco::rand_unif()), i);
 }
 
 mf_int Scheduler::get_job()
@@ -138,7 +135,7 @@ void Scheduler::put_job(mf_int block_idx, mf_double loss)
         busy_q_blocks[block_idx%nr_bins] = 0;
         block_losses[block_idx] = loss;
         nr_done_jobs++;
-        mf_float priority = (mf_float)counts[block_idx]+distribution(generator);
+        mf_float priority = (mf_float)counts[block_idx]+(mf_float)(Reco::rand_unif());
         pq.emplace(priority, block_idx);
         nr_paused_threads++;
         cond_var.notify_all();
@@ -225,8 +222,6 @@ mf_model* init_model(mf_int m, mf_int n, mf_int k_real, mf_int k_aligned)
     model->Q = nullptr;
 
     mf_float scale = sqrt(1.0/k_real);
-	default_random_engine generator;
-    uniform_real_distribution<mf_float> distribution(0.0, 1.0);
 
     try
     {
@@ -245,7 +240,7 @@ mf_model* init_model(mf_int m, mf_int n, mf_int k_real, mf_int k_aligned)
         {
             mf_long d = 0;
             for(; d < k_real; d++, ptr++)
-                *ptr = (mf_float)(distribution(generator)*scale);
+                *ptr = (mf_float)(Reco::rand_unif()*scale);
             for(; d < k_aligned; d++, ptr++)
                 *ptr = 0;
         }
@@ -787,11 +782,10 @@ vector<mf_node*> grid_problem(mf_problem &prob, mf_int nr_bins)
 
 vector<mf_int> gen_random_map(mf_int size)
 {
-    srand(0);
     vector<mf_int> map(size, 0);
     for(mf_int i = 0; i < size; i++)
         map[i] = i;
-    random_shuffle(map.begin(), map.end());
+    random_shuffle(map.begin(), map.end(), Reco::rand_less_than);
     return map;
 }
 
@@ -1102,11 +1096,10 @@ mf_float mf_cross_validation(
     mf_int nr_bins = param.nr_bins;
     mf_int nr_blocks_per_fold = nr_bins*nr_bins/nr_folds;
 
-    srand(0);
     vector<mf_int> cv_blocks;
     for(mf_int block = 0; block < nr_bins*nr_bins; block++)
         cv_blocks.push_back(block);
-    random_shuffle(cv_blocks.begin(), cv_blocks.end());
+    random_shuffle(cv_blocks.begin(), cv_blocks.end(), Reco::rand_less_than);
 
     if(!quiet)
     {
