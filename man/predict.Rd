@@ -7,7 +7,11 @@
 \item{r}{Object returned by \code{\link{Reco}()}.}
 
 \item{out_pred}{Path to the output file for prediction. If set to \code{NULL},
-                this function will return the predicted values in memory.}
+                this function will return the predicted values in memory.
+                The format of testing data file is the same as training
+                data (see the \strong{Data Format} section in
+                \code{$\link{train}()}), except that the third value in
+                each line can be omitted.}
 }
 \description{
 This method is a member function of class "\code{RecoSys}"
