@@ -167,7 +167,7 @@ RecoSys$methods(
         tune_min = opts_tune[which.min(rmse), ]
         opts_min = list(dim = tune_min$dim, cost = tune_min$cost, lrate = tune_min$lrate)
         
-        return(list(min = c(opts_min, opts_train), res = opts_tune))
+        return(list(min = opts_min, res = opts_tune))
     }
 )
 
@@ -211,7 +211,7 @@ RecoSys$methods(
 #'                       \code{TRUE}.}
 #' }
 #' 
-#' @section Data format:
+#' @section Data Format:
 #' The training data file takes the format of sparse matrix
 #' in triplet form, i.e., each line in the file contains three numbers
 #' \preformatted{row col value}
@@ -228,7 +228,7 @@ RecoSys$methods(
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))]
+#' r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
@@ -313,7 +313,7 @@ RecoSys$methods(
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(trainset, opts = list(dim = 10, nmf = TRUE))]
+#' r$train(trainset, opts = list(dim = 10, nmf = TRUE))
 #' P_path = tempfile()
 #' Q_path = tempfile()
 #' 
@@ -412,7 +412,7 @@ RecoSys$methods(
 #' pred = r$predict(trainset, NULL)
 #'
 #' ## Compare results
-#' print(scan(outfile, n = 10))
+#' print(scan(out_pred, n = 10))
 #' head(pred, 10)
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>

@@ -38,7 +38,7 @@ r$output(out_P = file.path(tempdir(), "mat_P.txt"),
 trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 r = Reco()
 set.seed(123) # This is a randomized algorithm
-r$train(trainset, opts = list(dim = 10, nmf = TRUE))]
+r$train(trainset, opts = list(dim = 10, nmf = TRUE))
 P_path = tempfile()
 Q_path = tempfile()
 

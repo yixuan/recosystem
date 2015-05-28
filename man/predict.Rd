@@ -37,7 +37,7 @@ r$predict(trainset, out_pred)
 pred = r$predict(trainset, NULL)
 
 ## Compare results
-print(scan(outfile, n = 10))
+print(scan(out_pred, n = 10))
 head(pred, 10)
 }
 \author{

@@ -44,7 +44,7 @@ The \code{opts} argument is a list that can supply any of the following paramete
 }
 }
 
-\section{Data format}{
+\section{Data Format}{
 
 The training data file takes the format of sparse matrix
 in triplet form, i.e., each line in the file contains three numbers
@@ -63,7 +63,7 @@ Example data files are contained in the \code{recosystem/dat} directory.
 trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 r = Reco()
 set.seed(123) # This is a randomized algorithm
-r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))]
+r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))
 }
 \author{
 Yixuan Qiu <\url{http://statr.me}>
