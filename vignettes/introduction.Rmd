@@ -1,13 +1,13 @@
 ---
-title: "Recommender System with recosystem Package"
+title: "Recommender System with the recosystem Package"
 author: "Yixuan Qiu"
-date: "02/07/2015"
+date: "05/28/2015"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Recommender System with recosystem Package}
 output: knitr:::html_vignette
 references:
-- id: FPSG2014
+- id: FPSG2015
   title: A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems
   author:
   - family: Chin
@@ -18,10 +18,25 @@ references:
     given: Yu-Chin
   - family: Lin
     given: Chih-Jen
-  container-title: Technical report
+  container-title: ACM TIST
   URL: 'http://www.csie.ntu.edu.tw/~cjlin/papers/libmf/libmf_journal.pdf'
   issued:
-    year: 2014
+    year: 2015
+- id: LRSG
+  title: 'A Learning-rate Schedule for Stochastic Gradient Methods to Matrix Factorization'
+  author:
+  - family: Chin
+    given: Wei-Sheng
+  - family: Zhuang
+    given: Yong
+  - family: Juan
+    given: Yu-Chin
+  - family: Lin
+    given: Chih-Jen
+  container-title: PAKDD
+  URL: 'http://www.csie.ntu.edu.tw/~cjlin/papers/libmf/mf_adaptive_pakdd.pdf'
+  issued:
+    year: 2015
 - id: LIBMF
   title: "LIBMF: A Matrix-factorization Library for Recommender Systems"
   author:
@@ -35,15 +50,15 @@ references:
     given: Wei-Sheng
   URL: 'http://www.csie.ntu.edu.tw/~cjlin/libmf/'
   issued:
-    year: 2014
+    year: 2015
 ---
 
 <!--
 %\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{Recommender system with recosystem package}
+%\VignetteIndexEntry{Recommender System with the recosystem Package}
 -->
 
-## About recosystem package
+## About recosystem Package
 
 `recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
@@ -51,7 +66,7 @@ Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
 an open source library for recommender system using marix factorization.
 [@LIBMF]
 
-## A quick view of recommender system
+## A Quick View of Recommender System
 
 The main task of recommender system is to predict unknown entries in the
 rating matrix based on observed values, as is shown in the table below:
@@ -81,50 +96,43 @@ $v$-th column of $Q$, then the rating given by user $u$ on item $v$
 would be predicted as $p'_u q_v$.
 
 A typical solution for $P$ and $Q$ is given by the following optimization
-problem [@FPSG2014]:
+problem [@FPSG2015; @LRSG]:
 
-$$\min_{P,Q} \sum_{(u,v)\in R} ((r_{u,v}-p'_u q_v)^2+\lambda_P ||p_u||^2+\lambda_Q ||q_v||^2)$$
+$$\min_{P,Q} \sum_{(u,v)\in R} \left((r_{u,v}-p'_u q_v)^2+\lambda_P ||p_u||^2+\lambda_Q ||q_v||^2\right)$$
 
 where $(u,v)$ are locations of observed entries in $R$, $r_{u,v}$ is
 the observed rating, and $\lambda_P,\lambda_Q$ are penalty parameters
-to avoid overfitting.
+to avoid overfitting. Usually we take $\lambda_P$ and $\lambda_Q$ to be the same,
+i.e., equal to a common value $\lambda$.
 
-The `LIBMF` library which `recosystem` is based on generalizes the formula
-above a little further, resulting in the following more general but more
-complicated optimiaztion problem [@FPSG2014]:
-
-$$\min_{P,Q,a,b} \sum_{(u,v)\in R} ((r_{u,v}-p'_u q_v-a_u-b_v-avg)^2+\lambda_P ||p_u||^2+\lambda_Q ||q_v||^2+\lambda_a||a||^2+\lambda_b||b||^2)$$
-
-The added vectors $a$ and $b$ are called user bias vector and item bias
-vector respectively, with $\lambda_a$ and $\lambda_b$ being their
-corresponding penalty parameters. $avg$ is the average rating in training
-data, which has an effect of centering the data first.
-
-## Features of LIBMF and recosystem
+## Highlights of LIBMF and recosystem
 
 `LIBMF` itself is a parallelized library, meaning that users can take
 advantage of multicore CPUs to speed up the computation. It also utilizes 
 some advanced CPU features to further improve the performance. [@LIBMF]
 
-`recosystem` is a complete wrapper of `LIBMF`, hence the features of `LIBMF`
+`recosystem` is a wrapper of `LIBMF`, hence the features of `LIBMF`
 are all included in `recosystem`. Also, unlike most other R packages for
-statistical modeling which store the whole dataset into memory,
-`LIBMF` (and hence `recosystem`) is much hard-disk-based. The dataset
-is not loaded into memory at one time, but rather converted into a
-temporary binary file. Similarly, the constructed model which contains
-information for prediction is stored in the hard disk. Finally,
-prediction result is also not in memory but written into a file.
-That is to say, `recosystem` will have a comparatively small memory usage.
+statistical modeling which store the whole dataset and model object in memory,
+`LIBMF` (and hence `recosystem`) is much hard-disk-based, for instance
+the constructed model which contains information for prediction can be stored
+in the hard disk, and prediction result can also be directly written into a file
+rather than kept in memory. That is to say, `recosystem` will have a
+comparatively small memory usage.
 
-## Data format
+## Data Format
 
-The data files, both for training and testing, need to be arranged in
+The data file for training set needs to be arranged in
 sparse matrix triplet form, i.e., each line in the file contains three
 numbers
 
 ```
 user_id item_id rating
 ```
+
+Testing data file is similar to training data, but since the ratings in
+testing data are usually unknown, the `rating` entry in testing data file
+can be omitted, or can be replaced by any placeholder such as `0` or `?`.
 
 Be careful with the convention that `user_id` and `item_id` start from 0,
 so the training data file for the example in the beginning will look like
@@ -142,27 +150,29 @@ so the training data file for the example in the beginning will look like
 And testing data file is
 
 ```
-0 2 0
-1 0 0
-2 2 0
+0 2
+1 0
+2 2
 ...
 ```
 
-Since ratings for testing data are unknown, we put zeros as placeholders.
+Since ratings for testing data are unknown, here we simply omit the third entry.
 However if their values are really given, the testing data will serve as
 a validation set on which RMSE of prediction can be calculated.
 
 ## Usage of recosystem
 
-The usage of `recosystem` is quite simple, mainly consisting of four steps:
+The usage of `recosystem` is quite simple, mainly consisting of the following steps:
 
-1. Create a model object by calling `Reco()`.
-2. Call methods `convert_train()` and `convert_test()` to convert data
-files in text mode into binary form.
-3. Train the model by calling `train()` method. A number of parameters
-can be set inside the function.
-4. Use the `predict()` method to compute predictions and write results
-into hard disk.
+1. Create a model object (a Reference Class object in R) by calling `Reco()`.
+2. (Optionally) call the `$tune()` method to select best tuning parameters
+along a set of candidate values.
+3. Train the model by calling the `$train()` method. A number of parameters
+can be set inside the function, possibly coming from the result of `$tune()`.
+4. (Optionally) output the model, i.e. write the factorized $P$ and $Q$
+matrices info files.
+5. Use the `$predict()` method to compute predictions and write results
+into a file.
 
 Below is an example on some simulated data:
 
@@ -172,13 +182,12 @@ set.seed(123) # this is a randomized algorithm
 trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
-r$convert_train(trainset)
-r$convert_test(testset)
-r$train(opts = list(dim = 100, niter = 100,
-                    cost.p = 0.001, cost.q = 0.001))
-print(r)
+opts = r$tune(trainset, opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2),
+                                    nthread = 2))
+opts
+r$train(trainset, opts = c(opts$min, nthread = 2, niter = 10))
 outfile = tempfile()
-r$predict(outfile)
+r$predict(testset, outfile)
 
 ## Compare the first few true values of testing data
 ## with predicted ones
@@ -189,10 +198,10 @@ print(scan(outfile, n = 10))
 ```
 
 Detailed help document for each function is available in topics
-`?recosystem::Reco`, `?recosystem::convert`, `?recosystem::train`
-and `?recosystem::predict`.
+`?recosystem::Reco`, `?recosystem::tune`, `?recosystem::train`,
+`?recosystem::output` and `?recosystem::predict`.
 
-## Installation issue
+## Installation Issue
 
 `LIBMF` utilizes some compiler and CPU features that may be unavailable
 in some systems. To build `recosystem` from source, one needs a C++
@@ -203,21 +212,19 @@ effect on performance. It is strongly suggested to set proper flags
 according to your type of CPU before compiling the package, in order to
 achieve the best performance:
 
-1. If your CPU doesn't support SSE3 (typically very old CPUs), set
-```
-PKG_CPPFLAGS = -DNOSSE
-```
-in the `src/Makevars` file.
-2. If SSE3 is supported
+1. The default `Makevars` provides generic options that should apply to most
+CPUs.
+2. If your CPU supports SSE3
 ([a list of supported CPUs](http://en.wikipedia.org/wiki/SSE3)), set
 ```
+PKG_CPPFLAGS = -DUSESSE
 PKG_CXXFLAGS = -msse3
 ```
 3. If not only SSE3 is supported but also AVX
 ([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), set
 ```
-PKG_CXXFLAGS = -mavx
 PKG_CPPFLAGS = -DUSEAVX
+PKG_CXXFLAGS = -mavx
 ```
 
 After editing the `Makevars` file, run `R CMD INSTALL recosystem` on
