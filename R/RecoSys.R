@@ -2,9 +2,9 @@ RecoSys = setRefClass("RecoSys",
                       fields = list(model = "RecoModel"))
 
 RecoSys$methods(
-    tune = function(train_path, opts = list(dim = c(10L, 15L),
+    tune = function(train_path, opts = list(dim = c(10L, 15L, 20L),
                                             cost = c(0.01, 0.1),
-                                            lrate = c(0.1, 0.2)))
+                                            lrate = c(0.01, 0.1)))
     {
         ## Check whether training set file exists
         train_path = path.expand(train_path)
@@ -15,9 +15,9 @@ RecoSys$methods(
         
         ## Tuning parameters: dim, cost, lrate
         ## First set up default values
-        opts_tune = list(dim   = c(10L, 15L),
+        opts_tune = list(dim   = c(10L, 15L, 20L),
                          cost  = c(0.01, 0.1),
-                         lrate = c(0.1, 0.2))
+                         lrate = c(0.01, 0.1))
         ## Update opts_tune from opts
         if("dim" %in% names(opts))
         {
@@ -182,8 +182,8 @@ RecoSys$methods(
 #' building and tuning model, outputing coefficients, and
 #' predicting results. See their help documents for details.
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{\link{tune}}, \code{\link{train}}, \code{\link{output}},
-#' \code{\link{predict}}
+#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()},
+#' \code{$\link{predict}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
 #' ACM TIST, 2015.
@@ -200,56 +200,87 @@ Reco = function()
 }
 
 
-#' Tuning Recommender Model Parameters
+#' Tuning Model Parameters
 #' 
-#' @description These methods are member functions of class "\code{RecoSys}"
-#' that convert training and testing data files into binary format.
-#' The conversion is a preprocessing step prior to the model training part,
-#' since data with this binary format could be accessed more efficiently.
+#' @description This method is a member function of class "\code{RecoSys}"
+#' that uses cross validation to tune the model parameters.
 #' 
-#' The common usage of these methods is
+#' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$convert_train(rawfile, outdir, verbose = TRUE)
-#' r$convert_test(rawfile, outdir, verbose = TRUE)}
+#' r$tune(train_path, opts = list(dim = c(10, 15, 20),
+#'                                cost = c(0.01, 0.1),
+#'                                lrate = c(0.01, 0.1))
+#' )}
 #' 
-#' @name convert
-#' @aliases convert_train convert_test
+#' @name tune
 #' @param r Object returned by \code{\link{Reco}}()
-#' @param rawfile Path of data file, see section 'Data format' for details
-#' @param outdir Directory in which the output binary file will be
-#'               generated. If missing, \code{tempdir()} will be used.
-#' @param verbose Whether to show detailed information. Default is \code{TRUE}.
-#' @section Data format:
-#' The data file required by these methods takes the format of sparse matrix
-#' in triplet form, i.e., each line in the file contains three numbers
-#' \preformatted{row col value}
-#' representing a number in the rating matrix
-#' with its location. In real applications, it typically looks like
-#' \preformatted{user_id item_id rating}
+#' @param train_path Path to the traning data file, same as the one in
+#'                   \code{$\link{train}()}. See the help page there for the
+#'                   details about the data format.
+#' @param opts A number of candidate tuning parameter values and extra options in the
+#'             model tuning procedure. See section \strong{Parameters and Options}
+#'             for details.
 #' 
-#' \bold{NOTE}: \code{row} and \code{col} start from 0. So if the first user
-#' rates 3 on the first item, the line will be
-#' \preformatted{0 0 3}
+#' @return A list with two components:
 #' 
-#' \bold{NOTE}: For testing data, the file also needs to contain three
-#' numbers each line. If the rating values are unknown, you can put any
-#' number as placeholders.
-#' \cr
-#' Example data files are contained in the \code{recosystem/dat} directory.
+#' \describe{
+#'   \item{\code{min}}{Parameter values with minimum cross validation RMSE. This
+#'                     is a list that can be passed to the \code{opts} argument
+#'                     in \code{$\link{train}()}.}
+#'   \item{\code{res}}{A data frame giving the supplied candidate
+#'                     values of tuning parameters, and one column showing the
+#'                     RMSE associated with each combination.}
+#' }
+#'             
+#' @section Parameters and Options:
+#' The \code{opts} argument should be a list that provides the candidate values
+#' of tuning parameters and some other options. For tuning parameter (\code{dim},
+#' \code{cost} or \code{lrate}), users can provide a numeric vector, so that
+#' the model will be evaluated on each combination of the candidate values.
+#' For other non-tuning options, users should give a single value. If a parameter
+#' or option is not set by the user, the program will use a default one.
+#' 
+#' See below for the list of available parameters and options:
+#'
+#' \describe{
+#' \item{\code{dim}}{Tuning parameter, the number of latent factors.
+#'                   Can be specified as an integer vector, with default value
+#'                   \code{c(10, 15, 20)}.}
+#' \item{\code{cost}}{Tuning parameter, the regularization cost for latent factors.
+#'                    Can be specified as a numeric vector, with default value
+#'                    \code{c(0.01, 0.1)}.}
+#' \item{\code{lrate}}{Tuning parameter, the learning rate, which can be thought
+#'                     of as the step size in gradient descent.
+#'                     Can be specified as a numeric vector, with default value
+#'                     \code{c(0.01, 0.1)}.}
+#' \item{\code{nfold}}{Integer, the number of folds in cross validation. Default is 5.}
+#' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
+#' \item{\code{nthread}}{Integer, the number of threads for parallel
+#'                       computing. Default is 1.}
+#' \item{\code{nmf}}{Logical, whether to perform non-negative matrix factorization.
+#'                   Default is \code{FALSE}.}
+#' \item{\code{verbose}}{Logical, whether to show detailed information. Default is
+#'                       \code{FALSE}.}
+#' }
+#' 
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
-#' r$convert_train(trainset)
-#' r$convert_test(testset)
-#' print(r)
+#' res = r$tune(
+#'     trainset,
+#'     opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2), nthread = 2)
+#' )
+#' r$train(trainset, opts = res$min)
+#' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
 #' @seealso \code{\link{train}}, \code{\link{output}}, \code{\link{predict}}
-#' @references LIBMF: A Matrix-factorization Library for Recommender Systems.
-#' \url{http://www.csie.ntu.edu.tw/~cjlin/libmf/}
-#' 
-#' Y. Zhuang, W.-S. Chin, Y.-C. Juan, and C.-J. Lin.
+#' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
-#' Technical report 2014.
+#' ACM TIST, 2015.
+#' 
+#' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
+#' PAKDD, 2015. 
+#' 
 NULL
 
 
@@ -308,6 +339,25 @@ NULL
 #' \item{\code{use_avg}}{Logical, whether to use training data average.
 #'                       Default is \code{FALSE}.}
 #' }
+#' 
+#' @section Data format:
+#' The data file required by these methods takes the format of sparse matrix
+#' in triplet form, i.e., each line in the file contains three numbers
+#' \preformatted{row col value}
+#' representing a number in the rating matrix
+#' with its location. In real applications, it typically looks like
+#' \preformatted{user_id item_id rating}
+#' 
+#' \bold{NOTE}: \code{row} and \code{col} start from 0. So if the first user
+#' rates 3 on the first item, the line will be
+#' \preformatted{0 0 3}
+#' 
+#' \bold{NOTE}: For testing data, the file also needs to contain three
+#' numbers each line. If the rating values are unknown, you can put any
+#' number as placeholders.
+#' \cr
+#' Example data files are contained in the \code{recosystem/dat} directory.
+#' 
 #' @examples set.seed(123) # this is a randomized algorithm
 #' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "recosystem")
