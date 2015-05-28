@@ -1,176 +1,6 @@
 RecoSys = setRefClass("RecoSys",
                       fields = list(model = "RecoModel"))
 
-RecoSys$methods(
-    tune = function(train_path, opts = list(dim = c(10L, 15L, 20L),
-                                            cost = c(0.01, 0.1),
-                                            lrate = c(0.01, 0.1)))
-    {
-        ## Check whether training set file exists
-        train_path = path.expand(train_path)
-        if(!file.exists(train_path))
-        {
-            stop(sprintf("%s does not exist", train_path))
-        }
-        
-        ## Tuning parameters: dim, cost, lrate
-        ## First set up default values
-        opts_tune = list(dim   = c(10L, 15L, 20L),
-                         cost  = c(0.01, 0.1),
-                         lrate = c(0.01, 0.1))
-        ## Update opts_tune from opts
-        if("dim" %in% names(opts))
-        {
-            opts_tune$dim = as.integer(opts$dim)
-        }
-        if("cost" %in% names(opts))
-        {
-            opts_tune$cost = as.numeric(opts$cost)
-        }
-        if("lrate" %in% names(opts))
-        {
-            opts_tune$lrate = as.numeric(opts$lrate)
-        }
-        ## Expand combinations
-        opts_tune = expand.grid(opts_tune)
-        
-        ## Other options
-        opts_train = list(nfold = 5L, niter = 20L, nthread = 1L,
-                          nmf = FALSE, verbose = FALSE)
-        opts_common = intersect(names(opts), names(opts_train))
-        opts_train[opts_common] = opts[opts_common]
-        
-        rmse = .Call("reco_tune", train_path, opts_tune, opts_train,
-                            package = "recosystem")
-        
-        opts_tune$rmse = rmse
-        opts_tune = na.omit(opts_tune)
-        if(!nrow(opts_tune))
-            stop("results are all NA/NaN")
-
-        tune_min = opts_tune[which.min(rmse), ]
-        opts_min = list(dim = tune_min$dim, cost = tune_min$cost, lrate = tune_min$lrate)
-        
-        return(list(min = c(opts_min, opts_train), res = opts_tune))
-    }
-)
-
-RecoSys$methods(
-    train = function(train_path, out_model = file.path(tempdir(), "model.txt"),
-                     opts = list())
-    {
-        ## Check whether training set file exists
-        train_path = path.expand(train_path)
-        if(!file.exists(train_path))
-        {
-            stop(sprintf("%s does not exist", train_path))
-        }
-        
-        model_path = path.expand(out_model)
-        
-        ## Parse options
-        opts_train = list(dim = 10L, cost = 0.1, lrate = 0.1,
-                          niter = 20L, nthread = 1L,
-                          nmf = FALSE, verbose = TRUE)
-        opts_common = intersect(names(opts), names(opts_train))
-        opts_train[opts_common] = opts[opts_common]
-        
-        ## Additional parameters to be passed to libmf but not set by users here
-        opts_train$nfold = 1L;
-        opts_train$va_path = ""
-        
-        model_param = .Call("reco_train", train_path, model_path, opts_train,
-                            package = "recosystem")
-        
-        .self$model$path = model_path
-        .self$model$nuser = model_param$nuser
-        .self$model$nitem = model_param$nitem
-        .self$model$nfac = model_param$nfac
-        
-        invisible(.self)
-    }
-)
-
-RecoSys$methods(
-    output = function(out_P = file.path(tempdir(), "mat_P.txt"),
-                      out_Q = file.path(tempdir(), "mat_Q.txt"))
-    {
-        ## Check whether model has been trained
-        model_path = .self$model$path
-        if(!file.exists(model_path))
-        {
-            stop("model not trained yet
-[Call $train() method to train model]")
-        }
-        
-        ## If both are NULL, return P and Q matrices in memory
-        if(is.null(out_P) & is.null(out_Q))
-        {
-            res = .Call("reco_output_memory", model_path)
-            return(list(P = matrix(res$Pdata, .self$model$nuser, byrow = TRUE),
-                        Q = matrix(res$Qdata, .self$model$nitem, byrow = TRUE)))
-        }
-        
-        out_P = path.expand(out_P)
-        out_Q = path.expand(out_Q)
-        
-        .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
-        
-        if(nchar(out_P))
-            cat(sprintf("P matrix generated at %s\n", out_P))
-        
-        if(nchar(out_Q))
-            cat(sprintf("Q matrix generated at %s\n", out_Q))
-        
-        invisible(.self)
-    }
-)
-
-RecoSys$methods(
-    predict = function(test_path, out = file.path(tempdir(), "predict.txt"))
-    {
-        ## Check whether testing set file exists
-        test_path = path.expand(test_path)
-        if(!file.exists(test_path))
-        {
-            stop(sprintf("%s does not exist", test_path))
-        }
-        
-        ## Check whether model has been trained
-        model_path = .self$model$path
-        if(!file.exists(model_path))
-        {
-            stop("model not trained yet
-[Call $train() method to train model]")
-        }
-        
-        ## If out is NULL, return prediction in memory
-        if(is.null(out))
-        {
-            res = .Call("reco_predict_memory", test_path, model_path)
-            return(res)
-        }
-        
-        out_path = path.expand(out)
-        
-        .Call("reco_predict", test_path, model_path, out_path, PACKAGE = "recosystem")
-        
-        cat(sprintf("prediction output generated at %s\n", out_path))
-        
-        invisible(.self)
-    }
-)
-
-RecoSys$methods(
-    show = function(outfile)
-    {
-        cat("[=== Fitted Model ===]\n\n")
-        .self$model$show()
-        
-        invisible(.self)
-    }
-)
-
 #' Constructing a Recommender System Object
 #' 
 #' This function simply returns an object of class "\code{RecoSys}"
@@ -199,6 +29,7 @@ Reco = function()
 {
     return(RecoSys$new())
 }
+
 
 
 #' Tuning Model Parameters
@@ -286,6 +117,61 @@ Reco = function()
 #' 
 NULL
 
+RecoSys$methods(
+    tune = function(train_path, opts = list(dim = c(10L, 15L, 20L),
+                                            cost = c(0.01, 0.1),
+                                            lrate = c(0.01, 0.1)))
+    {
+        ## Check whether training set file exists
+        train_path = path.expand(train_path)
+        if(!file.exists(train_path))
+        {
+            stop(sprintf("%s does not exist", train_path))
+        }
+        
+        ## Tuning parameters: dim, cost, lrate
+        ## First set up default values
+        opts_tune = list(dim   = c(10L, 15L, 20L),
+                         cost  = c(0.01, 0.1),
+                         lrate = c(0.01, 0.1))
+        ## Update opts_tune from opts
+        if("dim" %in% names(opts))
+        {
+            opts_tune$dim = as.integer(opts$dim)
+        }
+        if("cost" %in% names(opts))
+        {
+            opts_tune$cost = as.numeric(opts$cost)
+        }
+        if("lrate" %in% names(opts))
+        {
+            opts_tune$lrate = as.numeric(opts$lrate)
+        }
+        ## Expand combinations
+        opts_tune = expand.grid(opts_tune)
+        
+        ## Other options
+        opts_train = list(nfold = 5L, niter = 20L, nthread = 1L,
+                          nmf = FALSE, verbose = FALSE)
+        opts_common = intersect(names(opts), names(opts_train))
+        opts_train[opts_common] = opts[opts_common]
+        
+        rmse = .Call("reco_tune", train_path, opts_tune, opts_train,
+                            package = "recosystem")
+        
+        opts_tune$rmse = rmse
+        opts_tune = na.omit(opts_tune)
+        if(!nrow(opts_tune))
+            stop("results are all NA/NaN")
+
+        tune_min = opts_tune[which.min(rmse), ]
+        opts_min = list(dim = tune_min$dim, cost = tune_min$cost, lrate = tune_min$lrate)
+        
+        return(list(min = c(opts_min, opts_train), res = opts_tune))
+    }
+)
+
+
 
 #' Training a Recommender Model
 #' 
@@ -355,6 +241,43 @@ NULL
 #' PAKDD, 2015. 
 NULL
 
+RecoSys$methods(
+    train = function(train_path, out_model = file.path(tempdir(), "model.txt"),
+                     opts = list())
+    {
+        ## Check whether training set file exists
+        train_path = path.expand(train_path)
+        if(!file.exists(train_path))
+        {
+            stop(sprintf("%s does not exist", train_path))
+        }
+        
+        model_path = path.expand(out_model)
+        
+        ## Parse options
+        opts_train = list(dim = 10L, cost = 0.1, lrate = 0.1,
+                          niter = 20L, nthread = 1L,
+                          nmf = FALSE, verbose = TRUE)
+        opts_common = intersect(names(opts), names(opts_train))
+        opts_train[opts_common] = opts[opts_common]
+        
+        ## Additional parameters to be passed to libmf but not set by users here
+        opts_train$nfold = 1L;
+        opts_train$va_path = ""
+        
+        model_param = .Call("reco_train", train_path, model_path, opts_train,
+                            package = "recosystem")
+        
+        .self$model$path = model_path
+        .self$model$nuser = model_param$nuser
+        .self$model$nitem = model_param$nitem
+        .self$model$nfac = model_param$nfac
+        
+        invisible(.self)
+    }
+)
+
+
 
 #' Outputing Factorization Matrices
 #' 
@@ -405,6 +328,43 @@ NULL
 #' Technical report 2014.
 NULL
 
+RecoSys$methods(
+    output = function(out_P = file.path(tempdir(), "mat_P.txt"),
+                      out_Q = file.path(tempdir(), "mat_Q.txt"))
+    {
+        ## Check whether model has been trained
+        model_path = .self$model$path
+        if(!file.exists(model_path))
+        {
+            stop("model not trained yet
+[Call $train() method to train model]")
+        }
+        
+        ## If both are NULL, return P and Q matrices in memory
+        if(is.null(out_P) & is.null(out_Q))
+        {
+            res = .Call("reco_output_memory", model_path)
+            return(list(P = matrix(res$Pdata, .self$model$nuser, byrow = TRUE),
+                        Q = matrix(res$Qdata, .self$model$nitem, byrow = TRUE)))
+        }
+        
+        out_P = path.expand(out_P)
+        out_Q = path.expand(out_Q)
+        
+        .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
+        
+        if(nchar(out_P))
+            cat(sprintf("P matrix generated at %s\n", out_P))
+        
+        if(nchar(out_Q))
+            cat(sprintf("Q matrix generated at %s\n", out_Q))
+        
+        invisible(.self)
+    }
+)
+
+
+
 
 #' Recommender Model Predictions
 #' 
@@ -448,3 +408,48 @@ NULL
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
 #' Technical report 2014.
 NULL
+
+RecoSys$methods(
+    predict = function(test_path, out = file.path(tempdir(), "predict.txt"))
+    {
+        ## Check whether testing set file exists
+        test_path = path.expand(test_path)
+        if(!file.exists(test_path))
+        {
+            stop(sprintf("%s does not exist", test_path))
+        }
+        
+        ## Check whether model has been trained
+        model_path = .self$model$path
+        if(!file.exists(model_path))
+        {
+            stop("model not trained yet
+[Call $train() method to train model]")
+        }
+        
+        ## If out is NULL, return prediction in memory
+        if(is.null(out))
+        {
+            res = .Call("reco_predict_memory", test_path, model_path)
+            return(res)
+        }
+        
+        out_path = path.expand(out)
+        
+        .Call("reco_predict", test_path, model_path, out_path, PACKAGE = "recosystem")
+        
+        cat(sprintf("prediction output generated at %s\n", out_path))
+        
+        invisible(.self)
+    }
+)
+
+RecoSys$methods(
+    show = function(outfile)
+    {
+        cat("[=== Fitted Model ===]\n\n")
+        .self$model$show()
+        
+        invisible(.self)
+    }
+)
