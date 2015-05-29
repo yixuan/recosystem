@@ -70,7 +70,7 @@ See below for the list of available parameters and options:
 }
 }
 \examples{
-trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+\dontrun{trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 r = Reco()
 set.seed(123) # This is a randomized algorithm
 res = r$tune(
@@ -78,6 +78,7 @@ res = r$tune(
     opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2), nthread = 2)
 )
 r$train(trainset, opts = res$min)
+}
 }
 \author{
 Yixuan Qiu <\url{http://statr.me}>

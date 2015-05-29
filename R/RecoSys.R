@@ -117,7 +117,7 @@ RecoSys$methods(
 #'                       \code{FALSE}.}
 #' }
 #' 
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples \dontrun{trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
 #' res = r$tune(
@@ -125,6 +125,7 @@ RecoSys$methods(
 #'     opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2), nthread = 2)
 #' )
 #' r$train(trainset, opts = res$min)
+#' }
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
 #' @seealso \code{$\link{train}()}
@@ -424,7 +425,7 @@ RecoSys$methods(
 #'                 \code{$\link{train}()}), except that the third value in
 #'                 each line can be omitted.
 #'
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples \dontrun{trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' testset = system.file("dat", "smalltest.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
@@ -441,6 +442,7 @@ RecoSys$methods(
 #' ## Compare results
 #' print(scan(out_pred, n = 10))
 #' head(pred, 10)
+#' }
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
 #' @seealso \code{$\link{train}()}

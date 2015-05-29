@@ -26,7 +26,7 @@ The common usage of this method is
 r$predict(test_path, out_pred = file.path(tempdir(), "predict.txt")}
 }
 \examples{
-trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+\dontrun{trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
 set.seed(123) # This is a randomized algorithm
@@ -43,6 +43,7 @@ pred = r$predict(trainset, NULL)
 ## Compare results
 print(scan(out_pred, n = 10))
 head(pred, 10)
+}
 }
 \author{
 Yixuan Qiu <\url{http://statr.me}>
