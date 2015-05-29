@@ -1,6 +1,16 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.3}{
+  \itemize{
+    \item Update LIBMF to version 1.2.
+    \item Due to API change in LIBMF 1.2, \code{$convert_train()} and
+          \code{$convert_test()} have been removed, and \code{$train()}
+          and \code{$predict()} have changed API accordingly.
+    \item New member function \code{$tune()} for tuning model parameters.
+  }
+}
+
 \section{Changes in recosystem version 0.2.5}{
   \itemize{
     \item New member function \code{$output()} to output factorization matrices.
