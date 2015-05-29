@@ -1,5 +1,12 @@
 ## Recommender System with the recosystem Package
 
+**Important Notes**: The API of this package has changed since version 0.3, due
+to the API change of the underlying LIBMF library version 1.2.
+
+- `$convert_train()` and `$convert_test()` have been removed
+- `$train()` and `$predict()` have different argument list
+- Added `$tune()` member function for parameter tuning
+
 ### About This Package
 
 `recosystem` is an R wrapper of the `LIBMF` library developed by
