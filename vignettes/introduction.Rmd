@@ -160,6 +160,9 @@ Since ratings for testing data are unknown, here we simply omit the third entry.
 However if their values are really given, the testing data will serve as
 a validation set on which RMSE of prediction can be calculated.
 
+Example data files are contained in the `recosystem/dat`
+(or `recosystem/inst/dat`, for source package) directory.
+
 ## Usage of recosystem
 
 The usage of `recosystem` is quite simple, mainly consisting of the following steps:
@@ -178,14 +181,14 @@ Below is an example on some simulated data:
 
 ```{r}
 library(recosystem)
-set.seed(123) # this is a randomized algorithm
+set.seed(123) # This is a randomized algorithm
 trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 testset = system.file("dat", "smalltest.txt", package = "recosystem")
 r = Reco()
 opts = r$tune(trainset, opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2),
                                     nthread = 2))
 opts
-r$train(trainset, opts = c(opts$min, nthread = 2, niter = 10))
+r$train(trainset, opts = c(opts$min, nthread = 2))
 outfile = tempfile()
 r$predict(testset, outfile)
 
