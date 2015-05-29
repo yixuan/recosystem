@@ -32,6 +32,27 @@ Reco = function()
 
 
 
+## Notice on API change
+RecoSys$methods(
+    convert_train = function(...)
+    {
+        message("The API of recosystem has changed since version 0.3
+- $convert_train() and $convert_test() have been removed
+- $train() and $predict() have different argument lists
+- Added $tune() member function for parameter tuning
+
+Please see the help pages or the vignette for details")
+    }
+)
+RecoSys$methods(
+    convert_test = function(...)
+    {
+        .self$convert_train(...)
+    }
+)
+
+
+
 #' Tuning Model Parameters
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"

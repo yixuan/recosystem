@@ -4,7 +4,7 @@
 to the API change of the underlying LIBMF library version 1.2.
 
 - `$convert_train()` and `$convert_test()` have been removed
-- `$train()` and `$predict()` have different argument list
+- `$train()` and `$predict()` have different argument lists
 - Added `$tune()` member function for parameter tuning
 
 ### About This Package
