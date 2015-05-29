@@ -1,10 +1,8 @@
 #include <algorithm>
-#include <condition_variable>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
 #include <queue>
-#include <thread>
 #include <unordered_set>
 #include <random>
 #include <cstring>
@@ -41,6 +39,19 @@
 #include <omp.h>
 #endif
 
+// Current GCC in Rtools for Windows does not support <thread>
+// We need to use pthread instead
+#ifdef _WIN32
+  #define USE_PTHREADS
+#endif
+
+#ifdef USE_PTHREADS
+  #include <pthread.h>
+#else
+  #include <condition_variable>
+  #include <thread>
+#endif
+
 namespace mf
 {
 
@@ -57,6 +68,9 @@ class Scheduler
 {
 public:
     Scheduler(mf_int nr_bins, mf_int nr_threads, vector<mf_int> cv_blocks);
+#ifdef USE_PTHREADS
+    ~Scheduler();
+#endif
     mf_int get_job();
     void put_job(mf_int block, mf_double loss);
     mf_double get_loss();
@@ -77,8 +91,13 @@ private:
     vector<mf_int> busy_q_blocks;
     vector<mf_double> block_losses;
     unordered_set<mf_int> cv_blocks;
+#ifdef USE_PTHREADS
+    pthread_mutex_t mtx;
+    pthread_cond_t cond_var;
+#else
     mutex mtx;
     condition_variable cond_var;
+#endif
     priority_queue<pair<mf_float, mf_int>,
                    vector<pair<mf_float, mf_int>>,
                    greater<pair<mf_float, mf_int>>> pq;
@@ -102,9 +121,21 @@ Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads, vector<mf_int> cv_blocks
             pq.emplace(mf_float(Reco::rand_unif()), i);
 }
 
+#ifdef USE_PTHREADS
+Scheduler::~Scheduler()
+{
+    pthread_mutex_destroy(&mtx);
+    pthread_cond_destroy(&cond_var);
+}
+#endif
+
 mf_int Scheduler::get_job()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+#else
     lock_guard<mutex> lock(mtx);
+#endif
     vector<pair<mf_float, mf_int>> locked_blocks;
 
     while(true)
@@ -123,12 +154,38 @@ mf_int Scheduler::get_job()
         busy_p_blocks[p_block] = 1;
         busy_q_blocks[q_block] = 1;
         counts[block.second]++;
+#ifdef USE_PTHREADS
+        pthread_mutex_unlock(&mtx);
+#endif
         return block.second;
     }
 }
 
 void Scheduler::put_job(mf_int block_idx, mf_double loss)
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    busy_p_blocks[block_idx/nr_bins] = 0;
+    busy_q_blocks[block_idx%nr_bins] = 0;
+    block_losses[block_idx] = loss;
+    nr_done_jobs++;
+    mf_float priority = (mf_float)counts[block_idx]+(mf_float)(Reco::rand_unif());
+    pq.emplace(priority, block_idx);
+    nr_paused_threads++;
+    pthread_cond_broadcast(&cond_var);
+    pthread_mutex_unlock(&mtx);
+
+    pthread_mutex_lock(&mtx);
+    while(nr_done_jobs >= target)
+    {
+        pthread_cond_wait(&cond_var, &mtx);
+    }
+    pthread_mutex_unlock(&mtx);
+
+    pthread_mutex_lock(&mtx);
+    --nr_paused_threads;
+    pthread_mutex_unlock(&mtx);
+#else
     {
         lock_guard<mutex> lock(mtx);
         busy_p_blocks[block_idx/nr_bins] = 0;
@@ -152,16 +209,39 @@ void Scheduler::put_job(mf_int block_idx, mf_double loss)
         lock_guard<mutex> lock(mtx);
         --nr_paused_threads;
     }
+#endif
 }
 
 mf_double Scheduler::get_loss()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    mf_double res = accumulate(block_losses.begin(), block_losses.end(), 0.0);
+    pthread_mutex_unlock(&mtx);
+    return res;
+#else
     lock_guard<mutex> lock(mtx);
     return accumulate(block_losses.begin(), block_losses.end(), 0.0);
+#endif
 }
 
 void Scheduler::wait_for_jobs_done()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+
+    while(nr_done_jobs < target)
+    {
+        pthread_cond_wait(&cond_var, &mtx);
+    }
+
+    while(nr_paused_threads != nr_threads)
+    {
+        pthread_cond_wait(&cond_var, &mtx);
+    }
+
+    pthread_mutex_unlock(&mtx);
+#else
     unique_lock<mutex> lock(mtx);
 
     cond_var.wait(lock, [&] {
@@ -171,25 +251,46 @@ void Scheduler::wait_for_jobs_done()
     cond_var.wait(lock, [&] {
         return nr_paused_threads == nr_threads;
     });
+#endif
 }
 
 void Scheduler::resume()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    target += nr_bins*nr_bins;
+    pthread_cond_broadcast(&cond_var);
+    pthread_mutex_unlock(&mtx);
+#else
     lock_guard<mutex> lock(mtx);
     target += nr_bins*nr_bins;
     cond_var.notify_all();
+#endif
 }
 
 void Scheduler::terminate()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    terminated = true;
+    pthread_mutex_unlock(&mtx);
+#else
     lock_guard<mutex> lock(mtx);
     terminated = true;
+#endif
 }
 
 bool Scheduler::is_terminated()
 {
+#ifdef USE_PTHREADS
+    pthread_mutex_lock(&mtx);
+    bool res = terminated;
+    pthread_mutex_unlock(&mtx);
+    return res;
+#else
     lock_guard<mutex> lock(mtx);
     return terminated;
+#endif
 }
 
 mf_float* malloc_aligned_float(mf_long size)
@@ -885,6 +986,29 @@ mf_problem* copy_problem(mf_problem const *prob, bool copy_data)
     return new_prob;
 }
 
+
+
+#ifdef USE_PTHREADS
+typedef struct
+{
+    vector<mf_node*> *ptrs;
+    mf_model *model;
+    Scheduler *sched;
+    mf_parameter *param;
+    bool slow_only;
+    mf_float *PG;
+    mf_float *QG;
+} PthreadData;
+
+void *sg_wrapper(void *data)
+{
+    PthreadData *pdata = (PthreadData *) data;
+    sg(*(pdata->ptrs), *(pdata->model), *(pdata->sched),
+       *(pdata->param), pdata->slow_only, pdata->PG, pdata->QG);
+    pthread_exit(nullptr);
+}
+#endif
+
 shared_ptr<mf_model> fpsg(
     mf_problem const *tr_,
     mf_problem const *va_,
@@ -958,10 +1082,21 @@ shared_ptr<mf_model> fpsg(
 
     vector<mf_float> PG(model->m*2, 1), QG(model->n*2, 1);
 
+#ifdef USE_PTHREADS
+    pthread_t *threads = new pthread_t[param.nr_threads];
+    PthreadData pdata = {&ptrs, model, &sched, &param, slow_only, PG.data(), QG.data()};
+    for(mf_int i = 0; i < param.nr_threads; i++)
+    {
+        mf_int err = pthread_create(&threads[i], nullptr, sg_wrapper, &pdata);
+        if(err)
+            throw runtime_error("creating new thread failed");
+    }
+#else
     vector<thread> threads;
     for(mf_int i = 0; i < param.nr_threads; i++)
         threads.emplace_back(sg, ref(ptrs), ref(*model), ref(sched), param,
                              ref(slow_only), PG.data(), QG.data());
+#endif
 
     if(!param.quiet)
     {
@@ -1014,8 +1149,14 @@ shared_ptr<mf_model> fpsg(
     }
     sched.terminate();
 
+#ifdef USE_PTHREADS
+    for(mf_int i = 0; i < param.nr_threads; i++)
+        pthread_join(threads[i], NULL);
+    delete [] threads;
+#else
     for(auto &thread : threads)
         thread.join();
+#endif
 
     mf_double loss = calc_loss(tr->R, tr->nnz, *model)*std_dev*std_dev;
 
