@@ -210,7 +210,8 @@ Detailed help document for each function is available in topics
 in some systems. To build `recosystem` from source, one needs a C++
 compiler that supports C++11 standard.
 
-Also, there are some flags in file `src/Makevars` that may have influential
+Also, there are some flags in file `src/Makevars`
+(`src/Makevars.win` for Windows system) that may have influential
 effect on performance. It is strongly suggested to set proper flags
 according to your type of CPU before compiling the package, in order to
 achieve the best performance:
@@ -218,16 +219,16 @@ achieve the best performance:
 1. The default `Makevars` provides generic options that should apply to most
 CPUs.
 2. If your CPU supports SSE3
-([a list of supported CPUs](http://en.wikipedia.org/wiki/SSE3)), set
+([a list of supported CPUs](http://en.wikipedia.org/wiki/SSE3)), add
 ```
-PKG_CPPFLAGS = -DUSESSE
-PKG_CXXFLAGS = -msse3
+PKG_CPPFLAGS += -DUSESSE
+PKG_CXXFLAGS += -msse3
 ```
 3. If not only SSE3 is supported but also AVX
-([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), set
+([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), add
 ```
-PKG_CPPFLAGS = -DUSEAVX
-PKG_CXXFLAGS = -mavx
+PKG_CPPFLAGS += -DUSEAVX
+PKG_CXXFLAGS += -mavx
 ```
 
 After editing the `Makevars` file, run `R CMD INSTALL recosystem` on
