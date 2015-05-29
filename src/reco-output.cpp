@@ -48,13 +48,14 @@ BEGIN_RCPP
 
     // Get dimensions
     std::string line;
-    mf_int m, n, k;
+    // mf_int m, n, k;
+    mf_int m, n;
     std::getline(f, line);
-    m = std::stoi(line.substr(line.find(' ') + 1));
+    m = atoi(line.substr(line.find(' ') + 1).c_str());
     std::getline(f, line);
-    n = std::stoi(line.substr(line.find(' ') + 1));
+    n = atoi(line.substr(line.find(' ') + 1).c_str());
     std::getline(f, line);
-    k = std::stoi(line.substr(line.find(' ') + 1));
+    // k = atoi(line.substr(line.find(' ') + 1).c_str());
 
     // Writing P matrix
     if(!P_path.empty())

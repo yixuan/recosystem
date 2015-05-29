@@ -119,6 +119,10 @@ Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads, vector<mf_int> cv_blocks
     for(mf_int i = 0; i < nr_bins*nr_bins; i++)
         if(this->cv_blocks.find(i) == this->cv_blocks.end())
             pq.emplace(mf_float(Reco::rand_unif()), i);
+#ifdef USE_PTHREADS
+    pthread_mutex_init(&mtx, NULL);
+    pthread_cond_init(&cond_var, NULL);
+#endif
 }
 
 #ifdef USE_PTHREADS
@@ -801,9 +805,9 @@ void shuffle_problem(
     for(mf_long i = 0; i < prob.nnz; i++)
     {
         mf_node &N = prob.R[i];
-        if(N.u < p_map.size())
+        if(N.u < (mf_int) p_map.size())
             N.u = p_map[N.u];
-        if(N.v < q_map.size())
+        if(N.v < (mf_int) q_map.size())
             N.v = q_map[N.v];
     }
 }
@@ -893,7 +897,7 @@ vector<mf_int> gen_random_map(mf_int size)
 vector<mf_int> gen_inv_map(vector<mf_int> &map)
 {
     vector<mf_int> inv_map(map.size());
-    for(mf_int i = 0; i < map.size(); i++)
+    for(unsigned int i = 0; i < map.size(); i++)
       inv_map[map[i]] = i;
     return inv_map;
 }
@@ -1006,6 +1010,8 @@ void *sg_wrapper(void *data)
     sg(*(pdata->ptrs), *(pdata->model), *(pdata->sched),
        *(pdata->param), pdata->slow_only, pdata->PG, pdata->QG);
     pthread_exit(nullptr);
+    
+    return nullptr; // should not reach here
 }
 #endif
 
@@ -1084,7 +1090,7 @@ shared_ptr<mf_model> fpsg(
 
 #ifdef USE_PTHREADS
     pthread_t *threads = new pthread_t[param.nr_threads];
-    PthreadData pdata = {&ptrs, model, &sched, &param, slow_only, PG.data(), QG.data()};
+    PthreadData pdata = {&ptrs, model.get(), &sched, &param, slow_only, PG.data(), QG.data()};
     for(mf_int i = 0; i < param.nr_threads; i++)
     {
         mf_int err = pthread_create(&threads[i], nullptr, sg_wrapper, &pdata);
