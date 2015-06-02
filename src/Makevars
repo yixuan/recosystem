@@ -1,23 +1,20 @@
 CXX_STD = CXX11
 
-
-##### Do not use SSE #####
-## Uncomment the line below and comment others
-## if your machine doesn't have SSE support
-PKG_CPPFLAGS = -DNOSSE
-##########################
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
 
 
 ######## Use SSE #########
-## Uncomment the line below and comment others
-## if your machine has SSE3 support but not AVX
-#PKG_CXXFLAGS = -msse3
+## Uncomment the lines below if your machine
+## has SSE3 support but not AVX
+#PKG_CPPFLAGS += -DUSESSE
+#PKG_CXXFLAGS += -msse3
 ##########################
 
 
 ######## Use AVX #########
-## Uncomment the lines below and comment others
-## if your machine has AVX support
-#PKG_CXXFLAGS = -mavx
-#PKG_CPPFLAGS = -DUSEAVX
+## Uncomment the lines below and comment flags
+## in "Use SSE" section if your machine has AVX support
+#PKG_CPPFLAGS += -DUSEAVX
+#PKG_CXXFLAGS += -mavx
 ##########################

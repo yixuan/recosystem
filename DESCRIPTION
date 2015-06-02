@@ -1,13 +1,13 @@
 Package: recosystem
 Type: Package
 Title: Recommender System using Matrix Factorization
-Version: 0.2.5
-Date: 2015-02-07
+Version: 0.3
+Date: 2015-05-28
 Author: Yixuan Qiu, Chih-Jen Lin, Yu-Chin Juan, Yong Zhuang,
     Wei-Sheng Chin and other contributors. See file AUTHORS for
     details.
 Maintainer: Yixuan Qiu <yixuan.qiu@cos.name>
-Description: This package is an R wrapper of the libmf library
+Description: R wrapper of the 'libmf' library
     (http://www.csie.ntu.edu.tw/~cjlin/libmf/) for recommender
     system using matrix factorization. It is typically used to
     approximate an incomplete matrix using the product of two
