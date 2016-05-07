@@ -52,17 +52,9 @@ inline void free_aligned(void *ptr)
     }
 }
 
-// R implementation of uniform_real_distribution<mf_float>
-inline double rand_unif()
-{
-    Rcpp::RNGScope scp;
-    return R::unif_rand();
-}
-
 // Used in random_shuffle()
 inline int rand_less_than(int i)
 {
-    Rcpp::RNGScope scp;
     int r = int(R::unif_rand() * RAND_MAX);
     return r % i;
 }
