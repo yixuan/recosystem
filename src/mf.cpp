@@ -17,6 +17,11 @@
 #include <vector>
 #include <limits>
 
+// For changing cout to Rcout
+#include <Rcpp.h>
+// Additional helper functions
+#include "reco-utils.h"
+
 #include "mf.h"
 
 #if defined USESSE
@@ -27,6 +32,14 @@
 #include <immintrin.h>
 #endif
 
+// _OPENMP will be defined if OpenMP is enabled,
+// so we can detect this automatically
+#ifdef _OPENMP
+  #ifndef USEOMP
+    #define USEOMP
+  #endif
+#endif
+
 #if defined USEOMP
 #include <omp.h>
 #endif
@@ -35,6 +48,7 @@ namespace mf
 {
 
 using namespace std;
+using Rcpp::Rcout;
 
 namespace // unnamed namespace
 {
