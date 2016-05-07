@@ -954,9 +954,13 @@ mf_float* Utility::malloc_aligned_float(mf_long size)
     ptr = _aligned_malloc(size*sizeof(mf_float), kALIGNByte);
     if(ptr == nullptr)
         throw bad_alloc();
-#else
+#elif defined(posix_memalign)
     int status = posix_memalign(&ptr, kALIGNByte, size*sizeof(mf_float));
     if(status != 0)
+        throw bad_alloc();
+#else
+    ptr = Reco::malloc_aligned(kALIGNByte, size*sizeof(mf_float));
+    if(ptr == nullptr)
         throw bad_alloc();
 #endif
 
@@ -3553,9 +3557,12 @@ void mf_destroy_model(mf_model **model)
 #ifdef _WIN32
     _aligned_free((*model)->P);
     _aligned_free((*model)->Q);
-#else
+#elif defined(posix_memalign)
     free((*model)->P);
     free((*model)->Q);
+#else
+    Reco::free_aligned((*model)->P);
+    Reco::free_aligned((*model)->Q);
 #endif
     delete *model;
     *model = nullptr;
