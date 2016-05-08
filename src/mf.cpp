@@ -2833,7 +2833,7 @@ void fpsg_core(
 #endif
     if(tr->nnz == 0)
     {
-        cout << "warning: train on an empty training set" << endl;
+        Rcout << "warning: train on an empty training set" << endl;
         return;
     }
 
@@ -2859,18 +2859,18 @@ void fpsg_core(
 
     if(!param.quiet)
     {
-        cout.width(4);
-        cout << "iter";
-        cout.width(13);
-        cout << "tr_"+util.get_error_legend();
+        Rcout.width(4);
+        Rcout << "iter";
+        Rcout.width(13);
+        Rcout << "tr_"+util.get_error_legend();
         if(va->nnz != 0)
         {
-            cout.width(13);
-            cout << "va_"+util.get_error_legend();
+            Rcout.width(13);
+            Rcout << "va_"+util.get_error_legend();
         }
-        cout.width(13);
-        cout << "obj";
-        cout << "\n";
+        Rcout.width(13);
+        Rcout << "obj";
+        Rcout << "\n";
     }
 
     bool slow_only = param.lambda_p1 == 0 && param.lambda_q1 == 0? true: false;
@@ -2919,10 +2919,10 @@ void fpsg_core(
                     break;
             }
 
-            cout.width(4);
-            cout << iter;
-            cout.width(13);
-            cout << fixed << setprecision(4) << tr_error;
+            Rcout.width(4);
+            Rcout << iter;
+            Rcout.width(13);
+            Rcout << fixed << setprecision(4) << tr_error;
             if(va->nnz != 0)
             {
                 Block va_block(va->R, va->R+va->nnz);
@@ -2941,12 +2941,12 @@ void fpsg_core(
                         break;
                 }
 
-                cout.width(13);
-                cout << fixed << setprecision(4) << va_error;
+                Rcout.width(13);
+                Rcout << fixed << setprecision(4) << va_error;
             }
-            cout.width(13);
-            cout << fixed << setprecision(4) << scientific << reg+tr_loss;
-            cout << "\n" << flush;
+            Rcout.width(13);
+            Rcout << fixed << setprecision(4) << scientific << reg+tr_loss;
+            Rcout << "\n" << flush;
         }
 
         if(iter == 0)
@@ -3264,11 +3264,11 @@ mf_double CrossValidatorBase::do_cross_validation()
 
     if(!quiet)
     {
-        cout.width(4);
-        cout << "fold";
-        cout.width(10);
-        cout << util.get_error_legend();
-        cout << endl;
+        Rcout.width(4);
+        Rcout << "fold";
+        Rcout.width(10);
+        Rcout << util.get_error_legend();
+        Rcout << endl;
     }
 
     cv_error = 0;
@@ -3285,25 +3285,25 @@ mf_double CrossValidatorBase::do_cross_validation()
 
         if(!quiet)
         {
-            cout.width(4);
-            cout << fold;
-            cout.width(10);
-            cout << fixed << setprecision(4) << err;
-            cout << endl;
+            Rcout.width(4);
+            Rcout << fold;
+            Rcout.width(10);
+            Rcout << fixed << setprecision(4) << err;
+            Rcout << endl;
         }
     }
 
     if(!quiet)
     {
-        cout.width(14);
-        cout.fill('=');
-        cout << "" << endl;
-        cout.fill(' ');
-        cout.width(4);
-        cout << "avg";
-        cout.width(10);
-        cout << fixed << setprecision(4) << cv_error/nr_folds;
-        cout << endl;
+        Rcout.width(14);
+        Rcout.fill('=');
+        Rcout << "" << endl;
+        Rcout.fill(' ');
+        Rcout.width(4);
+        Rcout << "avg";
+        Rcout.width(10);
+        Rcout << fixed << setprecision(4) << cv_error/nr_folds;
+        Rcout << endl;
     }
 
     return cv_error/nr_folds;
