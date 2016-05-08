@@ -9,7 +9,7 @@
 #include <memory>
 #include <numeric>
 #include <queue>
-#include <random>
+// #include <random>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -89,12 +89,12 @@ private:
     vector<mf_int> busy_q_blocks;
     vector<mf_double> block_losses;
     vector<mf_double> block_errors;
-    vector<minstd_rand0> block_generators;
+    // vector<minstd_rand0> block_generators;
     unordered_set<mf_int> cv_blocks;
     mutex mtx;
     condition_variable cond_var;
-    default_random_engine generator;
-    uniform_real_distribution<mf_float> distribution;
+    // default_random_engine generator;
+    // uniform_real_distribution<mf_float> distribution;
     priority_queue<pair<mf_float, mf_int>,
                    vector<pair<mf_float, mf_int>>,
                    greater<pair<mf_float, mf_int>>> pq;
@@ -113,14 +113,19 @@ Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads,
       busy_q_blocks(nr_bins, 0),
       block_losses(nr_bins*nr_bins, 0),
       block_errors(nr_bins*nr_bins, 0),
-      cv_blocks(cv_blocks.begin(), cv_blocks.end()),
-      distribution(0.0, 1.0)
+      cv_blocks(cv_blocks.begin(), cv_blocks.end())// ,
+      // distribution(0.0, 1.0)
 {
     for(mf_int i = 0; i < nr_bins*nr_bins; i++)
     {
+        // if(this->cv_blocks.find(i) == this->cv_blocks.end())
+        //     pq.emplace(distribution(generator), i);
+        // block_generators.push_back(minstd_rand0(rand()));
+
+        // The constructor of Scheduler will be excuted by the master thread,
+        // so we can call R RNG safely.
         if(this->cv_blocks.find(i) == this->cv_blocks.end())
-            pq.emplace(distribution(generator), i);
-        block_generators.push_back(minstd_rand0(rand()));
+            pq.emplace(mf_float(R::unif_rand()), i);
     }
 }
 
@@ -214,7 +219,8 @@ void Scheduler::put_job(mf_int block_idx, mf_double loss, mf_double error)
         block_errors[block_idx] = error;
         nr_done_jobs++;
         mf_float priority =
-            (mf_float)counts[block_idx]+distribution(generator);
+            // (mf_float)counts[block_idx]+distribution(generator);
+            (mf_float)counts[block_idx]+mf_float(R::unif_rand());
         pq.emplace(priority, block_idx);
         nr_paused_threads++;
         cond_var.notify_all();
@@ -243,7 +249,8 @@ void Scheduler::put_bpr_job(mf_int first_block, mf_int second_block)
         busy_p_blocks[second_block/nr_bins] = 0;
         busy_q_blocks[second_block%nr_bins] = 0;
         mf_float priority =
-            (mf_float)counts[second_block]+distribution(generator);
+            // (mf_float)counts[second_block]+distribution(generator);
+            (mf_float)counts[second_block]+mf_float(R::unif_rand());
         pq.emplace(priority, second_block);
     }
 }
@@ -263,7 +270,16 @@ mf_double Scheduler::get_error()
 mf_int Scheduler::get_negative(mf_int first_block, mf_int second_block,
         mf_int m, mf_int n, bool is_column_oriented)
 {
-    mf_int rand_val = (mf_int)block_generators[first_block]();
+    // mf_int rand_val = (mf_int)block_generators[first_block]();
+
+    // The original code allows this function to be excuted by several threads
+    // simultaneously, which will break R's RNG. We add a lock to make sure
+    // the RNG is single-threaded.
+    mf_int rand_val = RAND_MAX;
+    {
+        lock_guard<mutex> lock(mtx);
+        rand_val = mf_int(R::unif_rand() * RAND_MAX);
+    }
 
     auto gen_random = [&] (mf_int block_id)
     {
@@ -700,15 +716,19 @@ mf_double Utility::calc_error(
     }
     else
     {
-        minstd_rand0 generator(rand());
+        // minstd_rand0 generator(rand());
         switch(fun)
         {
             case P_ROW_BPR_MFOC:
             {
-                uniform_int_distribution<mf_int> distribution(0, model.n-1);
-#if defined USEOMP
-#pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
-#endif
+                // uniform_int_distribution<mf_int> distribution(0, model.n-1);
+
+// This should not be parallelized, since random numbers are generated inside
+// the for loop, and all the threads share the same RNG.
+
+// #if defined USEOMP
+// #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
+// #endif
                 for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); i++)
                 {
                     BlockBase *block = blocks[cv_block_ids[i]];
@@ -716,7 +736,8 @@ mf_double Utility::calc_error(
                     while(block->move_next())
                     {
                         mf_node const &N = *(block->get_current());
-                        mf_int w = distribution(generator);
+                        // mf_int w = distribution(generator);
+                        mf_int w = Reco::rand_less_than(model.n);
                         error += log(1+exp(mf_predict(&model, N.u, w)-
                                            mf_predict(&model, N.u, N.v)));
                     }
@@ -726,10 +747,10 @@ mf_double Utility::calc_error(
             }
             case P_COL_BPR_MFOC:
             {
-                uniform_int_distribution<mf_int> distribution(0, model.m-1);
-#if defined USEOMP
-#pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
-#endif
+                // uniform_int_distribution<mf_int> distribution(0, model.m-1);
+// #if defined USEOMP
+// #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
+// #endif
                 for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); i++)
                 {
                     BlockBase *block = blocks[cv_block_ids[i]];
@@ -737,7 +758,8 @@ mf_double Utility::calc_error(
                     while(block->move_next())
                     {
                         mf_node const &N = *(block->get_current());
-                        mf_int w = distribution(generator);
+                        // mf_int w = distribution(generator);
+                        mf_int w = Reco::rand_less_than(model.m);
                         error += log(1+exp(mf_predict(&model, w, N.v)-
                                            mf_predict(&model, N.u, N.v)));
                     }
@@ -987,8 +1009,8 @@ mf_model* Utility::init_model(mf_int fun,
     model->Q = nullptr;
 
     mf_float scale = (mf_float)sqrt(1.0/k_real);
-    default_random_engine generator;
-    uniform_real_distribution<mf_float> distribution(0.0, 1.0);
+    // default_random_engine generator;
+    // uniform_real_distribution<mf_float> distribution(0.0, 1.0);
 
     try
     {
@@ -1010,7 +1032,8 @@ mf_model* Utility::init_model(mf_int fun,
             mf_float * ptr = start_ptr + i*model->k;
             if(counts[i] > 0)
                 for(mf_long d = 0; d < k_real; d++, ptr++)
-                    *ptr = (mf_float)(distribution(generator)*scale);
+                    // *ptr = (mf_float)(distribution(generator)*scale);
+                    *ptr = (mf_float)(R::unif_rand()*scale);
             else
                 if(fun != P_ROW_BPR_MFOC && fun != P_COL_BPR_MFOC) // unseen for bpr is 0
                     for(mf_long d = 0; d < k_real; d++, ptr++)
@@ -1026,11 +1049,12 @@ mf_model* Utility::init_model(mf_int fun,
 
 vector<mf_int> Utility::gen_random_map(mf_int size)
 {
-    srand(0);
+    // srand(0);
     vector<mf_int> map(size, 0);
     for(mf_int i = 0; i < size; i++)
         map[i] = i;
-    random_shuffle(map.begin(), map.end());
+    // random_shuffle(map.begin(), map.end());
+    random_shuffle(map.begin(), map.end(), Reco::rand_less_than);
     return map;
 }
 
@@ -3232,10 +3256,11 @@ CrossValidatorBase::CrossValidatorBase(mf_parameter param_, mf_int nr_folds_)
 mf_double CrossValidatorBase::do_cross_validation()
 {
     vector<mf_int> cv_blocks;
-    srand(0);
+    // srand(0);
     for(mf_int block = 0; block < nr_bins*nr_bins; block++)
         cv_blocks.push_back(block);
-    random_shuffle(cv_blocks.begin(), cv_blocks.end());
+    // random_shuffle(cv_blocks.begin(), cv_blocks.end());
+    random_shuffle(cv_blocks.begin(), cv_blocks.end(), Reco::rand_less_than);
 
     if(!quiet)
     {
