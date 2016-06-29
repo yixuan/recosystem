@@ -1,3 +1,9 @@
+setClass("DataSource",
+         slots = c(source = "ANY",
+                   index1 = "logical",
+                   type   = "character")
+         )
+
 data_file = function(path, index1 = FALSE, ...)
 {
     ## Check whether data file exists
@@ -7,8 +13,7 @@ data_file = function(path, index1 = FALSE, ...)
         stop(sprintf("%s does not exist", file_path))
     }
     
-    structure(list(path = file_path, index1 = as.logical(index1)),
-              class = "DataFile")
+    new("DataSource", source = file_path, index1 = index1, type = "file")
 }
 
 data_df = function(dat, index1 = FALSE, ...)
@@ -18,8 +23,7 @@ data_df = function(dat, index1 = FALSE, ...)
     if(!("user" %in% dnames) || !("item" %in% dnames))
         stop("data frame should contain columns named 'user' and 'item'")
     
-    structure(list(dat = dat, index1 = as.logical(index1)),
-              class = "DataDF")
+    new("DataSource", source = dat, index1 = index1, type = "data_frame")
 }
 
 data_rmm = function(rmm, ...)

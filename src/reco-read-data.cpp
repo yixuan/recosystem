@@ -5,16 +5,15 @@ using namespace mf;
 // DataSource.R
 DataReader* get_reader(SEXP data_source)
 {
-    Rcpp::RObject ds(data_source);
-    std::string ds_class = ds.attr("class");
-    Rcpp::List ds_list(data_source);
+    Rcpp::S4 ds(data_source);
+    std::string type = Rcpp::as<std::string>(ds.slot("type"));
     
     DataReader* res = nullptr;
     
-    if(ds_class == "DataFile")
+    if(type == "file")
     {
-        std::string path = Rcpp::as<std::string>(ds_list["path"]);
-        bool index1 = Rcpp::as<bool>(ds_list["index1"]);
+        std::string path = Rcpp::as<std::string>(ds.slot("source"));
+        bool index1 = Rcpp::as<bool>(ds.slot("index1"));
         res = new DataFileReader(path, index1);
     } else {
         Rcpp::stop("unsupported data source");
