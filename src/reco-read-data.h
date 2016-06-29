@@ -39,6 +39,8 @@ public:
     
     // Finish reading
     virtual void close() = 0;
+    
+    virtual ~DataReader() {}
 };
 
 
