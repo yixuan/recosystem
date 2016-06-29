@@ -265,37 +265,29 @@ RecoSys$methods(
 NULL
 
 RecoSys$methods(
-    train = function(train_path, out_model = file.path(tempdir(), "model.txt"),
+    train = function(train_data, out_model = file.path(tempdir(), "model.txt"),
                      opts = list())
     {
-        ## Check whether training set file exists
-        train_path = path.expand(train_path)
-        if(!file.exists(train_path))
-        {
-            stop(sprintf("%s does not exist", train_path))
-        }
-        
         model_path = path.expand(out_model)
         
         ## Parse options
-        opts_train = list(dim = 10L, cost = 0.1, lrate = 0.1,
+        opts_train = list(dim = 10L,
+                          costp_l1 = 0, costp_l2 = 0.1,
+                          costq_l1 = 0, costq_l2 = 0.1,
+                          lrate = 0.1,
                           niter = 20L, nthread = 1L,
                           nmf = FALSE, verbose = TRUE)
         opts = as.list(opts)
         opts_common = intersect(names(opts), names(opts_train))
         opts_train[opts_common] = opts[opts_common]
         
-        ## Additional parameters to be passed to libmf but not set by users here
-        opts_train$nfold = 1L;
-        opts_train$va_path = ""
-        
-        model_param = .Call("reco_train", train_path, model_path, opts_train,
+        model_param = .Call("reco_train", train_data, model_path, opts_train,
                             package = "recosystem")
         
-        .self$model$path = model_path
+        .self$model$path  = model_path
         .self$model$nuser = model_param$nuser
         .self$model$nitem = model_param$nitem
-        .self$model$nfac = model_param$nfac
+        .self$model$nfac  = model_param$nfac
         
         invisible(.self)
     }
