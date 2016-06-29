@@ -83,55 +83,6 @@ TrainOption parse_train_option(SEXP train_path_,
     return option;
 }
 
-mf_problem read_problem(std::string path)
-{
-    mf_problem prob;
-    prob.m = 0;
-    prob.n = 0;
-    prob.nnz = 0;
-    prob.R = nullptr;
-
-    if(path.empty())
-    {
-        return prob;
-    }
-
-    std::ifstream f(path);
-    if(!f.is_open())
-        throw std::runtime_error("cannot open " + path);
-    std::string line;
-    while(std::getline(f, line))
-        prob.nnz++;
-
-    mf_node *R = new mf_node[prob.nnz];
-
-    f.close();
-    f.open(path);
-
-    mf_node N;
-    mf_long idx = 0, lino = 0;
-    for(lino = 0; lino < prob.nnz; lino++)
-    {
-        std::getline(f, line);
-        std::stringstream ss(line);
-
-        ss >> N.u >> N.v >> N.r;
-        if(!ss)
-            continue;
-
-        if(N.u+1 > prob.m)
-            prob.m = N.u+1;
-        if(N.v+1 > prob.n)
-            prob.n = N.v+1;
-        R[idx] = N;
-        idx++;
-    }
-    prob.nnz = idx;
-    prob.R = R;
-
-    return prob;
-}
-
 RcppExport SEXP reco_train(SEXP train_path, SEXP model_path, SEXP opts)
 {
 BEGIN_RCPP
