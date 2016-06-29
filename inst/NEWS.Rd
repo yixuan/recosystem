@@ -1,6 +1,18 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.4}{
+  \itemize{
+    \item Update LIBMF to version 2.01.
+    \item API change from LIBMF 2.01:
+          \itemize{
+            \item The \code{cost} option in \code{$train()} is expanded to
+                  \code{costp_l1}, \code{costp_l2}, \code{costq_l1}, and
+                  \code{costq_l2}.
+          }
+  }
+}
+
 \section{Changes in recosystem version 0.3}{
   \itemize{
     \item Update LIBMF to version 1.2.
