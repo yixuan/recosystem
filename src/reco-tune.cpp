@@ -75,9 +75,7 @@ BEGIN_RCPP
 
     TuneOption option = parse_tune_option(opts_other_);
 
-    DataReader* data_reader;
-    // TODO: construct data_reader from train_data
-    
+    DataReader* data_reader = get_reader(train_data_);
     mf_problem tr = read_data(data_reader);
 
     for(mf_long i = 0; i < n; i++)
@@ -108,6 +106,7 @@ BEGIN_RCPP
     }
 
     delete[] tr.R;
+    delete data_reader;
 
     return rmse;
 

@@ -65,8 +65,7 @@ RcppExport SEXP reco_train(SEXP train_data_, SEXP model_path_, SEXP opts_)
 {
 BEGIN_RCPP
     
-    DataReader* data_reader;
-    // TODO: construct data_reader from train_data
+    DataReader* data_reader = get_reader(train_data_);
     
     std::string model_path = Rcpp::as<std::string>(model_path_);
     mf_parameter param = parse_train_option(opts_);
@@ -92,6 +91,7 @@ BEGIN_RCPP
 
     mf_destroy_model(&model);
     delete[] tr.R;
+    delete data_reader;
 
     return model_param;
 
