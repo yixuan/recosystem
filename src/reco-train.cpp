@@ -61,26 +61,26 @@ mf_parameter parse_train_option(SEXP opts_)
 
 
 
-RcppExport SEXP reco_train(SEXP train_data, SEXP model_path, SEXP opts)
+RcppExport SEXP reco_train(SEXP train_data_, SEXP model_path_, SEXP opts_)
 {
 BEGIN_RCPP
     
     DataReader* data_reader;
     // TODO: construct data_reader from train_data
     
-    std::string model_file = Rcpp::as<std::string>(model_path);
-    mf_parameter param = parse_train_option(opts);
+    std::string model_path = Rcpp::as<std::string>(model_path_);
+    mf_parameter param = parse_train_option(opts_);
 
     mf_problem tr = read_data(data_reader);
     mf_model* model = mf_train(&tr, param);
-    mf_int status = mf_save_model(model, model_file.c_str());
+    mf_int status = mf_save_model(model, model_path.c_str());
 
     if(status != 0)
     {
         mf_destroy_model(&model);
         delete[] tr.R;
 
-        std::string msg = "cannot save model to " + model_file;
+        std::string msg = "cannot save model to " + model_path;
         Rcpp::stop(msg.c_str());
     }
 
