@@ -45,10 +45,10 @@ public:
 class DataFileReader: public DataReader
 {
 private:
-    std::string   path;
-    int           ind_offset;
-    std::ifstream in_file;
-    std::string   line;
+    const std::string path;
+    const int         ind_offset;
+    std::ifstream     in_file;
+    std::string       line;
     
 public:
     DataFileReader(const std::string& file_path, bool index1 = false) :
@@ -101,6 +101,8 @@ public:
     }
 };
 
+
+DataReader* get_reader(SEXP data_source);
 
 mf::mf_problem read_data(DataReader* reader);
 

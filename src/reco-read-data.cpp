@@ -2,6 +2,27 @@
 
 using namespace mf;
 
+// DataSource.R
+DataReader* get_reader(SEXP data_source)
+{
+    Rcpp::RObject ds(data_source);
+    std::string ds_class = ds.attr("class");
+    Rcpp::List ds_list(data_source);
+    
+    DataReader* res = nullptr;
+    
+    if(ds_class == "DataFile")
+    {
+        std::string path = Rcpp::as<std::string>(ds_list["path"]);
+        bool index1 = Rcpp::as<bool>(ds_list["index1"]);
+        res = new DataFileReader(path, index1);
+    } else {
+        Rcpp::stop("unsupported data source");
+    }
+    
+    return res;
+}
+
 // An mf_problem stands for a data object
 mf_problem read_data(DataReader* reader)
 {
