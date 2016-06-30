@@ -90,7 +90,7 @@ BEGIN_RCPP
     );
 
     mf_destroy_model(&model);
-    delete[] tr.R;
+    delete [] tr.R;
     delete data_reader;
 
     return model_param;

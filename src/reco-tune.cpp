@@ -83,12 +83,12 @@ BEGIN_RCPP
         if(!option.param.quiet)
         {
             Rcpp::Rcout << "============================"   << std::endl;
-            Rcpp::Rcout << "dim:      " << tune_dim[i]      << std::endl;
+            Rcpp::Rcout << "dim     : " << tune_dim[i]      << std::endl;
             Rcpp::Rcout << "costp_l1: " << tune_costp_l1[i] << std::endl;
             Rcpp::Rcout << "costp_l2: " << tune_costp_l2[i] << std::endl;
             Rcpp::Rcout << "costq_l1: " << tune_costq_l1[i] << std::endl;
             Rcpp::Rcout << "costq_l2: " << tune_costq_l2[i] << std::endl;
-            Rcpp::Rcout << "lrate:    " << tune_lrate[i]    << std::endl;
+            Rcpp::Rcout << "lrate   : " << tune_lrate[i]    << std::endl << std::endl;
         }
         
         // Set value for k, lambda and eta
@@ -105,7 +105,7 @@ BEGIN_RCPP
             Rcpp::Rcout << "============================" << std::endl << std::endl;
     }
 
-    delete[] tr.R;
+    delete [] tr.R;
     delete data_reader;
 
     return rmse;
