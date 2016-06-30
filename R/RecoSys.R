@@ -140,57 +140,50 @@ RecoSys$methods(
 NULL
 
 RecoSys$methods(
-    tune = function(train_path, opts = list(dim = c(10L, 15L, 20L),
-                                            cost = c(0.01, 0.1),
-                                            lrate = c(0.01, 0.1)))
+    tune = function(train_data, opts = list(dim      = c(10L, 20L),
+                                            costp_l1 = c(0, 0.1),
+                                            costp_l2 = c(0.01, 0.1),
+                                            costq_l1 = c(0, 0.1),
+                                            costq_l2 = c(0.01, 0.1),
+                                            lrate    = c(0.01, 0.1)))
     {
-        ## Check whether training set file exists
-        train_path = path.expand(train_path)
-        if(!file.exists(train_path))
-        {
-            stop(sprintf("%s does not exist", train_path))
-        }
-        
-        ## Tuning parameters: dim, cost, lrate
+        ## Tuning parameters: dim, costp_*, costq_*, lrate
         ## First set up default values
-        opts_tune = list(dim   = c(10L, 15L, 20L),
-                         cost  = c(0.01, 0.1),
-                         lrate = c(0.01, 0.1))
+        opts_tune = list(dim      = c(10L, 20L),
+                         costp_l1 = c(0, 0.1),
+                         costp_l2 = c(0.01, 0.1),
+                         costq_l1 = c(0, 0.1),
+                         costq_l2 = c(0.01, 0.1),
+                         lrate    = c(0.01, 0.1))
+        
         ## Update opts_tune from opts
-        if("dim" %in% names(opts))
-        {
-            opts_tune$dim = as.integer(opts$dim)
-        }
-        if("cost" %in% names(opts))
-        {
-            opts_tune$cost = as.numeric(opts$cost)
-        }
-        if("lrate" %in% names(opts))
-        {
-            opts_tune$lrate = as.numeric(opts$lrate)
-        }
+        opts = as.list(opts)
+        opts_common = intersect(names(opts_tune), names(opts))
+        opts_tune[opts_common] = opts[opts_common]
+        opts_tune = lapply(opts_tune, as.numeric)
+        opts_tune$dim = as.integer(opts_tune$dim)
+        
         ## Expand combinations
         opts_tune = expand.grid(opts_tune)
         
         ## Other options
         opts_train = list(nfold = 5L, niter = 20L, nthread = 1L,
                           nmf = FALSE, verbose = FALSE)
-        opts = as.list(opts)
-        opts_common = intersect(names(opts), names(opts_train))
+        opts_common = intersect(names(opts_train), names(opts))
         opts_train[opts_common] = opts[opts_common]
         
-        rmse = .Call("reco_tune", train_path, opts_tune, opts_train,
-                            package = "recosystem")
+        rmse = .Call("reco_tune", train_data, opts_tune, opts_train,
+                     package = "recosystem")
         
         opts_tune$rmse = rmse
         opts_tune = na.omit(opts_tune)
         if(!nrow(opts_tune))
             stop("results are all NA/NaN")
 
-        tune_min = opts_tune[which.min(rmse), ]
-        opts_min = list(dim = tune_min$dim, cost = tune_min$cost, lrate = tune_min$lrate)
+        tune_min = as.list(opts_tune[which.min(rmse), ])
+        attr(tune_min, "out.attrs") = NULL
         
-        return(list(min = opts_min, res = opts_tune))
+        return(list(min = tune_min, res = opts_tune))
     }
 )
 
