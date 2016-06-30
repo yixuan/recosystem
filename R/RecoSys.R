@@ -192,20 +192,21 @@ RecoSys$methods(
 #' Training a Recommender Model
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
-#' that trains a recommender model. It will read a training data file and
-#' create a model file at the specified locations. The model file contains
+#' that trains a recommender model. It will read from a training data source and
+#' create a model file at the specified location. The model file contains
 #' necessary information for prediction.
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$train(train_path, out_model = file.path(tempdir(), "model.txt"),
+#' r$train(train_data, out_model = file.path(tempdir(), "model.txt"),
 #'         opts = list())}
 #' 
 #' @name train
 #' 
 #' @param r Object returned by \code{\link{Reco}}().
-#' @param train_path Path to the traning data file. See section \strong{Data Format}
-#'                   for the details about the data format.
+#' @param train_data An object of class "DataSource" that describes the source
+#'                   of training data, typically returned by function
+#'                   \code{\link{data_file}()} or \code{\link{data_df}()}.
 #' @param out_model Path to the model file that will be created.
 #' @param opts A number of parameters and options for the model training.
 #'             See section \strong{Parameters and Options} for details.
@@ -215,7 +216,10 @@ RecoSys$methods(
 #'
 #' \describe{
 #' \item{\code{dim}}{Integer, the number of latent factors. Default is 10.}
-#' \item{\code{cost}}{Numeric, the regularization cost for latent factors. Default is 0.1.}
+#' \item{\code{costp_l1}}{Numeric, L1 regularization parameter for user factors. Default is 0.}
+#' \item{\code{costp_l2}}{Numeric, L2 regularization parameter for user factors. Default is 0.1.}
+#' \item{\code{costq_l1}}{Numeric, L1 regularization parameter for item factors. Default is 0.}
+#' \item{\code{costq_l2}}{Numeric, L2 regularization parameter for item factors. Default is 0.1.}
 #' \item{\code{lrate}}{Numeric, the learning rate, which can be thought
 #'                     of as the step size in gradient descent. Default is 0.1.}
 #' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
@@ -227,24 +231,12 @@ RecoSys$methods(
 #'                       \code{TRUE}.}
 #' }
 #' 
-#' @section Data Format:
-#' The training data file takes the format of sparse matrix
-#' in triplet form, i.e., each line in the file contains three numbers
-#' \preformatted{row col value}
-#' representing a number in the rating matrix
-#' with its location. In real applications, it typically looks like
-#' \preformatted{user_id item_id rating}
-#' 
-#' \bold{NOTE}: \code{row} and \code{col} start from 0. So if the first user
-#' rates 3 on the first item, the line will be
-#' \preformatted{0 0 3}
-#' 
-#' Example data files are contained in the \code{recosystem/dat} directory.
-#' 
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(trainset, opts = list(dim = 20, cost = 0.01, nthread = 2))
+#' r$train(data_file(trainset), opts = list(dim = 20,
+#'                                          costp_l2 = 0.01, costq_l2 = 0.01,
+#'                                          nthread = 2))
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
@@ -253,8 +245,12 @@ RecoSys$methods(
 #' ACM TIST, 2015.
 #' 
 #' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
-#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
-#' PAKDD, 2015. 
+#' A Learning-rate Schedule for Stochastic Gradient Methods to Matrix Factorization.
+#' PAKDD, 2015.
+#'
+#' W.-S. Chin, B.-W. Yuan, M.-Y. Yang, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems.
+#' Technical report, 2015.
 NULL
 
 RecoSys$methods(
