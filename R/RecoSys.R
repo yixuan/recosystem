@@ -60,17 +60,20 @@ RecoSys$methods(
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$tune(train_path, opts = list(dim = c(10, 15, 20),
-#'                                cost = c(0.01, 0.1),
-#'                                lrate = c(0.01, 0.1))
+#' r$tune(train_data, opts = list(dim      = c(10L, 20L),
+#'                                costp_l1 = c(0, 0.1),
+#'                                costp_l2 = c(0.01, 0.1),
+#'                                costq_l1 = c(0, 0.1),
+#'                                costq_l2 = c(0.01, 0.1),
+#'                                lrate    = c(0.01, 0.1))
 #' )}
 #' 
 #' @name tune
 #' 
 #' @param r Object returned by \code{\link{Reco}}().
-#' @param train_path Path to the traning data file, same as the one in
-#'                   \code{$\link{train}()}. See the help page there for the
-#'                   details about the data format.
+#' @param train_data An object of class "DataSource" that describes the source
+#'                   of training data, typically returned by function
+#'                   \code{\link{data_file}()} or \code{\link{data_df}()}.
 #' @param opts A number of candidate tuning parameter values and extra options in the
 #'             model tuning procedure. See section \strong{Parameters and Options}
 #'             for details.
@@ -88,8 +91,9 @@ RecoSys$methods(
 #'             
 #' @section Parameters and Options:
 #' The \code{opts} argument should be a list that provides the candidate values
-#' of tuning parameters and some other options. For tuning parameter (\code{dim},
-#' \code{cost} or \code{lrate}), users can provide a numeric vector, so that
+#' of tuning parameters and some other options. For tuning parameters (\code{dim},
+#' \code{costp_l1}, \code{costp_l2}, \code{costq_l1}, \code{costq_l2},
+#' and \code{lrate}), users can provide a numeric vector for each one, so that
 #' the model will be evaluated on each combination of the candidate values.
 #' For other non-tuning options, users should give a single value. If a parameter
 #' or option is not set by the user, the program will use a default one.
@@ -99,10 +103,19 @@ RecoSys$methods(
 #' \describe{
 #' \item{\code{dim}}{Tuning parameter, the number of latent factors.
 #'                   Can be specified as an integer vector, with default value
-#'                   \code{c(10, 15, 20)}.}
-#' \item{\code{cost}}{Tuning parameter, the regularization cost for latent factors.
-#'                    Can be specified as a numeric vector, with default value
-#'                    \code{c(0.01, 0.1)}.}
+#'                   \code{c(10L, 20L)}.}
+#' \item{\code{costp_l1}}{Tuning parameter, the L1 regularization cost for user factors.
+#'                        Can be specified as a numeric vector, with default value
+#'                        \code{c(0, 0.1)}.}
+#' \item{\code{costp_l2}}{Tuning parameter, the L2 regularization cost for user factors.
+#'                        Can be specified as a numeric vector, with default value
+#'                        \code{c(0.01, 0.1)}.}
+#' \item{\code{costq_l1}}{Tuning parameter, the L1 regularization cost for item factors.
+#'                        Can be specified as a numeric vector, with default value
+#'                        \code{c(0, 0.1)}.}
+#' \item{\code{costq_l2}}{Tuning parameter, the L2 regularization cost for item factors.
+#'                        Can be specified as a numeric vector, with default value
+#'                        \code{c(0.01, 0.1)}.}
 #' \item{\code{lrate}}{Tuning parameter, the learning rate, which can be thought
 #'                     of as the step size in gradient descent.
 #'                     Can be specified as a numeric vector, with default value
@@ -117,14 +130,18 @@ RecoSys$methods(
 #'                       \code{FALSE}.}
 #' }
 #' 
-#' @examples \dontrun{trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples \dontrun{
+#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' train_src = data_file(trainset)
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
 #' res = r$tune(
-#'     trainset,
-#'     opts = list(dim = c(10, 20, 30), lrate = c(0.05, 0.1, 0.2), nthread = 2)
+#'     train_src,
+#'     opts = list(dim = c(10, 20, 30),
+#'                 costp_l1 = 0, costq_l1 = 0,
+#'                 lrate = c(0.05, 0.1, 0.2), nthread = 2)
 #' )
-#' r$train(trainset, opts = res$min)
+#' r$train(train_src, opts = res$min)
 #' }
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
@@ -134,9 +151,12 @@ RecoSys$methods(
 #' ACM TIST, 2015.
 #' 
 #' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
-#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
-#' PAKDD, 2015. 
-#' 
+#' A Learning-rate Schedule for Stochastic Gradient Methods to Matrix Factorization.
+#' PAKDD, 2015.
+#'
+#' W.-S. Chin, B.-W. Yuan, M.-Y. Yang, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems.
+#' Technical report, 2015.
 NULL
 
 RecoSys$methods(
