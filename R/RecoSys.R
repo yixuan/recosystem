@@ -20,8 +20,12 @@ RecoSys = setRefClass("RecoSys",
 #' ACM TIST, 2015.
 #' 
 #' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
-#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
-#' PAKDD, 2015. 
+#' A Learning-rate Schedule for Stochastic Gradient Methods to Matrix Factorization.
+#' PAKDD, 2015.
+#'
+#' W.-S. Chin, B.-W. Yuan, M.-Y. Yang, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems.
+#' Technical report, 2015.
 #' 
 #' @export
 #' @keywords models
