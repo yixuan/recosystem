@@ -287,11 +287,10 @@ RecoSys$methods(
 
 
 
-#' Outputing Factorization Matrices
+#' Exporting Factorization Matrices
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
-#' that could write the user score matrix \eqn{P} and item score matrix \eqn{Q}
-#' to text files.
+#' that exports the user score matrix \eqn{P} and the item score matrix \eqn{Q}.
 #' 
 #' Prior to calling this method, model needs to be trained by calling
 #' \code{$\link{train}()}.
@@ -299,10 +298,10 @@ RecoSys$methods(
 #' The common usage of this method is
 #' \preformatted{r = Reco()
 #' r$train(...)
-#' r$output(out_P = file.path(tempdir(), "mat_P.txt"),
+#' r$export(out_P = file.path(tempdir(), "mat_P.txt"),
 #'          out_Q = file.path(tempdir(), "mat_Q.txt"))}
 #' 
-#' @name output
+#' @name export
 #' 
 #' @param r Object returned by \code{\link{Reco}()}.
 #' @param out_P Filename of the output user score matrix. Note that this contains
@@ -327,15 +326,15 @@ RecoSys$methods(
 #' Q_path = tempfile()
 #' 
 #' ## Write P and Q matrices to files
-#' r$output(P_path, Q_path)
+#' r$export(P_path, Q_path)
 #' head(read.table(P_path, header = FALSE, sep = " "))
 #' head(read.table(Q_path, header = FALSE, sep = " "))
 #' 
 #' ## Skip P and only output Q
-#' r$output("", Q_path)
+#' r$export("", Q_path)
 #' 
 #' ## Return P and Q in memory
-#' res = r$output(NULL, NULL)
+#' res = r$export(NULL, NULL)
 #' head(res$P)
 #' head(res$Q)
 #'
@@ -346,12 +345,16 @@ RecoSys$methods(
 #' ACM TIST, 2015.
 #' 
 #' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
-#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
-#' PAKDD, 2015. 
+#' A Learning-rate Schedule for Stochastic Gradient Methods to Matrix Factorization.
+#' PAKDD, 2015.
+#'
+#' W.-S. Chin, B.-W. Yuan, M.-Y. Yang, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems.
+#' Technical report, 2015.
 NULL
 
 RecoSys$methods(
-    output = function(out_P = file.path(tempdir(), "mat_P.txt"),
+    export = function(out_P = file.path(tempdir(), "mat_P.txt"),
                       out_Q = file.path(tempdir(), "mat_Q.txt"))
     {
         ## Check whether model has been trained
@@ -382,6 +385,15 @@ RecoSys$methods(
             cat(sprintf("Q matrix generated at %s\n", out_Q))
         
         invisible(.self)
+    }
+)
+
+RecoSys$methods(
+    output = function(...)
+    {
+        warning("$output() has been renamed to $export()
+$output() will be removed in the next version")
+        .self$export(...)
     }
 )
 
