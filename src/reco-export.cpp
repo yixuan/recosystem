@@ -7,97 +7,165 @@
 
 using namespace mf;
 
-RcppExport SEXP reco_output_memory(SEXP model)
+class ModelExporter
+{
+protected:
+    typedef mf::mf_int   mf_int;
+    typedef mf::mf_long  mf_long;
+    typedef mf::mf_float mf_float;
+    
+public:
+    // Process one line
+    virtual void process_line(const std::string& line) = 0;
+    
+    virtual ~ModelExporter() {}
+};
+
+class ModelExporterFile: public ModelExporter
+{
+private:
+    std::ofstream out_file;
+    const mf_int  nfactor;
+    
+public:
+    ModelExporterFile(const std::string& out_path_, const mf_int& nfactor_) :
+        out_file(out_path_), nfactor(nfactor_)
+    {
+        if(!out_file.is_open())
+            Rcpp::stop("cannot write to " + out_path_);
+    }
+    
+    void process_line(const std::string& line)
+    {
+        // Sample line:
+        //     p0 T 0.560987 0.605718 0.528195 0.506409 ...
+        // p0 means line 0 of P matrix
+        // T  means values after are not NaN
+        // F  means values in this line are actually NaN
+        std::size_t pos = line.find(' ');
+        char TF = line[pos + 1];
+        if(TF == 'T')
+        {
+            out_file << line.substr(pos + 3) << std::endl;
+        } else {
+            for(mf_int i = 0; i < nfactor; i++)
+                out_file << "Nan ";
+            
+            out_file << std::endl;
+        }
+    }
+};
+
+class ModelExporterMemory: public ModelExporter
+{
+private:
+    double*       pen;
+    const mf_int  nfactor;
+    
+public:
+    ModelExporterMemory(double* dest_, const mf_int& nfactor_) :
+        pen(dest_), nfactor(nfactor_)
+    {}
+    
+    void process_line(const std::string& line)
+    {
+        std::size_t pos = line.find(' ');
+        char TF = line[pos + 1];
+        
+        if(TF == 'T')
+        {
+            std::stringstream dat(line.substr(pos + 3));
+            for(mf_int i = 0; i < nfactor; i++)
+            {
+                dat >> *pen;
+                pen++;
+            }
+        } else {
+            for(mf_int i = 0; i < nfactor; i++)
+            {
+                *pen = std::numeric_limits<mf_float>::quiet_NaN();
+                pen++;
+            }
+        }
+    }
+};
+
+class ModelExporterNothing: public ModelExporter
+{
+public:
+    void process_line(const std::string& line) {}
+};
+
+
+
+RcppExport SEXP reco_export(SEXP model_path_, SEXP P_, SEXP Q_)
 {
 BEGIN_RCPP
-
-    std::string model_path = Rcpp::as<std::string>(model);
-
-    mf_model *model = mf_load_model(model_path.c_str());
-    if(model == nullptr)
-        Rcpp::stop("cannot load model from " + model_path);
-
-    Rcpp::NumericVector P(model->k * model->m);
-    Rcpp::NumericVector Q(model->k * model->n);
-
-    // Note: conversion from float to double here
-    std::copy(model->P, model->P + model->m * model->k, P.begin());
-    std::copy(model->Q, model->Q + model->n * model->k, Q.begin());
-
-    mf_destroy_model(&model);
-
-    return Rcpp::List::create(
-        Rcpp::Named("Pdata") = P,
-        Rcpp::Named("Qdata") = Q
-    );
-
-END_RCPP
-}
-
-RcppExport SEXP reco_output(SEXP model, SEXP P, SEXP Q)
-{
-BEGIN_RCPP
-
-    std::string model_path = Rcpp::as<std::string>(model);
-    std::string P_path = Rcpp::as<std::string>(P);
-    std::string Q_path = Rcpp::as<std::string>(Q);
-
-    std::ifstream f(model_path);
-    if(!f.is_open())
-        Rcpp::stop("cannot open " + model_path);
-
-    // Get dimensions
+    
+    std::string model_path = Rcpp::as<std::string>(model_path_);
+    std::ifstream model_file(model_path);
+    if(!model_file.is_open())
+        Rcpp::stop("cannot open model file " + model_path);
+    
     std::string line;
-    // mf_int m, n, k;
-    mf_int m, n;
-    std::getline(f, line);
-    m = atoi(line.substr(line.find(' ') + 1).c_str());
-    std::getline(f, line);
-    n = atoi(line.substr(line.find(' ') + 1).c_str());
-    std::getline(f, line);
-    // k = atoi(line.substr(line.find(' ') + 1).c_str());
+    mf_int m, n, k;
+    // Read meta information
+    model_file >> line >> line >>
+                  line >> m    >>
+                  line >> n    >>
+                  line >> k    >>
+                  line >> line;
+         
+    Rcpp::S4 P(P_), Q(Q_);
+    std::string P_type = Rcpp::as<std::string>(P.slot("type"));
+    std::string Q_type = Rcpp::as<std::string>(Q.slot("type"));
+    
+    int Pdim = 0, Qdim = 0;
+    if(P_type == "memory")  Pdim = m;
+    if(Q_type == "memory")  Qdim = n;
+    Rcpp::NumericMatrix Pdata(k, Pdim), Qdata(k, Qdim);
 
-    // Writing P matrix
-    if(!P_path.empty())
+    ModelExporter* Pexporter = nullptr;
+    ModelExporter* Qexporter = nullptr;
+    
+    if(P_type == "file")
     {
-        std::ofstream fp(P_path);
-        if(!fp.is_open())
-            Rcpp::stop("cannot write " + P_path);
-
-        for(mf_int i = 0; i < m; i++)
-        {
-            std::getline(f, line);
-            std::size_t pos = line.find(' ');
-            // Remove the beginning pos+1 characters, and the space at the tail
-            fp << line.substr(pos + 1, line.length() - pos - 2) << std::endl;
-        }
-
-        fp.close();
+        Pexporter = new ModelExporterFile(Rcpp::as<std::string>(P.slot("dest")), k);
+    } else if(P_type == "memory") {
+        Pexporter = new ModelExporterMemory(Pdata.begin(), k);
+    } else if(P_type == "nothing") {
+        Pexporter = new ModelExporterNothing();
     } else {
-        // Skip m lines
-        for(mf_int i = 0; i < m; i++)
-            f.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        Rcpp::stop("unsupported output format");
     }
-
-    // Writing Q matrix
-    if(!Q_path.empty())
+    
+    for(mf_int i = 0; i < m; i++)
     {
-        std::ofstream fq(Q_path);
-        if(!fq.is_open())
-            Rcpp::stop("cannot write " + Q_path);
-
-        for(mf_int i = 0; i < n; i++)
-        {
-            std::getline(f, line);
-            std::size_t pos = line.find(' ');
-            // Remove the beginning pos+1 characters, and the space at the tail
-            fq << line.substr(pos + 1, line.length() - pos - 2) << std::endl;
-        }
-
-        fq.close();
+        std::getline(model_file, line);
+        Pexporter->process_line(line);
     }
 
-    return R_NilValue;
-
+    if(Q_type == "file")
+    {
+        Qexporter = new ModelExporterFile(Rcpp::as<std::string>(Q.slot("dest")), k);
+    } else if(Q_type == "memory") {
+        Qexporter = new ModelExporterMemory(Qdata.begin(), k);
+    } else if(Q_type == "nothing") {
+        Qexporter = new ModelExporterNothing();
+    } else {
+        Rcpp::stop("unsupported output format");
+    }
+    
+    for(mf_int i = 0; i < n; i++)
+    {
+        std::getline(model_file, line);
+        Qexporter->process_line(line);
+    }
+    
+    return Rcpp::List::create(
+        Rcpp::Named("Pdata") = Pdata,
+        Rcpp::Named("Qdata") = Qdata
+    );
+    
 END_RCPP
 }
