@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
 #include "mf.h"
 
 using namespace mf;
@@ -110,11 +111,19 @@ BEGIN_RCPP
     std::string line;
     mf_int m, n, k;
     // Read meta information
-    model_file >> line >> line >>
-                  line >> m    >>
-                  line >> n    >>
-                  line >> k    >>
-                  line >> line;
+    //   f 0
+    //   m 1000
+    //   n 1000
+    //   k 20
+    //   b 3.007
+    std::getline(model_file, line);  // f
+    std::getline(model_file, line);  // m
+    m = atoi(line.substr(line.find(' ') + 1).c_str());
+    std::getline(model_file, line);  // n
+    n = atoi(line.substr(line.find(' ') + 1).c_str());
+    std::getline(model_file, line);  // k
+    k = atoi(line.substr(line.find(' ') + 1).c_str());
+    std::getline(model_file, line);  // b
          
     Rcpp::S4 P(P_), Q(Q_);
     std::string P_type = Rcpp::as<std::string>(P.slot("type"));
