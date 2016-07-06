@@ -50,7 +50,7 @@ public:
             out_file << line.substr(pos + 3) << std::endl;
         } else {
             for(mf_int i = 0; i < nfactor; i++)
-                out_file << "Nan ";
+                out_file << "NaN ";
             
             out_file << std::endl;
         }
