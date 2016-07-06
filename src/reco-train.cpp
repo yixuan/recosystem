@@ -5,7 +5,6 @@
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
-#include <vector>
 
 #include <Rcpp.h>
 #include "mf.h"
@@ -52,7 +51,7 @@ mf_parameter parse_train_option(SEXP opts_)
 
     // Verbose or not
     param.quiet = !(Rcpp::as<bool>(opts["verbose"]));
-    
+
     // Whether to copy data matrix or not
     param.copy_data = false;
 
@@ -64,9 +63,9 @@ mf_parameter parse_train_option(SEXP opts_)
 RcppExport SEXP reco_train(SEXP train_data_, SEXP model_path_, SEXP opts_)
 {
 BEGIN_RCPP
-    
+
     DataReader* data_reader = get_reader(train_data_);
-    
+
     std::string model_path = Rcpp::as<std::string>(model_path_);
     mf_parameter param = parse_train_option(opts_);
 
