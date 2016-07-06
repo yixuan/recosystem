@@ -321,20 +321,20 @@ RecoSys$methods(
 #' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(trainset, opts = list(dim = 10, nmf = TRUE))
+#' r$train(data_file(trainset), opts = list(dim = 10, nmf = TRUE))
 #' P_path = tempfile()
 #' Q_path = tempfile()
 #' 
 #' ## Write P and Q matrices to files
-#' r$export(P_path, Q_path)
+#' r$export(out_file(P_path), out_file(Q_path))
 #' head(read.table(P_path, header = FALSE, sep = " "))
 #' head(read.table(Q_path, header = FALSE, sep = " "))
 #' 
 #' ## Skip P and only output Q
-#' r$export("", Q_path)
+#' r$export(out_nothing(), out_file(Q_path))
 #' 
 #' ## Return P and Q in memory
-#' res = r$export(NULL, NULL)
+#' res = r$export(out_memory(), out_memory())
 #' head(res$P)
 #' head(res$Q)
 #'
@@ -354,8 +354,8 @@ RecoSys$methods(
 NULL
 
 RecoSys$methods(
-    export = function(out_P = file.path(tempdir(), "mat_P.txt"),
-                      out_Q = file.path(tempdir(), "mat_Q.txt"))
+    export = function(out_P = out_file(file.path(tempdir(), "mat_P.txt")),
+                      out_Q = out_file(file.path(tempdir(), "mat_Q.txt")))
     {
         ## Check whether model has been trained
         model_path = .self$model$path
@@ -365,26 +365,21 @@ RecoSys$methods(
 [Call $train() method to train model]")
         }
         
-        ## If both are NULL, return P and Q matrices in memory
-        if(is.null(out_P) & is.null(out_Q))
-        {
-            res = .Call("reco_output_memory", model_path)
-            return(list(P = matrix(res$Pdata, .self$model$nuser, byrow = TRUE),
-                        Q = matrix(res$Qdata, .self$model$nitem, byrow = TRUE)))
-        }
+        res = .Call("reco_export", model_path, out_P, out_Q, PACKAGE = "recosystem")
+        P = NULL
+        Q = NULL
         
-        out_P = path.expand(out_P)
-        out_Q = path.expand(out_Q)
+        if(out_P@type == "file")
+            cat(sprintf("P matrix generated at %s\n", out_P@dest))
+        if(out_P@type == "memory")
+            P = t(res$Pdata)
         
-        .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
+        if(out_Q@type == "file")
+            cat(sprintf("Q matrix generated at %s\n", out_Q@dest))
+        if(out_Q@type == "memory")
+            Q = t(res$Qdata)
         
-        if(nchar(out_P))
-            cat(sprintf("P matrix generated at %s\n", out_P))
-        
-        if(nchar(out_Q))
-            cat(sprintf("Q matrix generated at %s\n", out_Q))
-        
-        invisible(.self)
+        return(list(P = P, Q = Q))
     }
 )
 
