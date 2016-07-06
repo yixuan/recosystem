@@ -354,8 +354,7 @@ RecoSys$methods(
 NULL
 
 RecoSys$methods(
-    export = function(out_P = out_file(file.path(tempdir(), "mat_P.txt")),
-                      out_Q = out_file(file.path(tempdir(), "mat_Q.txt")))
+    export = function(out_P = out_file("mat_P.txt"), out_Q = out_file("mat_Q.txt"))
     {
         ## Check whether model has been trained
         model_path = .self$model$path
@@ -448,15 +447,8 @@ $output() will be removed in the next version")
 NULL
 
 RecoSys$methods(
-    predict = function(test_path, out_pred = file.path(tempdir(), "predict.txt"))
+    predict = function(test_data, out_pred = file.path("predict.txt"))
     {
-        ## Check whether testing set file exists
-        test_path = path.expand(test_path)
-        if(!file.exists(test_path))
-        {
-            stop(sprintf("%s does not exist", test_path))
-        }
-        
         ## Check whether model has been trained
         model_path = .self$model$path
         if(!file.exists(model_path))
@@ -465,20 +457,12 @@ RecoSys$methods(
 [Call $train() method to train model]")
         }
         
-        ## If out_pred is NULL, return prediction in memory
-        if(is.null(out_pred))
-        {
-            res = .Call("reco_predict_memory", test_path, model_path)
-            return(res)
-        }
+        res = .Call("reco_predict", test_data, model_path, out_pred, PACKAGE = "recosystem")
         
-        out_path = path.expand(out_pred)
+        if(out_pred@type == "file")
+            cat(sprintf("prediction output generated at %s\n", out_pred@dest))
         
-        .Call("reco_predict", test_path, model_path, out_path, PACKAGE = "recosystem")
-        
-        cat(sprintf("prediction output generated at %s\n", out_path))
-        
-        invisible(.self)
+        return(res)
     }
 )
 
