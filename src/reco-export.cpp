@@ -47,12 +47,14 @@ public:
         char TF = line[pos + 1];
         if(TF == 'T')
         {
-            out_file << line.substr(pos + 3) << std::endl;
+            // Removing trailing space
+            std::size_t last = line.find_last_not_of(' ');
+            out_file << line.substr(pos + 3, last - pos - 2) << std::endl;
         } else {
-            for(mf_int i = 0; i < nfactor; i++)
+            for(mf_int i = 0; i < nfactor - 1; i++)
                 out_file << "NaN ";
             
-            out_file << std::endl;
+            out_file << "NaN" << std::endl;
         }
     }
 };
