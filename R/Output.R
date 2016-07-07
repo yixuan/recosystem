@@ -13,7 +13,7 @@ setClass("Output",
 #' the result to be returned as R objects, and \code{out_nothing()} means
 #' the result is not needed and will not be returned.
 #' 
-#' @param path Path to the data file.
+#' @param path Path to the output file.
 #' @return An object of class "Output" as required by
 #' \code{$\link{export}()} and \code{$\link{predict}()}.
 #' 

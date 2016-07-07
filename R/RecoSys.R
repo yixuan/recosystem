@@ -8,12 +8,12 @@ RecoSys = setRefClass("RecoSys",
 #' 
 #' @return \code{Reco()} returns an object of class "\code{RecoSys}"
 #' equipped with methods
-#' \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()}
+#' \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{export}()}
 #' and \code{$\link{predict}()}, which describe the typical process of
-#' building and tuning model, outputing coefficients, and
+#' building and tuning model, exporting factorization matrices, and
 #' predicting results. See their help documents for details.
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()},
+#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{export}()},
 #' \code{$\link{predict}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -114,8 +114,8 @@ Reco = function()
 #' }
 #' 
 #' @examples \dontrun{
-#' trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
-#' train_src = data_file(trainset)
+#' train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' train_src = data_file(train_set)
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
 #' res = r$tune(
@@ -234,12 +234,12 @@ RecoSys$methods(
 #'                       \code{TRUE}.}
 #' }
 #' 
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @examples train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(data_file(trainset), opts = list(dim = 20,
-#'                                          costp_l2 = 0.01, costq_l2 = 0.01,
-#'                                          nthread = 2))
+#' r$train(data_file(train_set), opts = list(dim = 20,
+#'                                           costp_l2 = 0.01, costq_l2 = 0.01,
+#'                                           nthread = 2))
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
@@ -292,46 +292,48 @@ RecoSys$methods(
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that exports the user score matrix \eqn{P} and the item score matrix \eqn{Q}.
 #' 
-#' Prior to calling this method, model needs to be trained by calling
+#' Prior to calling this method, model needs to be trained using member function
 #' \code{$\link{train}()}.
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
 #' r$train(...)
-#' r$export(out_P = file.path(tempdir(), "mat_P.txt"),
-#'          out_Q = file.path(tempdir(), "mat_Q.txt"))}
+#' r$export(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
 #' 
 #' @name export
 #' 
 #' @param r Object returned by \code{\link{Reco}()}.
-#' @param out_P Filename of the output user score matrix. Note that this contains
-#'              the \strong{transpose} of the \eqn{P} matrix, hence each row in
-#'              the file stands for a user, and each column stands for a latent
-#'              factor. Values are space seperated. If \code{out_P} is an empty
-#'              string (\code{""}), the \eqn{P} matrix will not be output.
-#' @param out_Q Filename of the output item score matrix. Note that this contains
-#'              the \strong{transpose} of the \eqn{Q} matrix, hence each row in
-#'              the file stands for an item, and each column stands for a latent
-#'              factor. Values are space seperated. If \code{out_Q} is an empty
-#'              string (\code{""}), the \eqn{Q} matrix will not be output. If both
-#'              \code{out_P} and \code{out_Q} are \code{NULL}, this function will
-#'              return a list containing the \eqn{P} and \eqn{Q} matrices in memory,
-#'              and no files will be created.
+#' @param out_P An object of class \code{Output} that specifies the
+#'              output format of the user matrix, typically returned by function
+#'              \code{\link{out_file}()}, \code{\link{out_memory}()} or
+#'              \code{\link{out_nothing}()}.
+#'              \code{\link{out_file}()} writes the matrix into a file, with
+#'              each row representing a user and each column representing a
+#'              latent factor.
+#'              \code{\link{out_memory}()} exports the matrix
+#'              into the return value of \code{$export()}.
+#'              \code{\link{out_nothing}()} means the matrix will not be exported.
+#' @param out_Q Ditto, but for the item matrix.
 #' 
-#' @examples trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
+#' @return A list with components \code{P} and \code{Q}. They will be filled
+#'         with user or item matrix if \code{\link{out_memory}()} is used
+#'         in the function argument, otherwise \code{NULL} will be returned.
+#'         
+#' 
+#' @examples train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(data_file(trainset), opts = list(dim = 10, nmf = TRUE))
-#' P_path = tempfile()
-#' Q_path = tempfile()
+#' r$train(data_file(train_set), opts = list(dim = 10, nmf = TRUE))
 #' 
 #' ## Write P and Q matrices to files
-#' r$export(out_file(P_path), out_file(Q_path))
-#' head(read.table(P_path, header = FALSE, sep = " "))
-#' head(read.table(Q_path, header = FALSE, sep = " "))
+#' P_file = out_file(tempfile())
+#' Q_file = out_file(tempfile())
+#' r$export(P_file, Q_file)
+#' head(read.table(P_file@dest, header = FALSE, sep = " "))
+#' head(read.table(Q_file@dest, header = FALSE, sep = " "))
 #' 
-#' ## Skip P and only output Q
-#' r$export(out_nothing(), out_file(Q_path))
+#' ## Skip P and only export Q
+#' r$export(out_nothing(), Q_file)
 #' 
 #' ## Return P and Q in memory
 #' res = r$export(out_memory(), out_memory())
