@@ -399,41 +399,49 @@ $output() will be removed in the next version")
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that predicts unknown entries in the rating matrix.
-#' Prior to calling this method, model needs to be trained by calling
+#' 
+#' Prior to calling this method, model needs to be trained using member function
 #' \code{$\link{train}()}.
-#' Prediction results will be written into the specified file, one value
-#' per line, corresponding to the testing data.
 #' 
 #' The common usage of this method is
 #' \preformatted{r = Reco()
-#' r$predict(test_path, out_pred = file.path(tempdir(), "predict.txt")}
+#' r$train(...)
+#' r$predict(test_data, out_pred = data_file("predict.txt")}
 #' 
 #' @name predict
 #' 
 #' @param r Object returned by \code{\link{Reco}()}.
-#' @param out_pred Path to the output file for prediction. If set to \code{NULL},
-#'                 this function will return the predicted values in memory.
-#'                 The format of testing data file is the same as training
-#'                 data (see the \strong{Data Format} section in
-#'                 \code{$\link{train}()}), except that the third value in
-#'                 each line can be omitted.
+#' @param train_data An object of class "DataSource" that describes the source
+#'                   of testing data, typically returned by function
+#'                   \code{\link{data_file}()} or \code{\link{data_df}()}.
+#' @param out_pred An object of class \code{Output} that specifies the
+#'                 output format of prediction, typically returned by function
+#'                 \code{\link{out_file}()}, \code{\link{out_memory}()} or
+#'                 \code{\link{out_nothing}()}.
+#'                 \code{\link{out_file}()} writes the result into a
+#'                 file, \code{\link{out_memory}()} exports the vector of
+#'                 predicted values into the return value of \code{$predict()},
+#'                 and \code{\link{out_nothing}()} means the result will be
+#'                 neither returned nor written into a file (but computation will
+#'                 still be conducted).
 #'
-#' @examples \dontrun{trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
-#' testset = system.file("dat", "smalltest.txt", package = "recosystem")
+#' @examples \dontrun{
+#' train_file = data_file(system.file("dat", "smalltrain.txt", package = "recosystem"))
+#' test_file = data_file(system.file("dat", "smalltest.txt", package = "recosystem"))
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' opts_tune = r$tune(trainset)$min
-#' r$train(trainset, opts = opts_tune)
+#' opts_tune = r$tune(train_file)$min
+#' r$train(train_file, opts = opts_tune)
 #' 
-#' ## Write predicted values to file
-#' out_pred = tempfile()
-#' r$predict(trainset, out_pred)
+#' ## Write predicted values into file
+#' out_pred = out_file(tempfile())
+#' r$predict(test_file, out_pred)
 #' 
 #' ## Return predicted values in memory
-#' pred = r$predict(trainset, NULL)
+#' pred = r$predict(test_file, out_memory())
 #'
 #' ## Compare results
-#' print(scan(out_pred, n = 10))
+#' print(scan(out_pred@dest, n = 10))
 #' head(pred, 10)
 #' }
 #' 
@@ -444,8 +452,12 @@ $output() will be removed in the next version")
 #' ACM TIST, 2015.
 #' 
 #' W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
-#' A learning-rate schedule for stochastic gradient methods to matrix factorization.
-#' PAKDD, 2015. 
+#' A Learning-rate Schedule for Stochastic Gradient Methods to Matrix Factorization.
+#' PAKDD, 2015.
+#'
+#' W.-S. Chin, B.-W. Yuan, M.-Y. Yang, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
+#' LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems.
+#' Technical report, 2015.
 NULL
 
 RecoSys$methods(
