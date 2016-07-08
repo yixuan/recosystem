@@ -1,3 +1,6 @@
+#ifndef RECO_UTILS_H
+#define RECO_UTILS_H
+
 #include <cstdlib>
 #include <Rcpp.h>
 
@@ -61,3 +64,6 @@ inline int rand_less_than(int i)
 
 
 } // namespace Reco
+
+
+#endif // RECO_UTILS_H
