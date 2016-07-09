@@ -40,7 +40,7 @@ data_file = function(path, index1 = FALSE, ...)
     file_path = path.expand(path)
     if(!file.exists(file_path))
     {
-        stop(sprintf("%s does not exist", file_path))
+        stop(sprintf("file '%s' does not exist", file_path))
     }
     
     new("DataSource", source = file_path, index1 = index1, type = "file")
@@ -48,14 +48,10 @@ data_file = function(path, index1 = FALSE, ...)
 
 #' @rdname data_source
 #' @export
-data_df = function(dat, index1 = FALSE, ...)
+data_memory = function(user_id, item_id, rating = NULL, index1 = FALSE, ...)
 {
-    ## Check whether the required columns exist
-    dnames = names(dat)
-    if(!("user" %in% dnames) || !("item" %in% dnames))
-        stop("data frame should contain columns named 'user' and 'item'")
-    
-    new("DataSource", source = dat, index1 = index1, type = "data_frame")
+    new("DataSource", source = list(user_id, item_id, rating),
+                      index1 = index1, type = "memory")
 }
 
 data_rmm = function(rmm, ...)
