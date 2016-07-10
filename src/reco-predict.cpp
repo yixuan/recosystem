@@ -110,12 +110,6 @@ BEGIN_RCPP
     } else {
         Rcpp::stop("unsupported data source");
     }
-	
-	if(!reader->is_valid())
-	{
-		delete reader;
-		Rcpp::stop("cannot open testing data");
-	}
 	mf_long len = reader->count();
 
     // Exporter

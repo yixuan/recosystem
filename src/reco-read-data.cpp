@@ -31,9 +31,6 @@ mf_problem read_data(DataReader* reader)
     prob.n = 0;
     prob.nnz = 0;
     prob.R = nullptr;
-
-    if(!reader->is_valid())
-        return prob;
     
     // Upper limit of nnz
     mf_long max_nnz = reader->count();

@@ -20,10 +20,6 @@ protected:
     typedef mf::mf_float mf_float;
 
 public:
-    // Whether this is a valid data source
-    // File name is empty? Data frame contains no data? etc.
-    virtual bool is_valid() = 0;
-
     // Return an upper limit of prob.nnz
     // When there exist invalid data in the file or data frame, this will be
     // greater than prob.nnz
@@ -55,19 +51,18 @@ protected:
 public:
     DataFileReader(const std::string& file_path, bool index1 = false) :
         path(file_path), ind_offset(index1)
-    {}
-
-    bool is_valid()
     {
+        // Test whether file can be opened
         std::ifstream f(path);
-        return f.is_open();
+        if(!f.is_open())
+            throw std::runtime_error("cannot open file '" + path + '\'');
     }
 
     mf_long count()
     {
         std::ifstream f(path);
         if(!f.is_open())
-            throw std::runtime_error("cannot open " + path);
+            throw std::runtime_error("cannot open file '" + path + '\'');
 
         std::string line;
         mf_long nlines = 0;
@@ -82,7 +77,7 @@ public:
     {
         in_file.open(path);
         if(!in_file.is_open())
-            throw std::runtime_error("cannot open " + path);
+            throw std::runtime_error("cannot open file '" + path + '\'');
     }
 
     bool next(mf_int& u, mf_int& v, mf_float& r)
