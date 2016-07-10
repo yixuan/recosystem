@@ -450,10 +450,15 @@ $output() will be removed in the next version")
 #' 
 #' ## Return predicted values in memory
 #' pred = r$predict(test_file, out_memory())
+#' 
+#' ## If testing data are stored in memory
+#' test_df = read.table(test_file@source, sep = " ", header = FALSE)
+#' pred2 = r$predict(data_memory(test_df[, 1], test_df[, 2]), out_memory())
 #'
 #' ## Compare results
 #' print(scan(out_pred@dest, n = 10))
 #' head(pred, 10)
+#' head(pred2, 10)
 #' }
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
