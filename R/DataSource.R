@@ -50,6 +50,7 @@ setClass("DataSource",
 #' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{predict}()}
 #' 
 #' @rdname data_source
+#' @name data_source
 #' @export
 data_file = function(path, index1 = FALSE, ...)
 {

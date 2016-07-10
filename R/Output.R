@@ -21,6 +21,7 @@ setClass("Output",
 #' @seealso \code{$\link{export}()}, \code{$\link{predict}()}
 #' 
 #' @rdname output_format
+#' @name output_format
 #' @export
 out_file = function(path, ...)
 {
