@@ -79,7 +79,7 @@ data_memory = function(user_index, item_index, rating = NULL, index1 = FALSE, ..
     
     rating = as.numeric(rating)
     
-    new("DataSource", source = list(user_id, item_id, rating),
+    new("DataSource", source = list(user_index, item_index, rating),
                       index1 = index1, type = "memory")
 }
 

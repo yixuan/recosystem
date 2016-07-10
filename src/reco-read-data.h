@@ -128,7 +128,7 @@ public:
     bool next(mf_int& u, mf_int& v, mf_float& r)
     {
         u = *pen_userid - ind_offset;
-        v = *pen_userid - ind_offset;
+        v = *pen_itemid - ind_offset;
         r = static_cast<mf_float>(*pen_rating);
 
         bool failure = Rcpp::IntegerVector::is_na(*pen_userid) ||
