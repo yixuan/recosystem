@@ -7,30 +7,47 @@ setClass("DataSource",
 #' Specifying Data Source
 #' 
 #' Functions in this page are used to specify the source of data in the recommender system.
-#' They are intended to provide the input objects of functions such as
-#' \code{$\link{tune}()} and \code{$\link{train}()}.
-#' Currently two data formats are supported: data file (via function \code{data_file()})
-#' and data frame (via function \code{data_df()}).
+#' They are intended to provide the input argument of functions such as
+#' \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
+#' Currently two data formats are supported: data file (via function \code{data_file()}),
+#' and data in memory as R objects (via function \code{data_memory()}).
 #' 
-#' The training data file takes the format of sparse matrix
+#' In \code{$\link{tune}()} and \code{$\link{train}()}, functions in this page
+#' are used to specify the source of training data. \code{data_file()}
+#' expects a text file that describes a sparse matrix
 #' in triplet form, i.e., each line in the file contains three numbers
 #' \preformatted{row col value}
 #' representing a number in the rating matrix
 #' with its location. In real applications, it typically looks like
-#' \preformatted{user_id item_id rating}
+#' \preformatted{user_index item_index rating}
+#' The \file{smalltrain.txt} file in the \file{dat} directory of this package
+#' shows an example of training data file.
 #' 
-#' The testing data have the same format as training data, except that the value (rating)
-#' column is not required, and will be ignored if it is provided.
+#' If user index, item index, and ratings are stored as R vectors in memory,
+#' they can be passed to \code{data_memory()} to form the training data source.
+#' 
+#' By default the user index and item index start with zeros, and the option
+#' \code{index1 = TRUE} can be set if they start with ones.
+#' 
+#' In \code{$\link{predict}()}, functions in this page provide the source of
+#' testing data. The testing data have the same format as training data, except
+#' that the value (rating) column is not required, and will be ignored if it is
+#' provided. The \file{smalltest.txt} file in the \file{dat} directory of this
+#' package shows an example of testing data file.
 #' 
 #' @param path Path to the data file.
-#' @param dat The data frame that represents the training or testing data set.
-#' @param index1 Whether the user id and item id start with 1 (\code{index1 = TRUE}) or
-#'               0 (\code{index1 = FALSE}).
+#' @param user_index An integer vector giving the user indices of rating scores.
+#' @param item_index An integer vector giving the item indices of rating scores.
+#' @param rating A numeric vector of the observed entries in the rating matrix.
+#'               Can be specified as \code{NULL} for testing data, in which case
+#'               it is ignored.
+#' @param index1 Whether the user indices and item indices start with 1
+#'               (\code{index1 = TRUE}) or 0 (\code{index1 = FALSE}).
 #' @return An object of class "DataSource" as required by
-#' \code{$\link{tune}()} and \code{$\link{train}()}.
+#' \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
 #' 
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}
+#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{predict}()}
 #' 
 #' @rdname data_source
 #' @export
@@ -48,8 +65,18 @@ data_file = function(path, index1 = FALSE, ...)
 
 #' @rdname data_source
 #' @export
-data_memory = function(user_id, item_id, rating = NULL, index1 = FALSE, ...)
+data_memory = function(user_index, item_index, rating = NULL, index1 = FALSE, ...)
 {
+    user_index = as.integer(user_index)
+    item_index = as.integer(item_index)
+
+    if(length(user_index) != length(item_index))
+        stop("user_index and item_index must have the same length")
+    if(!is.null(rating) && length(rating) != length(user_index))
+        stop("user_index, item_index, and rating must have the same length")
+    
+    rating = as.numeric(rating)
+    
     new("DataSource", source = list(user_id, item_id, rating),
                       index1 = index1, type = "memory")
 }
