@@ -1,7 +1,7 @@
 ---
 title: "Recommender System with the recosystem Package"
 author: "Yixuan Qiu"
-date: "05/28/2015"
+date: "07/10/2016"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Recommender System with recosystem Package}
@@ -38,17 +38,21 @@ references:
   issued:
     year: 2015
 - id: LIBMF
-  title: "LIBMF: A Matrix-factorization Library for Recommender Systems"
+  title: "LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems"
   author:
-  - family: Lin
-    given: Chih-Jen
-  - family: Juan
-    given: Yu-Chin
-  - family: Zhuang
-    given: Yong
   - family: Chin
     given: Wei-Sheng
-  URL: 'http://www.csie.ntu.edu.tw/~cjlin/libmf/'
+  - family: Yuan
+    given: Bo-Wen
+  - family: Yang
+    given: Meng-Yuan
+  - family: Zhuang
+    given: Yong
+  - family: Juan
+    given: Yu-Chin
+  - family: Lin
+    given: Chih-Jen
+  URL: 'https://www.csie.ntu.edu.tw/~cjlin/papers/libmf/libmf_open_source.pdf'
   issued:
     year: 2015
 ---
@@ -61,10 +65,10 @@ references:
 ## About recosystem Package
 
 `recosystem` is an R wrapper of the `LIBMF` library developed by
-Yu-Chin Juan, Yong Zhuang, Wei-Sheng Chin and Chih-Jen Lin
-(http://www.csie.ntu.edu.tw/~cjlin/libmf/),
-an open source library for recommender system using marix factorization.
-[@LIBMF]
+Yu-Chin Juan, Wei-Sheng Chin, Yong Zhuang, Bo-Wen Yuan, Meng-Yuan Yang,
+and Chih-Jen Lin (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
+an open source library for recommender system using parallel marix
+factorization. [@LIBMF]
 
 ## A Quick View of Recommender System
 
@@ -81,8 +85,8 @@ rating matrix based on observed values, as is shown in the table below:
 
 Each cell with number in it is the rating given by some user on a specific
 item, while those marked with question marks are unknown ratings that need
-to be predicted. In some other literatures, this problem may be given other
-names, e.g. collaborative filtering, matrix completion, matrix recovery, etc.
+to be predicted. In some other literatures, this problem may be named
+collaborative filtering, matrix completion, matrix recovery, etc.
 
 A popular technique to solve the recommender system problem is the matrix
 factorization method. The idea is to approximate the whole rating matrix
@@ -98,12 +102,12 @@ would be predicted as $p'_u q_v$.
 A typical solution for $P$ and $Q$ is given by the following optimization
 problem [@FPSG2015; @LRSG]:
 
-$$\min_{P,Q} \sum_{(u,v)\in R} \left((r_{u,v}-p'_u q_v)^2+\lambda_P ||p_u||^2+\lambda_Q ||q_v||^2\right)$$
+$$\min_{P,Q} \sum_{(u,v)\in R} \left[f(p_u,q_v;r_{u,v})+\mu_P||p_u||_1+\mu_Q||q_v||_1+\frac{\lambda_P}{2} ||p_u||_2^2+\frac{\lambda_Q}{2} ||q_v||_2^2\right]$$
 
 where $(u,v)$ are locations of observed entries in $R$, $r_{u,v}$ is
-the observed rating, and $\lambda_P,\lambda_Q$ are penalty parameters
-to avoid overfitting. Usually we take $\lambda_P$ and $\lambda_Q$ to be the same,
-i.e., equal to a common value $\lambda$.
+the observed rating, $f$ is the loss function, and
+$\mu_P,\mu_Q,\lambda_P,\lambda_Q$ are penalty parameters
+to avoid overfitting.
 
 ## Highlights of LIBMF and recosystem
 
@@ -179,25 +183,26 @@ into a file.
 
 Below is an example on some simulated data:
 
-```{r}
+```{r cache=TRUE}
 library(recosystem)
 set.seed(123) # This is a randomized algorithm
-trainset = system.file("dat", "smalltrain.txt", package = "recosystem")
-testset = system.file("dat", "smalltest.txt", package = "recosystem")
+train_set = data_file(system.file("dat", "smalltrain.txt", package = "recosystem"))
+test_set = data_file(system.file("dat", "smalltest.txt", package = "recosystem"))
 r = Reco()
-opts = r$tune(trainset, opts = list(dim = c(10, 20, 30), lrate = c(0.1, 0.2),
-                                    nthread = 1, niter = 10))
+opts = r$tune(train_set, opts = list(dim = c(10, 20, 30), lrate = c(0.1, 0.2),
+                                     costp_l1 = 0, costq_l1 = 0,
+                                     nthread = 1, niter = 10))
 opts
-r$train(trainset, opts = c(opts$min, nthread = 1, niter = 20))
-outfile = tempfile()
-r$predict(testset, outfile)
+r$train(train_set, opts = c(opts$min, nthread = 1, niter = 20))
 
-## Compare the first few true values of testing data
-## with predicted ones
-# True values
-print(read.table(testset, header = FALSE, sep = " ", nrows = 10)$V3)
-# Predicted values
-print(scan(outfile, n = 10))
+## Write predictions to file
+pred_file = tempfile()
+r$predict(test_set, out_file(pred_file))
+print(scan(pred_file, n = 10))
+
+## Or, directly return an R vector
+pred_rvec = r$predict(test_set, out_memory())
+head(pred_rvec, 10)
 ```
 
 Detailed help document for each function is available in topics
