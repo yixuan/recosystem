@@ -1,4 +1,4 @@
-library(rARPACK)
+library(RSpectra)
 library(Matrix)
 nuser = 1000
 nitem = 1000
@@ -19,7 +19,7 @@ dat = cbind(msp@i, msp@j, msp@x)
 ntrain = 10000
 ntest = 10000
 smalltrain = dat[sample(nrow(dat), ntrain), ]
-smalltest = dat[sample(nrow(dat), ntest), ]
+smalltest = dat[sample(nrow(dat), ntest), 1:2]
 write.table(smalltrain, "smalltrain.txt", sep = " ",
             col.names = FALSE, row.names = FALSE)
 write.table(smalltest, "smalltest.txt", sep = " ",
