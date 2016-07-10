@@ -92,10 +92,57 @@ public:
         return !ss.fail();
     }
 
-    void close()
+    void close() { in_file.close(); }
+};
+
+
+class DataMemoryReader: public DataReader
+{
+protected:
+    const mf_long len;
+    const int*    pen_userid;
+    const int*    pen_itemid;
+    const double* pen_rating;
+    const mf_int  ind_offset;
+
+public:
+    DataMemoryReader(Rcpp::IntegerVector user_ind,
+                     Rcpp::IntegerVector item_ind,
+                     Rcpp::NumericVector rating,
+                     bool index1 = false) :
+        len(user_ind.length()),
+        pen_userid(user_ind.begin()),
+        pen_itemid(item_ind.begin()),
+        pen_rating(rating.begin()),
+        ind_offset(index1)
     {
-        in_file.close();
+        // Test whether rating vector is valid
+        if(rating.length() != len)
+            throw std::logic_error("rating vector must have the same length as user index and item index");
     }
+
+    mf_long count() { return len; }
+
+    void open() {}
+
+    bool next(mf_int& u, mf_int& v, mf_float& r)
+    {
+        u = *pen_userid - ind_offset;
+        v = *pen_userid - ind_offset;
+        r = static_cast<mf_float>(*pen_rating);
+
+        bool failure = Rcpp::IntegerVector::is_na(*pen_userid) ||
+                       Rcpp::IntegerVector::is_na(*pen_itemid) ||
+                       Rcpp::NumericVector::is_na(*pen_rating);
+
+        pen_userid++;
+        pen_itemid++;
+        pen_rating++;
+
+        return !failure;
+    }
+
+    void close() {}
 };
 
 

@@ -7,18 +7,22 @@ DataReader* get_reader(SEXP data_source)
 {
     Rcpp::S4 ds(data_source);
     std::string type = Rcpp::as<std::string>(ds.slot("type"));
-    
+
     DataReader* res = nullptr;
-    
+
     if(type == "file")
     {
         std::string path = Rcpp::as<std::string>(ds.slot("source"));
         bool index1 = Rcpp::as<bool>(ds.slot("index1"));
         res = new DataFileReader(path, index1);
+    } else if(type == "memory") {
+        Rcpp::List lst = ds.slot("source");
+        bool index1 = Rcpp::as<bool>(ds.slot("index1"));
+        res = new DataMemoryReader(lst[0], lst[1], lst[2], index1);
     } else {
         Rcpp::stop("unsupported data source");
     }
-    
+
     return res;
 }
 
@@ -31,7 +35,7 @@ mf_problem read_data(DataReader* reader)
     prob.n = 0;
     prob.nnz = 0;
     prob.R = nullptr;
-    
+
     // Upper limit of nnz
     mf_long max_nnz = reader->count();
 

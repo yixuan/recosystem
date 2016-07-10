@@ -70,6 +70,8 @@ data_memory = function(user_index, item_index, rating = NULL, index1 = FALSE, ..
     user_index = as.integer(user_index)
     item_index = as.integer(item_index)
 
+    if(length(user_index) < 1)
+        stop("length of user_index must be greater than zero")
     if(length(user_index) != length(item_index))
         stop("user_index and item_index must have the same length")
     if(!is.null(rating) && length(rating) != length(user_index))
