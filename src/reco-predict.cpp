@@ -13,6 +13,7 @@
 
 using namespace mf;
 
+// Readers
 class TestDataFileReader: public DataFileReader
 {
 public:
@@ -33,6 +34,46 @@ public:
     }
 };
 
+class TestDataMemoryReader: public DataReader
+{
+protected:
+    const mf_long len;
+    const int*    pen_userid;
+    const int*    pen_itemid;
+    const mf_int  ind_offset;
+
+public:
+    TestDataMemoryReader(Rcpp::IntegerVector user_ind,
+                         Rcpp::IntegerVector item_ind,
+                         bool index1 = false) :
+        len(user_ind.length()),
+        pen_userid(user_ind.begin()),
+        pen_itemid(item_ind.begin()),
+        ind_offset(index1)
+    {}
+
+    mf_long count() { return len; }
+
+    void open() {}
+
+    bool next(mf_int& u, mf_int& v, mf_float& r)
+    {
+        u = *pen_userid - ind_offset;
+        v = *pen_itemid - ind_offset;
+
+        bool failure = Rcpp::IntegerVector::is_na(*pen_userid) ||
+                       Rcpp::IntegerVector::is_na(*pen_itemid);
+
+        pen_userid++;
+        pen_itemid++;
+
+        return !failure;
+    }
+
+    void close() {}
+};
+
+// Exporters
 class PredictionExporter
 {
 protected:
@@ -62,10 +103,10 @@ public:
 
     void process_value(const mf_float& val)
     {
-		if(std::isnan(val))
-			out_file << "NA" << std::endl;
-		else
-			out_file << val << std::endl;
+        if(std::isnan(val))
+            out_file << "NA" << std::endl;
+        else
+            out_file << val << std::endl;
     }
 };
 
@@ -81,7 +122,11 @@ public:
 
     void process_value(const mf_float& val)
     {
-        *pen = val;
+        if(std::isnan(val))
+            *pen = NA_REAL;
+        else
+            *pen = val;
+
         pen++;
     }
 };
@@ -107,36 +152,40 @@ BEGIN_RCPP
         std::string path = Rcpp::as<std::string>(test_data.slot("source"));
         bool index1 = Rcpp::as<bool>(test_data.slot("index1"));
         reader = new TestDataFileReader(path, index1);
+    } else if(type == "memory") {
+        Rcpp::List lst = test_data.slot("source");
+        bool index1 = Rcpp::as<bool>(test_data.slot("index1"));
+        reader = new TestDataMemoryReader(lst[0], lst[1], index1);
     } else {
         Rcpp::stop("unsupported data source");
     }
-	mf_long len = reader->count();
+    mf_long len = reader->count();
 
     // Exporter
     PredictionExporter* exporter = nullptr;
     Rcpp::S4 output(output_);
     type = Rcpp::as<std::string>(output.slot("type"));
-	Rcpp::NumericVector res((type == "memory") ? len : 0);
+    Rcpp::NumericVector res((type == "memory") ? len : 0);
     if(type == "file")
     {
         exporter = new PredictionExporterFile(Rcpp::as<std::string>(output.slot("dest")));
     } else if(type == "memory") {
         exporter = new PredictionExporterMemory(res.begin());
     } else if(type == "nothing") {
-		exporter = new PredictionExporterNothing();
+        exporter = new PredictionExporterNothing();
     } else {
         Rcpp::stop("unsupported output format");
     }
 
-	// Read model file
+    // Read model file
     std::string model_path = Rcpp::as<std::string>(model_path_);
     mf_model* model = mf_load_model(model_path.c_str());
     if(model == nullptr)
         Rcpp::stop("cannot load model from " + model_path);
-		
-	// Prediction
+
+    // Prediction
     mf_int u, v;
-	mf_float dummy;
+    mf_float dummy;
     reader->open();
     for(mf_long lino = 1; lino <= len; lino++)
     {
@@ -147,20 +196,20 @@ BEGIN_RCPP
             std::ostringstream message;
             message << "line " << lino << " of testing data is invalid, NA returned";
             Rcpp::warning(message.str());
-			exporter->process_value(std::numeric_limits<mf_float>::quiet_NaN());
+            exporter->process_value(std::numeric_limits<mf_float>::quiet_NaN());
             continue;
         }
-		
-		mf_float val = mf_predict(model, u, v);
-		exporter->process_value(val);
+
+        mf_float val = mf_predict(model, u, v);
+        exporter->process_value(val);
     }
-	reader->close();
+    reader->close();
 
     mf_destroy_model(&model);
-	delete exporter;
-	delete reader;
+    delete exporter;
+    delete reader;
 
-	if(res.length() == 0)  return R_NilValue;
+    if(res.length() == 0)  return R_NilValue;
     return res;
 
 END_RCPP
