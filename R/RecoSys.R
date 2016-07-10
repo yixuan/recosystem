@@ -56,7 +56,7 @@ Reco = function()
 #' @param r Object returned by \code{\link{Reco}}().
 #' @param train_data An object of class "DataSource" that describes the source
 #'                   of training data, typically returned by function
-#'                   \code{\link{data_file}()} or \code{\link{data_df}()}.
+#'                   \code{\link{data_file}()} or \code{\link{data_memory}()}.
 #' @param opts A number of candidate tuning parameter values and extra options in the
 #'             model tuning procedure. See section \strong{Parameters and Options}
 #'             for details.
@@ -209,7 +209,7 @@ RecoSys$methods(
 #' @param r Object returned by \code{\link{Reco}}().
 #' @param train_data An object of class "DataSource" that describes the source
 #'                   of training data, typically returned by function
-#'                   \code{\link{data_file}()} or \code{\link{data_df}()}.
+#'                   \code{\link{data_file}()} or \code{\link{data_memory}()}.
 #' @param out_model Path to the model file that will be created.
 #' @param opts A number of parameters and options for the model training.
 #'             See section \strong{Parameters and Options} for details.
@@ -291,6 +291,8 @@ RecoSys$methods(
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that exports the user score matrix \eqn{P} and the item score matrix \eqn{Q}.
+#' Previously this function was called \code{$output()}, and from version 0.4
+#' it was renamed to \code{$export()}.
 #' 
 #' Prior to calling this method, model needs to be trained using member function
 #' \code{$\link{train}()}.
@@ -301,6 +303,7 @@ RecoSys$methods(
 #' r$export(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
 #' 
 #' @name export
+#' @aliases output
 #' 
 #' @param r Object returned by \code{\link{Reco}()}.
 #' @param out_P An object of class \code{Output} that specifies the
@@ -413,7 +416,7 @@ $output() will be removed in the next version")
 #' @param r Object returned by \code{\link{Reco}()}.
 #' @param train_data An object of class "DataSource" that describes the source
 #'                   of testing data, typically returned by function
-#'                   \code{\link{data_file}()} or \code{\link{data_df}()}.
+#'                   \code{\link{data_file}()} or \code{\link{data_memory}()}.
 #' @param out_pred An object of class \code{Output} that specifies the
 #'                 output format of prediction, typically returned by function
 #'                 \code{\link{out_file}()}, \code{\link{out_memory}()} or
