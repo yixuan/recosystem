@@ -146,7 +146,7 @@ along a set of candidate values.
 3. Train the model by calling the `$train()` method. A number of parameters
 can be set inside the function, possibly coming from the result of `$tune()`.
 4. (Optionally) export the model, i.e. write the factorization matrices
-$P$ and $Q$ into files or return them as R objects.
+`P` and `Q` into files or return them as R objects.
 5. Use the `$predict()` method to compute predicted valeus.
 
 Below is an example on some simulated data:
