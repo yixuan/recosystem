@@ -6,9 +6,10 @@
     \item Update LIBMF to version 2.01.
     \item API change from LIBMF 2.01:
           \itemize{
-            \item The \code{cost} option in \code{$train()} is expanded to
-                  \code{costp_l1}, \code{costp_l2}, \code{costq_l1}, and
-                  \code{costq_l2}.
+            \item The \code{cost} option in \code{$train()} and \code{$tune()}
+                  has been expanded to and replaced by \code{costp_l1},
+                  \code{costp_l2}, \code{costq_l1}, and \code{costq_l2}, to
+                  allow for more flexibility of the model.
           }
     \item Other API change:
           \itemize{

@@ -226,7 +226,7 @@ Below is an example on some simulated data:
 library(recosystem)
 set.seed(123) # This is a randomized algorithm
 train_set = data_file(system.file("dat", "smalltrain.txt", package = "recosystem"))
-test_set = data_file(system.file("dat", "smalltest.txt", package = "recosystem"))
+test_set  = data_file(system.file("dat", "smalltest.txt",  package = "recosystem"))
 r = Reco()
 opts = r$tune(train_set, opts = list(dim = c(10, 20, 30), lrate = c(0.1, 0.2),
                                      costp_l1 = 0, costq_l1 = 0,
