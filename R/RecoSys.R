@@ -492,6 +492,9 @@ RecoSys$methods(
         if(out_pred@type == "file")
             cat(sprintf("prediction output generated at %s\n", out_pred@dest))
         
+        if(out_pred@type != "memory")
+            return(invisible(NULL))
+        
         return(res)
     }
 )
