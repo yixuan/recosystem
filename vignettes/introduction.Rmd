@@ -70,6 +70,23 @@ and Chih-Jen Lin (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
 an open source library for recommender system using parallel marix
 factorization. [@LIBMF]
 
+## Highlights of LIBMF and recosystem
+
+`LIBMF` is a high-performance C++ library for large scale matrix factorization
+in a single machine. `LIBMF` itself is a parallelized library, meaning that
+users can take advantage of multicore CPUs to speed up the computation.
+It also utilizes some advanced CPU features to further improve the performance.
+[@LIBMF]
+
+`recosystem` is a wrapper of `LIBMF`, hence it inherits most of the features
+of `LIBMF`, and additionally provides a number of user-friendly R functions to
+simplify data processing and model building. Also, unlike most other R packages
+for statistical modeling that store the whole dataset and model object in
+memory, `LIBMF` (and hence `recosystem`) can significantly reduce memory use,
+for instance the constructed model that contains information for prediction
+can be stored in the hard disk, and output result can also be directly
+written into a file rather than kept in memory.
+
 ## A Quick View of Recommender System
 
 The main task of recommender system is to predict unknown entries in the
@@ -109,22 +126,43 @@ the observed rating, $f$ is the loss function, and
 $\mu_P,\mu_Q,\lambda_P,\lambda_Q$ are penalty parameters
 to avoid overfitting.
 
-## Highlights of LIBMF and recosystem
+The process of solving the matrices $P$ and $Q$ is referred to as
+model training, and the selection of penalty parameters is called
+parameter tuning. In `recosystem`, we provide convenient functions for
+these two tasks, and additionally have functions for model exporting
+(extracting $P$ and $Q$ matrices) and prediction.
 
-`LIBMF` itself is a parallelized library, meaning that users can take
-advantage of multicore CPUs to speed up the computation. It also utilizes 
-some advanced CPU features to further improve the performance. [@LIBMF]
+## Data Input and Output
 
-`recosystem` is a wrapper of `LIBMF`, hence the features of `LIBMF`
-are all included in `recosystem`. Also, unlike most other R packages for
-statistical modeling which store the whole dataset and model object in memory,
-`LIBMF` (and hence `recosystem`) is much hard-disk-based, for instance
-the constructed model which contains information for prediction can be stored
-in the hard disk, and prediction result can also be directly written into a file
-rather than kept in memory. That is to say, `recosystem` will have a
-comparatively small memory usage.
+Each step in the recommender system involves data input and output, as the
+table below shows:
 
-## Data Format
+| Step             | Input             | Output                           |
+|------------------|-------------------|----------------------------------|
+| Model training   | Training data set | --                               |
+| Parameter tuning | Training data set | --                               |
+| Exporting model  | --                | User matrix $P$, item matrix $Q$ |
+| Prediction       | Testing data set  | Predicted values                 |
+
+Data may have different formats and types of storage, for example the input
+data set may be saved in a file or stored as R objects, and users may want
+the output results to be directly written into file or to be returned as R
+objects for further processing. In `recosystem`, we use two classes,
+`DataSource` and `Output`, to handle data input and output in a unified way.
+
+An object of class `DataSource` specifies the source of a data set (either
+training or testing), which can be created by the following two functions:
+
+- `data_file()`: Specifies a data set from a file in the hard disk
+- `data_memory()`: Specifies a data set from R objects
+
+And an object of class `Output` describes how the result should be output,
+typically returned by the functions below:
+
+- `out_file()`: Result should be saved to a file
+- `out_memory()`: Result should be returned as R objects
+- `out_nothing()`: Nothing should be output
+
 
 The data file for training set needs to be arranged in
 sparse matrix triplet form, i.e., each line in the file contains three
