@@ -7,10 +7,10 @@ RecoModel = setRefClass("RecoModel",
 RecoModel$methods(
     initialize = function()
     {
-        .self$path = ""
+        .self$path  = ""
         .self$nuser = 0L
         .self$nitem = 0L
-        .self$nfac = 0L
+        .self$nfac  = 0L
     }
 )
 
