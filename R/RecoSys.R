@@ -184,10 +184,19 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         opts_tune = expand.grid(opts_tune)
         
         ## Other options
-        opts_train = list(nfold = 5L, niter = 20L, nthread = 1L,
+        opts_train = list(loss = "l2", nfold = 5L, niter = 20L, nthread = 1L,
                           nmf = FALSE, verbose = FALSE)
         opts_common = intersect(names(opts_train), names(opts))
         opts_train[opts_common] = opts[opts_common]
+        
+        loss_fun = c("l2" = 0, "l1" = 1, "kl" = 2,
+                     "log" = 5, "squared_hinge" = 6, "hinge" = 7,
+                     "row_log" = 10, "col_log" = 11)
+        if(!(opts_train$loss %in% names(loss_fun)))
+            stop(paste("'loss' must be one of", paste(names(loss_fun), collapse = ", "), sep = "\n"))
+        if(opts_train$loss == "kl" && (!opts_train$nmf))
+            stop("nmf must be TRUE if loss == 'kl'")
+        opts_train$loss = as.integer(loss_fun[opts_train$loss])
         
         rmse = .Call("reco_tune", train_data, opts_tune, opts_train,
                      package = "recosystem")
@@ -299,7 +308,8 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         model_path = path.expand(out_model)
         
         ## Parse options
-        opts_train = list(dim = 10L,
+        opts_train = list(loss = "l2",
+                          dim = 10L,
                           costp_l1 = 0, costp_l2 = 0.1,
                           costq_l1 = 0, costq_l2 = 0.1,
                           lrate = 0.1,
@@ -308,6 +318,15 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         opts = as.list(opts)
         opts_common = intersect(names(opts), names(opts_train))
         opts_train[opts_common] = opts[opts_common]
+        
+        loss_fun = c("l2" = 0, "l1" = 1, "kl" = 2,
+                     "log" = 5, "squared_hinge" = 6, "hinge" = 7,
+                     "row_log" = 10, "col_log" = 11)
+        if(!(opts_train$loss %in% names(loss_fun)))
+            stop(paste("'loss' must be one of", paste(names(loss_fun), collapse = ", "), sep = "\n"))
+        if(opts_train$loss == "kl" && (!opts_train$nmf))
+            stop("nmf must be TRUE if loss == 'kl'")
+        opts_train$loss = as.integer(loss_fun[opts_train$loss])
         
         model_param = .Call("reco_train", train_data, model_path, opts_train,
                             package = "recosystem")

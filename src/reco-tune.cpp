@@ -29,6 +29,9 @@ TuneOption parse_tune_option(SEXP opts_)
 
     // k, lambda_* and eta are tuning parameters. They will be set in the main
     // program.
+    
+    // Loss function
+    option.param.fun = Rcpp::as<mf_int>(opts["loss"]);
 
     // Cross validation folds
     option.nr_folds = Rcpp::as<mf_int>(opts["nfold"]);
