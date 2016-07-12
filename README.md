@@ -6,6 +6,7 @@
 - The `cost` option in `$train()` and `$tune()` has been expanded to and replaced
   by `costp_l1`, `costp_l2`, `costq_l1`, and `costq_l2`, to allow for more
   flexibility of the model.
+- A new `loss` parameter in `$train()` and `$tune()` to specify loss function.
 - Data input and output are now managed in a unified way via functions
   `data_file()`, `data_memory()`, `out_file()`, `out_memory()`, and
   `out_nothing()`. See section **Data Input and Output** below.
