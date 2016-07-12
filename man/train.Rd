@@ -31,6 +31,7 @@ r$train(train_data, out_model = file.path(tempdir(), "model.txt"),
 The \code{opts} argument is a list that can supply any of the following parameters:
 
 \describe{
+\item{\code{loss}}{Character string, the loss function. Default is "l2", see below for details.}
 \item{\code{dim}}{Integer, the number of latent factors. Default is 10.}
 \item{\code{costp_l1}}{Numeric, L1 regularization parameter for user factors. Default is 0.}
 \item{\code{costp_l2}}{Numeric, L2 regularization parameter for user factors. Default is 0.1.}
@@ -45,6 +46,31 @@ The \code{opts} argument is a list that can supply any of the following paramete
                   Default is \code{FALSE}.}
 \item{\code{verbose}}{Logical, whether to show detailed information. Default is
                       \code{TRUE}.}
+}
+
+The \code{loss} option may take the following values:
+
+For real-valued matrix factorization,
+
+\describe{
+\item{\code{"l2"}}{Squared error (L2-norm)}
+\item{\code{"l1"}}{Absolute error (L1-norm)}
+\item{\code{"kl"}}{Generalized KL-divergence}
+}
+
+For binary matrix factorization,
+
+\describe{
+\item{\code{"log"}}{Logarithmic error}
+\item{\code{"squared_hinge"}}{Squared hinge loss}
+\item{\code{"hinge"}}{Hinge loss}
+}
+
+For one-class matrix factorization,
+
+\describe{
+\item{\code{"row_log"}}{Row-oriented pair-wise logarithmic loss}
+\item{\code{"col_log"}}{Column-oriented pair-wise logarithmic loss}
 }
 }
 \examples{
