@@ -101,7 +101,7 @@ public:
 
 
 
-RcppExport SEXP reco_export(SEXP model_path_, SEXP P_, SEXP Q_)
+RcppExport SEXP reco_output(SEXP model_path_, SEXP P_, SEXP Q_)
 {
 BEGIN_RCPP
     

@@ -9,7 +9,7 @@ Reco()
 \value{
 \code{Reco()} returns an object of class "\code{RecoSys}"
 equipped with methods
-\code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{export}()}
+\code{$\link{train}()}, \code{$\link{tune}()}, \code{$\link{output}()}
 and \code{$\link{predict}()}, which describe the typical process of
 building and tuning model, exporting factorization matrices, and
 predicting results. See their help documents for details.
@@ -35,7 +35,7 @@ LIBMF: A Library for Parallel Matrix Factorization in Shared-memory Systems.
 Technical report, 2015.
 }
 \seealso{
-\code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{export}()},
+\code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()},
 \code{$\link{predict}()}
 }
 \keyword{models}

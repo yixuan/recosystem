@@ -9,12 +9,12 @@ RecoSys = setRefClass("RecoSys",
 #' 
 #' @return \code{Reco()} returns an object of class "\code{RecoSys}"
 #' equipped with methods
-#' \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{export}()}
+#' \code{$\link{train}()}, \code{$\link{tune}()}, \code{$\link{output}()}
 #' and \code{$\link{predict}()}, which describe the typical process of
 #' building and tuning model, exporting factorization matrices, and
 #' predicting results. See their help documents for details.
 #' @author Yixuan Qiu <\url{http://statr.me}>
-#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{export}()},
+#' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()},
 #' \code{$\link{predict}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -377,8 +377,6 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' 
 #' @description This method is a member function of class "\code{RecoSys}"
 #' that exports the user score matrix \eqn{P} and the item score matrix \eqn{Q}.
-#' Previously this function was called \code{$output()}, and from version 0.4
-#' it was renamed to \code{$export()}.
 #' 
 #' Prior to calling this method, model needs to be trained using member function
 #' \code{$\link{train}()}.
@@ -386,10 +384,9 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' The common usage of this method is
 #' \preformatted{r = Reco()
 #' r$train(...)
-#' r$export(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
+#' r$output(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
 #' 
-#' @name export
-#' @aliases output
+#' @name output
 #' 
 #' @param r Object returned by \code{\link{Reco}()}.
 #' @param out_P An object of class \code{Output} that specifies the
@@ -400,7 +397,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #'              each row representing a user and each column representing a
 #'              latent factor.
 #'              \code{\link{out_memory}()} exports the matrix
-#'              into the return value of \code{$export()}.
+#'              into the return value of \code{$output()}.
 #'              \code{\link{out_nothing}()} means the matrix will not be exported.
 #' @param out_Q Ditto, but for the item matrix.
 #' 
@@ -417,15 +414,15 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' ## Write P and Q matrices to files
 #' P_file = out_file(tempfile())
 #' Q_file = out_file(tempfile())
-#' r$export(P_file, Q_file)
+#' r$output(P_file, Q_file)
 #' head(read.table(P_file@dest, header = FALSE, sep = " "))
 #' head(read.table(Q_file@dest, header = FALSE, sep = " "))
 #' 
 #' ## Skip P and only export Q
-#' r$export(out_nothing(), Q_file)
+#' r$output(out_nothing(), Q_file)
 #' 
 #' ## Return P and Q in memory
-#' res = r$export(out_memory(), out_memory())
+#' res = r$output(out_memory(), out_memory())
 #' head(res$P)
 #' head(res$Q)
 #'
@@ -445,7 +442,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 NULL
 
 RecoSys$methods(
-    export = function(out_P = out_file("mat_P.txt"), out_Q = out_file("mat_Q.txt"))
+    output = function(out_P = out_file("mat_P.txt"), out_Q = out_file("mat_Q.txt"))
     {
         ## Backward compatibility for version 0.3
         if(is.character(out_P))
@@ -469,7 +466,7 @@ use out_file(path) for argument 'out_Q' instead")
 [Call $train() method to train model]")
         }
         
-        res = .Call("reco_export", model_path, out_P, out_Q, PACKAGE = "recosystem")
+        res = .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
         P = NULL
         Q = NULL
         
@@ -484,15 +481,6 @@ use out_file(path) for argument 'out_Q' instead")
             Q = t(res$Qdata)
         
         return(list(P = P, Q = Q))
-    }
-)
-
-RecoSys$methods(
-    output = function(...)
-    {
-        warning("$output() has been renamed to $export() since version 0.4
-$output() will be removed in the next version")
-        .self$export(...)
     }
 )
 

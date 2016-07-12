@@ -130,7 +130,7 @@ The process of solving the matrices $P$ and $Q$ is referred to as
 model training, and the selection of penalty parameters is called
 parameter tuning. In `recosystem`, we provide convenient functions for
 these two tasks, and additionally have functions for model exporting
-(extracting $P$ and $Q$ matrices) and prediction.
+(outputing $P$ and $Q$ matrices) and prediction.
 
 ## Data Input and Output
 
@@ -216,7 +216,7 @@ The usage of `recosystem` is quite simple, mainly consisting of the following st
 along a set of candidate values.
 3. Train the model by calling the `$train()` method. A number of parameters
 can be set inside the function, possibly coming from the result of `$tune()`.
-4. (Optionally) export the model, i.e. write the factorization matrices
+4. (Optionally) export the model via `$output()`, i.e. write the factorization matrices
 $P$ and $Q$ into files or return them as R objects.
 5. Use the `$predict()` method to compute predicted valeus.
 

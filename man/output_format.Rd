@@ -18,12 +18,12 @@ out_nothing(...)
 }
 \value{
 An object of class "Output" as required by
-\code{$\link{export}()} and \code{$\link{predict}()}.
+\code{$\link{output}()} and \code{$\link{predict}()}.
 }
 \description{
 Functions in this page are used to specify the format of output results.
 They are intended to provide the argument of functions such as
-\code{$\link{export}()} and \code{$\link{predict}()}.
+\code{$\link{output}()} and \code{$\link{predict}()}.
 Currently there are three types of output: \code{out_file()} indicates
 that the result should be written into a file, \code{out_memory()} makes
 the result to be returned as R objects, and \code{out_nothing()} means
@@ -33,6 +33,6 @@ the result is not needed and will not be returned.
 Yixuan Qiu <\url{http://statr.me}>
 }
 \seealso{
-\code{$\link{export}()}, \code{$\link{predict}()}
+\code{$\link{output}()}, \code{$\link{predict}()}
 }
 

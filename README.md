@@ -6,7 +6,6 @@
 - The `cost` option in `$train()` and `$tune()` has been expanded to and replaced
   by `costp_l1`, `costp_l2`, `costq_l1`, and `costq_l2`, to allow for more
   flexibility of the model.
-- `$output()` has been renamed to `$export()`.
 - Data input and output are now managed in a unified way via functions
   `data_file()`, `data_memory()`, `out_file()`, `out_memory()`, and
   `out_nothing()`. See section **Data Input and Output** below.
@@ -145,7 +144,7 @@ The usage of `recosystem` is quite simple, mainly consisting of the following st
 along a set of candidate values.
 3. Train the model by calling the `$train()` method. A number of parameters
 can be set inside the function, possibly coming from the result of `$tune()`.
-4. (Optionally) export the model, i.e. write the factorization matrices
+4. (Optionally) export the model via `$output()`, i.e. write the factorization matrices
 `P` and `Q` into files or return them as R objects.
 5. Use the `$predict()` method to compute predicted valeus.
 

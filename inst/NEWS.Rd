@@ -13,7 +13,6 @@
           }
     \item Other API change:
           \itemize{
-            \item \code{$output()} has been renamed to \code{$export()}.
             \item Data input and output are now managed in a unified way
                   via functions \code{data_file()}, \code{data_memory()},
                   \code{out_file()}, \code{out_memory()},
