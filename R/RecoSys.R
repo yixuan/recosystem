@@ -150,6 +150,20 @@ RecoSys$methods(
                                             costq_l2 = c(0.01, 0.1),
                                             lrate    = c(0.01, 0.1)))
     {
+        ## Backward compatibility for version 0.3
+        if(is.character(train_data))
+        {
+            warning("API has changed since version 0.4
+use data_file(path) for argument 'train_data' instead")
+            train_data = data_file(train_data)
+        }
+        if("cost" %in% names(opts))
+            stop("the 'cost' parameter has been expanded to and replaced by
+costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
+        
+        if(!inherits(train_data, "DataSource") || !isS4(train_data))
+            stop("'train_data' should be an object of class 'DataSource'")
+        
         ## Tuning parameters: dim, costp_*, costq_*, lrate
         ## First set up default values
         opts_tune = list(dim      = c(10L, 20L),
@@ -268,6 +282,20 @@ RecoSys$methods(
     train = function(train_data, out_model = file.path(tempdir(), "model.txt"),
                      opts = list())
     {
+        ## Backward compatibility for version 0.3
+        if(is.character(train_data))
+        {
+            warning("API has changed since version 0.4
+use data_file(path) for argument 'train_data' instead")
+            train_data = data_file(train_data)
+        }
+        if("cost" %in% names(opts))
+            stop("the 'cost' parameter has been expanded to and replaced by
+costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
+        
+        if(!inherits(train_data, "DataSource") || !isS4(train_data))
+            stop("'train_data' should be an object of class 'DataSource'")
+        
         model_path = path.expand(out_model)
         
         ## Parse options
@@ -369,6 +397,20 @@ NULL
 RecoSys$methods(
     export = function(out_P = out_file("mat_P.txt"), out_Q = out_file("mat_Q.txt"))
     {
+        ## Backward compatibility for version 0.3
+        if(is.character(out_P))
+        {
+            warning("API has changed since version 0.4
+use out_file(path) for argument 'out_P' instead")
+            out_P = out_file(out_P)
+        }
+        if(is.character(out_Q))
+        {
+            warning("API has changed since version 0.4
+use out_file(path) for argument 'out_Q' instead")
+            out_Q = out_file(out_Q)
+        }
+        
         ## Check whether model has been trained
         model_path = .self$model$path
         if(!file.exists(model_path))
@@ -398,7 +440,7 @@ RecoSys$methods(
 RecoSys$methods(
     output = function(...)
     {
-        warning("$output() has been renamed to $export()
+        warning("$output() has been renamed to $export() since version 0.4
 $output() will be removed in the next version")
         .self$export(...)
     }
@@ -477,8 +519,25 @@ $output() will be removed in the next version")
 NULL
 
 RecoSys$methods(
-    predict = function(test_data, out_pred = file.path("predict.txt"))
+    predict = function(test_data, out_pred = out_file("predict.txt"))
     {
+        ## Backward compatibility for version 0.3
+        if(is.character(test_data))
+        {
+            warning("API has changed since version 0.4
+use data_file(path) for argument 'test_data' instead")
+            test_data = data_file(test_data)
+        }
+        if(is.character(out_pred))
+        {
+            warning("API has changed since version 0.4
+use out_file(path) for argument 'out_pred' instead")
+            out_pred = out_file(out_pred)
+        }
+        
+        if(!inherits(test_data, "DataSource") || !isS4(test_data))
+            stop("'test_data' should be an object of class 'DataSource'")
+        
         ## Check whether model has been trained
         model_path = .self$model$path
         if(!file.exists(model_path))
