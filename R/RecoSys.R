@@ -103,6 +103,9 @@ Reco = function()
 #'                     of as the step size in gradient descent.
 #'                     Can be specified as a numeric vector, with default value
 #'                     \code{c(0.01, 0.1)}.}
+#' \item{\code{loss}}{Character string, the loss function. Default is "l2", see
+#'                    section \strong{Parameters and Options} in \code{$\link{train}()}
+#'                    for details.}
 #' \item{\code{nfold}}{Integer, the number of folds in cross validation. Default is 5.}
 #' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 #' \item{\code{nthread}}{Integer, the number of threads for parallel
@@ -241,6 +244,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' The \code{opts} argument is a list that can supply any of the following parameters:
 #'
 #' \describe{
+#' \item{\code{loss}}{Character string, the loss function. Default is "l2", see below for details.}
 #' \item{\code{dim}}{Integer, the number of latent factors. Default is 10.}
 #' \item{\code{costp_l1}}{Numeric, L1 regularization parameter for user factors. Default is 0.}
 #' \item{\code{costp_l2}}{Numeric, L2 regularization parameter for user factors. Default is 0.1.}
@@ -255,6 +259,31 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #'                   Default is \code{FALSE}.}
 #' \item{\code{verbose}}{Logical, whether to show detailed information. Default is
 #'                       \code{TRUE}.}
+#' }
+#' 
+#' The \code{loss} option may take the following values:
+#' 
+#' For real-valued matrix factorization,
+#' 
+#' \describe{
+#' \item{\code{"l2"}}{Squared error (L2-norm)}
+#' \item{\code{"l1"}}{Absolute error (L1-norm)}
+#' \item{\code{"kl"}}{Generalized KL-divergence}
+#' }
+#' 
+#' For binary matrix factorization,
+#'
+#' \describe{
+#' \item{\code{"log"}}{Logarithmic error}
+#' \item{\code{"squared_hinge"}}{Squared hinge loss}
+#' \item{\code{"hinge"}}{Hinge loss}
+#' }
+#' 
+#' For one-class matrix factorization,
+#' 
+#' \describe{
+#' \item{\code{"row_log"}}{Row-oriented pair-wise logarithmic loss}
+#' \item{\code{"col_log"}}{Column-oriented pair-wise logarithmic loss}
 #' }
 #' 
 #' @examples ## Training model from a data file
