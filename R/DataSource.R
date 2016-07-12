@@ -23,6 +23,11 @@ setClass("DataSource",
 #' The \file{smalltrain.txt} file in the \file{dat} directory of this package
 #' shows an example of training data file.
 #' 
+#' From version 0.4 \pkg{recosystem} supports two special types of matrix
+#' factorization: the binary matrix factorization (BMF), and the one-class
+#' matrix factorization (OCMF). BMF requires ratings to take value from
+#' \eqn{{-1, 1}}, and OCMF requires all the ratings to be positive.
+#' 
 #' If user index, item index, and ratings are stored as R vectors in memory,
 #' they can be passed to \code{data_memory()} to form the training data source.
 #' 

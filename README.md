@@ -120,6 +120,10 @@ in the beginning of this article may look like
 ...
 ```
 
+From version 0.4 `recosystem` supports two special types of matrix factorization:
+the binary matrix factorization (BMF), and the one-class matrix factorization (OCMF).
+BMF requires ratings to take value from `{-1, 1}`, and OCMF requires all the ratings to be positive.
+
 Testing data file is similar to training data, but since the ratings in
 testing data are usually unknown, the `rating` entry in testing data file
 can be omitted, or can be replaced by any placeholder such as `0` or `?`.
