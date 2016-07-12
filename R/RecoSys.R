@@ -1,5 +1,6 @@
 RecoSys = setRefClass("RecoSys",
-                      fields = list(model = "RecoModel"))
+                      fields = list(model      = "RecoModel",
+                                    train_pars = "list"))
 
 #' Constructing a Recommender System Object
 #' 
@@ -364,6 +365,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         .self$model$nuser = model_param$nuser
         .self$model$nitem = model_param$nitem
         .self$model$nfac  = model_param$nfac
+        .self$train_pars  = opts_train
         
         invisible(.self)
     }
@@ -611,6 +613,34 @@ RecoSys$methods(
     {
         cat("[=== Fitted Model ===]\n\n")
         .self$model$show()
+        
+        cat("\n\n[=== Training Options ===]\n\n")
+        catl = function(key, val, ...)
+            cat(sprintf("%-20s = %s\n", key, val), ..., sep = "")
+        
+        loss = .self$train_pars$loss
+        loss_fun_name = if(is.null(loss)) character(0) else switch(as.character(loss),
+            "0" = "Squared error (L2-norm)",
+            "1" = "Absolute error (L1-norm)",
+            "2" = "Generalized KL-divergence",
+            "5" = "Logarithmic error",
+            "6" = "Squared hinge loss",
+            "7" = "Hinge loss",
+            "10" = "Row-oriented pair-wise logarithmic loss",
+            "11" = "Column-oriented pair-wise logarithmic loss",
+            "Unknown"
+        )
+        
+        catl("Loss function",        loss_fun_name)
+        catl("L1 penalty for P",     .self$train_pars$costp_l1)
+        catl("L2 penalty for P",     .self$train_pars$costp_l2)
+        catl("L1 penalty for Q",     .self$train_pars$costq_l1)
+        catl("L2 penalty for Q",     .self$train_pars$costq_l2)
+        catl("Learning rate",        .self$train_pars$lrate)
+        catl("NMF",                  .self$train_pars$nmf)
+        catl("Number of iterations", .self$train_pars$niter)
+        catl("Number of threads",    .self$train_pars$nthread)
+        catl("Verbose",              .self$train_pars$verbose)
         
         invisible(.self)
     }

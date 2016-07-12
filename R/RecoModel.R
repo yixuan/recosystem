@@ -1,8 +1,8 @@
 RecoModel = setRefClass("RecoModel",
-                        fields = list(path = "character",
+                        fields = list(path  = "character",
                                       nuser = "integer",
                                       nitem = "integer",
-                                      nfac = "integer"))
+                                      nfac  = "integer"))
 
 RecoModel$methods(
     initialize = function()
@@ -17,9 +17,12 @@ RecoModel$methods(
 RecoModel$methods(
     show = function()
     {
-        cat("Path to model file  =", ' "', .self$path, '"\n', sep = "")
-        cat("Number of users     =", .self$nuser, "\n")
-        cat("Number of items     =", .self$nitem, "\n")
-        cat("Number of factors   =", .self$nfac, "\n")
+        catl = function(key, val, ...)
+            cat(sprintf("%-20s = %s\n", key, val), ..., sep = "")
+        
+        catl("Path to model file", .self$path)
+        catl("Number of users",    .self$nuser)
+        catl("Number of items",    .self$nitem)
+        catl("Number of factors",  .self$nfac)
     }
 )
