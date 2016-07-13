@@ -21,7 +21,7 @@
                   and \code{out_nothing()}. See \code{?data_source} and
                   \code{?output_format} for more information.
             \item As a result, a number of arguments in functions
-                  \code{$tune()}, \code{$train()}, \code{$export()},
+                  \code{$tune()}, \code{$train()}, \code{$output()},
                   and \code{$predict()} now should be objects returned by these
                   input/output functions.
           }

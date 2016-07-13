@@ -250,7 +250,7 @@ head(pred_rvec, 10)
 
 Detailed help document for each function is available in topics
 `?recosystem::Reco`, `?recosystem::tune`, `?recosystem::train`,
-`?recosystem::export` and `?recosystem::predict`.
+`?recosystem::output` and `?recosystem::predict`.
 
 ## Performance Improvement with Extra Installation Options
 

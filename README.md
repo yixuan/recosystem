@@ -11,7 +11,7 @@
   `data_file()`, `data_memory()`, `out_file()`, `out_memory()`, and
   `out_nothing()`. See section **Data Input and Output** below.
 - As a result, a number of arguments in functions `$tune()`, `$train()`,
-  `$export()`, and `$predict()` now should be objects returned by these
+  `$output()`, and `$predict()` now should be objects returned by these
   input/output functions.
 
 ## Recommender System with the recosystem Package
@@ -261,7 +261,7 @@ head(pred_rvec, 10)
 
 Detailed help document for each function is available in topics
 `?recosystem::Reco`, `?recosystem::tune`, `?recosystem::train`,
-`?recosystem::export` and `?recosystem::predict`.
+`?recosystem::output` and `?recosystem::predict`.
 
 ### Performance Improvement with Extra Installation Options
 
