@@ -3081,7 +3081,8 @@ try
 }
 catch(exception const &e)
 {
-    cerr << e.what() << endl;
+    // cerr << e.what() << endl;
+    Rcpp::stop(e.what());
     throw;
 }
     return model;
@@ -3152,7 +3153,8 @@ try
 }
 catch(exception const &e)
 {
-    cerr << e.what() << endl;
+    // cerr << e.what() << endl;
+    Rcpp::stop(e.what());
     throw;
 }
     return model;
@@ -3169,32 +3171,37 @@ bool check_parameter(mf_parameter param)
        param.fun != P_ROW_BPR_MFOC &&
        param.fun != P_COL_BPR_MFOC)
     {
-        cerr << "unknown loss function" << endl;
+        // cerr << "unknown loss function" << endl;
+        Rcpp::stop("unknown loss function");
         return false;
     }
 
     if(param.k < 1)
     {
-        cerr << "number of factors must be greater than zero" << endl;
+        // cerr << "number of factors must be greater than zero" << endl;
+        Rcpp::stop("number of factors must be greater than zero");
         return false;
     }
 
     if(param.nr_threads < 1)
     {
-        cerr << "number of threads must be greater than zero" << endl;
+        // cerr << "number of threads must be greater than zero" << endl;
+        Rcpp::stop("number of threads must be greater than zero");
         return false;
     }
 
     if(param.nr_bins < 1 || param.nr_bins < param.nr_threads)
     {
-        cerr << "number of bins must be greater than number of threads"
-             << endl;
+        // cerr << "number of bins must be greater than number of threads"
+        //      << endl;
+        Rcpp::stop("number of bins must be greater than number of threads");
         return false;
     }
 
     if(param.nr_iters < 1)
     {
-        cerr << "number of iterations must be greater than zero" << endl;
+        // cerr << "number of iterations must be greater than zero" << endl;
+        Rcpp::stop("number of iterations must be greater than zero");
         return false;
     }
 
@@ -3203,27 +3210,32 @@ bool check_parameter(mf_parameter param)
        param.lambda_q1 < 0 ||
        param.lambda_q2 < 0)
     {
-        cerr << "regularization coefficient must be non-negative" << endl;
+        // cerr << "regularization coefficient must be non-negative" << endl;
+        Rcpp::stop("regularization coefficient must be non-negative");
         return false;
     }
 
     if(param.eta <= 0)
     {
-        cerr << "learning rate must be greater than zero" << endl;
+        // cerr << "learning rate must be greater than zero" << endl;
+        Rcpp::stop("learning rate must be greater than zero");
         return false;
     }
 
     if(param.fun == P_KL_MFR && !param.do_nmf)
     {
-        cerr << "--nmf must be set when using generalized KL-divergence"
-             << endl;
+        // cerr << "--nmf must be set when using generalized KL-divergence"
+        //      << endl;
+        Rcpp::stop("--nmf must be set when using generalized KL-divergence");
         return false;
     }
 
     if(param.nr_bins <= 2*param.nr_threads)
     {
-        cerr << "Warning: insufficient blocks may slow down the training"
-             << "process (4*nr_threads^2+1 blocks is suggested)" << endl;
+        // cerr << "Warning: insufficient blocks may slow down the training"
+        //      << "process (4*nr_threads^2+1 blocks is suggested)" << endl;
+        Rcpp::warning("insufficient blocks may slow down the training"
+                      "process (4*nr_threads^2+1 blocks is suggested)");
     }
 
     return true;
