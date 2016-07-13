@@ -23,6 +23,8 @@ data_memory(user_index, item_index, rating = NULL, index1 = FALSE, ...)
 \item{rating}{A numeric vector of the observed entries in the rating matrix.
 Can be specified as \code{NULL} for testing data, in which case
 it is ignored.}
+
+\item{\dots}{Currently unused.}
 }
 \value{
 An object of class "DataSource" as required by

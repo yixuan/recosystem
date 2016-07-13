@@ -14,6 +14,7 @@ setClass("Output",
 #' the result is not needed and will not be returned.
 #' 
 #' @param path Path to the output file.
+#' @param \dots Currently unused.
 #' @return An object of class "Output" as required by
 #' \code{$\link{output}()} and \code{$\link{predict}()}.
 #' 

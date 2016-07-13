@@ -10,7 +10,7 @@
                   has been expanded to and replaced by \code{costp_l1},
                   \code{costp_l2}, \code{costq_l1}, and \code{costq_l2}, to
                   allow for more flexibility of the model.
-            \item Added a \code{loss} parameter in \code{$train()} and
+            \item A new \code{loss} parameter in \code{$train()} and
                   \code{$tune()} to specify loss function.
           }
     \item Other API change:

@@ -1019,8 +1019,12 @@ mf_model* Utility::init_model(mf_int fun,
     }
     catch(bad_alloc const &e)
     {
-        cerr << e.what() << endl;
+        // cerr << e.what() << endl;
+        // mf_destroy_model(&model);
+        // throw;
+        
         mf_destroy_model(&model);
+        Rcpp::stop(e.what());
         throw;
     }
 
@@ -3544,8 +3548,12 @@ mf_model* mf_load_model(char const *path)
     }
     catch(bad_alloc const &e)
     {
-        cerr << e.what() << endl;
+        // cerr << e.what() << endl;
+        // mf_destroy_model(&model);
+        // return nullptr;
+        
         mf_destroy_model(&model);
+        Rcpp::stop(e.what());
         return nullptr;
     }
 

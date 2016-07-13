@@ -48,6 +48,7 @@ setClass("DataSource",
 #'               it is ignored.
 #' @param index1 Whether the user indices and item indices start with 1
 #'               (\code{index1 = TRUE}) or 0 (\code{index1 = FALSE}).
+#' @param \dots Currently unused.
 #' @return An object of class "DataSource" as required by
 #' \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
 #' 
@@ -87,9 +88,4 @@ data_memory = function(user_index, item_index, rating = NULL, index1 = FALSE, ..
     
     new("DataSource", source = list(user_index, item_index, rating),
                       index1 = index1, type = "memory")
-}
-
-data_rmm = function(rmm, ...)
-{
-    
 }

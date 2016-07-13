@@ -15,6 +15,8 @@ out_nothing(...)
 }
 \arguments{
 \item{path}{Path to the output file.}
+
+\item{\dots}{Currently unused.}
 }
 \value{
 An object of class "Output" as required by
