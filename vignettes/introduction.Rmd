@@ -222,7 +222,7 @@ along a set of candidate values.
 can be set inside the function, possibly coming from the result of `$tune()`.
 4. (Optionally) export the model via `$output()`, i.e. write the factorization matrices
 $P$ and $Q$ into files or return them as R objects.
-5. Use the `$predict()` method to compute predicted valeus.
+5. Use the `$predict()` method to compute predicted values.
 
 Below is an example on some simulated data:
 

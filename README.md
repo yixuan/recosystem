@@ -21,7 +21,7 @@
 `recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Wei-Sheng Chin, Yong Zhuang, Bo-Wen Yuan, Meng-Yuan Yang,
 and Chih-Jen Lin (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
-an open source library for recommender system using parallel marix
+an open source library for recommender system using parallel matrix
 factorization.
 
 ### Highlights of LIBMF and recosystem
@@ -151,7 +151,7 @@ along a set of candidate values.
 can be set inside the function, possibly coming from the result of `$tune()`.
 4. (Optionally) export the model via `$output()`, i.e. write the factorization matrices
 `P` and `Q` into files or return them as R objects.
-5. Use the `$predict()` method to compute predicted valeus.
+5. Use the `$predict()` method to compute predicted values.
 
 Below is an example on some simulated data:
 
