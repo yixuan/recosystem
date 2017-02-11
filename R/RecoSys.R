@@ -65,12 +65,12 @@ Reco = function()
 #' @return A list with two components:
 #' 
 #' \describe{
-#'   \item{\code{min}}{Parameter values with minimum cross validation RMSE. This
-#'                     is a list that can be passed to the \code{opts} argument
-#'                     in \code{$\link{train}()}.}
+#'   \item{\code{min}}{Parameter values with minimum cross validated loss.
+#'                     This is a list that can be passed to the
+#'                     \code{opts} argument in \code{$\link{train}()}.}
 #'   \item{\code{res}}{A data frame giving the supplied candidate
 #'                     values of tuning parameters, and one column showing the
-#'                     RMSE associated with each combination.}
+#'                     loss function value associated with each combination.}
 #' }
 #'             
 #' @section Parameters and Options:
@@ -202,15 +202,15 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
             stop("nmf must be TRUE if loss == 'kl'")
         opts_train$loss = as.integer(loss_fun[opts_train$loss])
         
-        rmse = .Call("reco_tune", train_data, opts_tune, opts_train,
-                     package = "recosystem")
+        loss_fun = .Call("reco_tune", train_data, opts_tune, opts_train,
+                         package = "recosystem")
         
-        opts_tune$rmse = rmse
+        opts_tune$loss_fun = loss_fun
         opts_tune = na.omit(opts_tune)
         if(!nrow(opts_tune))
             stop("results are all NA/NaN")
 
-        tune_min = as.list(opts_tune[which.min(rmse), ])
+        tune_min = as.list(opts_tune[which.min(loss_fun), ])
         attr(tune_min, "out.attrs") = NULL
         
         return(list(min = tune_min, res = opts_tune))
