@@ -1,11 +1,11 @@
 ---
 title: "recosystem: Recommender System Using Parallel Matrix Factorization"
 author: "Yixuan Qiu"
-date: "07/10/2016"
+date: "`r Sys.Date()`"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{recosystem: Recommender System Using Parallel Matrix Factorization}
-output: knitr:::html_vignette
+output: prettydoc:::html_pretty
 references:
 - id: FPSG2015
   title: A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems
