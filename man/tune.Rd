@@ -18,12 +18,12 @@ for details.}
 A list with two components:
 
 \describe{
-  \item{\code{min}}{Parameter values with minimum cross validation RMSE. This
-                    is a list that can be passed to the \code{opts} argument
-                    in \code{$\link{train}()}.}
+  \item{\code{min}}{Parameter values with minimum cross validated loss.
+                    This is a list that can be passed to the
+                    \code{opts} argument in \code{$\link{train}()}.}
   \item{\code{res}}{A data frame giving the supplied candidate
                     values of tuning parameters, and one column showing the
-                    RMSE associated with each combination.}
+                    loss function value associated with each combination.}
 }
 }
 \description{
