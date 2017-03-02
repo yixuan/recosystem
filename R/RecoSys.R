@@ -203,7 +203,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         opts_train$loss = as.integer(loss_fun[opts_train$loss])
         
         loss_fun = .Call("reco_tune", train_data, opts_tune, opts_train,
-                         package = "recosystem")
+                         PACKAGE = "recosystem")
         
         opts_tune$loss_fun = loss_fun
         opts_tune = na.omit(opts_tune)
@@ -359,7 +359,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         opts_train$loss = as.integer(loss_fun[opts_train$loss])
         
         model_param = .Call("reco_train", train_data, model_path, opts_train,
-                            package = "recosystem")
+                            PACKAGE = "recosystem")
         
         .self$model$path  = model_path
         .self$model$nuser = model_param$nuser
