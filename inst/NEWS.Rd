@@ -7,6 +7,7 @@
           \code{$tune()}.
     \item Also updated the documentation accordingly.
     \item Fixed the wrong parameter name in \code{.Call()}, thanks to Kurt Hornik.
+    \item Now using the \pkg{prettydoc} package to format vignettes.
   }
 }
 
