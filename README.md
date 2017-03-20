@@ -187,12 +187,12 @@ $min$costq_l2
 $min$lrate
 [1] 0.1
 
-$min$rmse
+$min$loss_fun
 [1] 0.9804937
 
 
 $res
-   dim costp_l1 costp_l2 costq_l1 costq_l2 lrate      rmse
+   dim costp_l1 costp_l2 costq_l1 costq_l2 lrate  loss_fun
 1   10        0     0.01        0     0.01   0.1 0.9996368
 2   20        0     0.01        0     0.01   0.1 1.0040111
 3   30        0     0.01        0     0.01   0.1 0.9967101
