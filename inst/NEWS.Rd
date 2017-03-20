@@ -1,11 +1,12 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
-\section{Changes in recosystem version 0.4.x}{
+\section{Changes in recosystem version 0.4.1}{
   \itemize{
     \item Fixed the misleading column name "rmse" in the return value of
           \code{$tune()}.
     \item Also updated the documentation accordingly.
+    \item Fixed the wrong parameter name in \code{.Call()}, thanks to Kurt Hornik.
   }
 }
 
