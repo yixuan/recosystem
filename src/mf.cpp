@@ -378,7 +378,7 @@ void Block::tie_to(mf_node *first_, mf_node *last_)
 {
     first = first_;
     last = last_;
-};
+}
 
 class BlockOnDisk : public BlockBase
 {
