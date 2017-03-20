@@ -2,7 +2,7 @@ Package: recosystem
 Type: Package
 Title: Recommender System using Matrix Factorization
 Version: 0.4.1
-Date: 2017-02-11
+Date: 2017-03-20
 Author: Yixuan Qiu, Chih-Jen Lin, Yu-Chin Juan, Wei-Sheng Chin,
     Yong Zhuang, Bo-Wen Yuan, Meng-Yuan Yang, and other
     contributors. See file AUTHORS for details.
