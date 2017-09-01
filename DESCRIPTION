@@ -27,6 +27,6 @@ Imports:
     Rcpp (>= 0.11.0)
 Suggests:
     knitr, prettydoc
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppProgress
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1

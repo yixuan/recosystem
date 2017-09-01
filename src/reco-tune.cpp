@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include <progress.hpp>
 #include <Rcpp.h>
 
 #include "mf.h"
@@ -72,6 +73,7 @@ RcppExport SEXP reco_tune(SEXP train_data_, SEXP opts_tune_, SEXP opts_other_)
 BEGIN_RCPP
 
     Rcpp::DataFrame opts_tune(opts_tune_);
+    Rcpp::List opts_other(opts_other_);
     Rcpp::IntegerVector tune_dim       = opts_tune["dim"];
     Rcpp::NumericVector tune_costp_l1  = opts_tune["costp_l1"];
     Rcpp::NumericVector tune_costp_l2  = opts_tune["costp_l2"];
@@ -80,6 +82,8 @@ BEGIN_RCPP
     Rcpp::NumericVector tune_lrate     = opts_tune["lrate"];
     mf_long n = tune_dim.length();
     Rcpp::NumericVector rmse(n);
+    bool show_progress = Rcpp::as<bool>(opts_other["progress"]);
+    Progress progress(n, show_progress);
 
     TuneOption option = parse_tune_option(opts_other_);
 
@@ -88,6 +92,7 @@ BEGIN_RCPP
 
     for(mf_long i = 0; i < n; i++)
     {
+        progress.increment();
         if(!option.param.quiet)
         {
             Rcpp::Rcout << "============================"   << std::endl;
