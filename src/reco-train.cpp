@@ -49,6 +49,11 @@ mf_parameter parse_train_option(SEXP opts_)
     if(param.nr_threads <= 0)
         throw std::invalid_argument("number of threads should be greater than zero");
 
+    // Number of bins
+    param.nr_bins = Rcpp::as<mf_int>(opts["nbin"]);
+    if(param.nr_bins <= 0 || param.nr_bins <= param.nr_threads)
+        throw std::invalid_argument("number of bins should be greater than number of threads");
+    
     // Whether to perform NMF or not
     param.do_nmf = Rcpp::as<bool>(opts["nmf"]);
 

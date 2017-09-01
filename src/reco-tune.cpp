@@ -48,6 +48,11 @@ TuneOption parse_tune_option(SEXP opts_)
     if(option.param.nr_threads <= 0)
         throw std::invalid_argument("number of threads should be greater than zero");
 
+    // Number of bins
+    option.param.nr_bins = Rcpp::as<mf_int>(opts["nbin"]);
+    if(option.param.nr_bins <= 0 || option.param.nr_bins <= option.param.nr_threads)
+        throw std::invalid_argument("number of bins should be greater than number of threads");
+    
     // Whether to perform NMF or not
     option.param.do_nmf = Rcpp::as<bool>(opts["nmf"]);
 

@@ -111,6 +111,8 @@ Reco = function()
 #' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 #' \item{\code{nthread}}{Integer, the number of threads for parallel
 #'                       computing. Default is 1.}
+#' \item{\code{nbin}}{Integer, the number of bins. Must be greater than \code{nthread}.
+#'                    Default is 20.}
 #' \item{\code{nmf}}{Logical, whether to perform non-negative matrix factorization.
 #'                   Default is \code{FALSE}.}
 #' \item{\code{verbose}}{Logical, whether to show detailed information. Default is
@@ -189,7 +191,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         
         ## Other options
         opts_train = list(loss = "l2", nfold = 5L, niter = 20L, nthread = 1L,
-                          nmf = FALSE, verbose = FALSE)
+                          nbin = 20L, nmf = FALSE, verbose = FALSE)
         opts_common = intersect(names(opts_train), names(opts))
         opts_train[opts_common] = opts[opts_common]
         
@@ -256,6 +258,8 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 #' \item{\code{nthread}}{Integer, the number of threads for parallel
 #'                       computing. Default is 1.}
+#' \item{\code{nbin}}{Integer, the number of bins. Must be greater than \code{nthread}.
+#'                    Default is 20.}
 #' \item{\code{nmf}}{Logical, whether to perform non-negative matrix factorization.
 #'                   Default is \code{FALSE}.}
 #' \item{\code{verbose}}{Logical, whether to show detailed information. Default is
@@ -343,7 +347,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
                           costp_l1 = 0, costp_l2 = 0.1,
                           costq_l1 = 0, costq_l2 = 0.1,
                           lrate = 0.1,
-                          niter = 20L, nthread = 1L,
+                          niter = 20L, nthread = 1L, nbin = 20L,
                           nmf = FALSE, verbose = TRUE)
         opts = as.list(opts)
         opts_common = intersect(names(opts), names(opts_train))
