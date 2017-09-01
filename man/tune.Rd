@@ -85,6 +85,7 @@ See below for the list of available parameters and options:
                   Default is \code{FALSE}.}
 \item{\code{verbose}}{Logical, whether to show detailed information. Default is
                       \code{FALSE}.}
+\item{\code{progress}}{Logical, whether to show a progress bar. Default is \code{TRUE}.}
 }
 }
 

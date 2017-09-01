@@ -117,6 +117,7 @@ Reco = function()
 #'                   Default is \code{FALSE}.}
 #' \item{\code{verbose}}{Logical, whether to show detailed information. Default is
 #'                       \code{FALSE}.}
+#' \item{\code{progress}}{Logical, whether to show a progress bar. Default is \code{TRUE}.}
 #' }
 #' 
 #' @examples \dontrun{
@@ -191,7 +192,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         
         ## Other options
         opts_train = list(loss = "l2", nfold = 5L, niter = 20L, nthread = 1L,
-                          nbin = 20L, nmf = FALSE, verbose = FALSE)
+                          nbin = 20L, nmf = FALSE, verbose = FALSE, progress = TRUE)
         opts_common = intersect(names(opts_train), names(opts))
         opts_train[opts_common] = opts[opts_common]
         

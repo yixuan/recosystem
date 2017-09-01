@@ -6,6 +6,10 @@
     \item Added the missing "\code{nbin}" parameter in \code{$train()} and
           \code{$tune()}. (\href{https://github.com/yixuan/recosystem/issues/6}{#6},
           reported by \href{https://github.com/Tutuchan}{@Tutuchan})
+    \item Added a progress bar for model tuning, controlled by the "\code{progress}"
+          parameter in \code{$tune()}.
+          (\href{https://github.com/yixuan/recosystem/issues/5}{#5},
+          suggested by \href{https://github.com/talegari}{@talegari})
   }
 }
 
