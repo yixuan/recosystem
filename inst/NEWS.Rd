@@ -1,6 +1,14 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.4.2}{
+  \itemize{
+    \item Added the missing "\code{nbin}" parameter in \code{$train()} and
+          \code{$tune()}. (\href{https://github.com/yixuan/recosystem/issues/6}{#6},
+          reported by \href{https://github.com/Tutuchan}{@Tutuchan})
+  }
+}
+
 \section{Changes in recosystem version 0.4.1}{
   \itemize{
     \item Fixed the misleading column name "rmse" in the return value of
