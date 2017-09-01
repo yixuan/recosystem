@@ -58,9 +58,6 @@ head(res$P)
 head(res$Q)
 
 }
-\author{
-Yixuan Qiu <\url{http://statr.me}>
-}
 \references{
 W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -77,4 +74,6 @@ Technical report, 2015.
 \seealso{
 \code{$\link{train}()}, \code{$\link{predict}()}
 }
-
+\author{
+Yixuan Qiu <\url{http://statr.me}>
+}

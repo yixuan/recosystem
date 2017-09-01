@@ -79,12 +79,15 @@ See below for the list of available parameters and options:
 \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 \item{\code{nthread}}{Integer, the number of threads for parallel
                       computing. Default is 1.}
+\item{\code{nbin}}{Integer, the number of bins. Must be greater than \code{nthread}.
+                   Default is 20.}
 \item{\code{nmf}}{Logical, whether to perform non-negative matrix factorization.
                   Default is \code{FALSE}.}
 \item{\code{verbose}}{Logical, whether to show detailed information. Default is
                       \code{FALSE}.}
 }
 }
+
 \examples{
 \dontrun{
 train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
@@ -100,9 +103,6 @@ res = r$tune(
 r$train(train_src, opts = res$min)
 }
 
-}
-\author{
-Yixuan Qiu <\url{http://statr.me}>
 }
 \references{
 W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
@@ -120,4 +120,6 @@ Technical report, 2015.
 \seealso{
 \code{$\link{train}()}
 }
-
+\author{
+Yixuan Qiu <\url{http://statr.me}>
+}

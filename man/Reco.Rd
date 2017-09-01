@@ -18,9 +18,6 @@ predicting results. See their help documents for details.
 This function simply returns an object of class "\code{RecoSys}"
 that can be used to construct recommender model and conduct prediction.
 }
-\author{
-Yixuan Qiu <\url{http://statr.me}>
-}
 \references{
 W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -38,5 +35,7 @@ Technical report, 2015.
 \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()},
 \code{$\link{predict}()}
 }
+\author{
+Yixuan Qiu <\url{http://statr.me}>
+}
 \keyword{models}
-
