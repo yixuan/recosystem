@@ -116,13 +116,13 @@ Scheduler::Scheduler(mf_int nr_bins, mf_int nr_threads,
       cv_blocks(cv_blocks.begin(), cv_blocks.end())// ,
       // distribution(0.0, 1.0)
 {
-    for(mf_int i = 0; i < nr_bins*nr_bins; i++)
+    for(mf_int i = 0; i < nr_bins*nr_bins; ++i)
     {
         // if(this->cv_blocks.find(i) == this->cv_blocks.end())
         //     pq.emplace(distribution(generator), i);
         // block_generators.push_back(minstd_rand0(rand()));
 
-        // The constructor of Scheduler will be excuted by the master thread,
+        // The constructor of Scheduler will be executed by the master thread,
         // so we can call R RNG safely.
         if(this->cv_blocks.find(i) == this->cv_blocks.end())
             pq.emplace(mf_float(R::unif_rand()), i);
@@ -155,14 +155,14 @@ mf_int Scheduler::get_job()
             {
                 busy_p_blocks[p_block] = 1;
                 busy_q_blocks[q_block] = 1;
-                counts[block.second]++;
+                counts[block.second] += 1;
                 is_found = true;
                 break;
             }
         }
 
-        for(auto &block : locked_blocks)
-            pq.push(block);
+        for(auto &block1 : locked_blocks)
+            pq.push(block1);
     }
 
     return block.second;
@@ -211,21 +211,27 @@ mf_int Scheduler::get_bpr_job(mf_int first_block, bool is_column_oriented)
 
 void Scheduler::put_job(mf_int block_idx, mf_double loss, mf_double error)
 {
+    // Return the held block to the scheduler
     {
         lock_guard<mutex> lock(mtx);
         busy_p_blocks[block_idx/nr_bins] = 0;
         busy_q_blocks[block_idx%nr_bins] = 0;
         block_losses[block_idx] = loss;
         block_errors[block_idx] = error;
-        nr_done_jobs++;
+        ++nr_done_jobs;
         mf_float priority =
             // (mf_float)counts[block_idx]+distribution(generator);
             (mf_float)counts[block_idx]+mf_float(R::unif_rand());
         pq.emplace(priority, block_idx);
-        nr_paused_threads++;
+        ++nr_paused_threads;
+        // Tell others that a block is available again.
         cond_var.notify_all();
     }
 
+    // Wait if nr_done_jobs (aka the number of processed blocks) is too many
+    // because we want to print out the training status roughly once all blocks
+    // are processed once. This is the only place that a solver thread should
+    // wait for something.
     {
         unique_lock<mutex> lock(mtx);
         cond_var.wait(lock, [&] {
@@ -233,6 +239,7 @@ void Scheduler::put_job(mf_int block_idx, mf_double loss, mf_double error)
         });
     }
 
+    // Nothing is blocking and this thread is going to take another block
     {
         lock_guard<mutex> lock(mtx);
         --nr_paused_threads;
@@ -303,7 +310,7 @@ mf_int Scheduler::get_negative(mf_int first_block, mf_int second_block,
             return rand_val%(v_max-v_min)+v_min;
     };
 
-    if (rand_val % 2)
+    if(rand_val % 2)
         return (mf_int)gen_random(first_block);
     else
         return (mf_int)gen_random(second_block);
@@ -313,10 +320,18 @@ void Scheduler::wait_for_jobs_done()
 {
     unique_lock<mutex> lock(mtx);
 
+    // The first thing the main thread should wait for is that solver threads
+    // process enough matrix blocks.
+    // [REVIEW] Is it really needed? Solver threads automatically stop if they
+    // process too many blocks, so the next wait should be enough for stopping
+    // the main thread when nr_done_job is not enough.
     cond_var.wait(lock, [&] {
         return nr_done_jobs >= target;
     });
 
+    // Wait for all threads to stop. Once a thread realizes that all threads
+    // have processed enough blocks it should stop. Then, the main thread can
+    // print values safely.
     cond_var.wait(lock, [&] {
         return nr_paused_threads == nr_threads;
     });
@@ -386,7 +401,7 @@ public:
     BlockOnDisk() : first(0), last(0), current(0),
                     source_path(""), buffer(0) {};
     bool move_next() { return ++current < last-first; }
-    mf_node* get_current() { return &buffer[current]; }
+    mf_node* get_current() { return &buffer[static_cast<size_t>(current)]; }
     void tie_to(string source_path_, mf_long first_, mf_long last_);
     void reload();
     void free() { buffer.resize(0); };
@@ -413,7 +428,7 @@ void BlockOnDisk::reload()
     if(!source)
         throw runtime_error("can not open "+source_path);
 
-    buffer.resize(last-first);
+    buffer.resize(static_cast<size_t>(last-first));
     source.seekg(first*sizeof(mf_node));
     source.read((char*)buffer.data(), (last-first)*sizeof(mf_node));
     current = -1;
@@ -438,6 +453,16 @@ struct sort_node_by_q
         return tie(lhs.v, lhs.u) < tie(rhs.v, rhs.u);
     }
 };
+
+struct deleter
+{
+    void operator() (mf_problem *prob)
+    {
+        delete[] prob->R;
+        delete prob;
+    }
+};
+
 
 class Utility
 {
@@ -464,7 +489,7 @@ public:
                         vector<mf_int> &omega_p, vector<mf_int> &omega_q);
     mf_double calc_reg2(mf_model &model, mf_float lambda_p, mf_float lambda_q,
                         vector<mf_int> &omega_p, vector<mf_int> &omega_q);
-    string get_error_legend();
+    string get_error_legend() const;
     mf_double calc_error(vector<BlockBase*> &blocks,
                          vector<mf_int> &cv_block_ids,
                          mf_model const &model);
@@ -472,7 +497,16 @@ public:
 
     static mf_problem* copy_problem(mf_problem const *prob, bool copy_data);
     static vector<mf_int> gen_random_map(mf_int size);
+    // A function used to allocate all aligned float array.
+    // It hides platform-specific function calls. Memory
+    // allocated by malloc_aligned_float must be freed by using
+    // free_aligned_float.
     static mf_float* malloc_aligned_float(mf_long size);
+    // A function used to free all aligned float array.
+    // It hides platform-specific function calls.
+    static void free_aligned_float(mf_float* ptr);
+    // Initialization function for stochastic gradient method.
+    // Factor matrices P and Q are both randomly initialized.
     static mf_model* init_model(mf_int loss, mf_int m, mf_int n,
                                 mf_int k, mf_float avg,
                                 vector<mf_int> &omega_p,
@@ -483,7 +517,7 @@ public:
     static void shuffle_model(mf_model &model,
                               vector<mf_int> &p_map,
                               vector<mf_int> &q_map);
-
+    mf_int get_thread_number() const { return nr_threads; };
 private:
     mf_int fun;
     mf_int nr_threads;
@@ -500,7 +534,7 @@ void Utility::collect_info(
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:ex,ex2)
 #endif
-    for(mf_long i = 0; i < prob.nnz; i++)
+    for(mf_long i = 0; i < prob.nnz; ++i)
     {
         mf_node &N = prob.R[i];
         ex += (mf_double)N.r;
@@ -532,7 +566,7 @@ void Utility::collect_info_on_disk(
             prob.m = N.u+1;
         if(N.v+1 > prob.n)
             prob.n = N.v+1;
-        prob.nnz++;
+        prob.nnz += 1;
         ex += (mf_double)N.r;
         ex2 += (mf_double)N.r*N.r;
     }
@@ -552,7 +586,7 @@ void Utility::scale_problem(mf_problem &prob, mf_float scale)
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(static)
 #endif
-    for(mf_long i = 0; i < prob.nnz; i++)
+    for(mf_long i = 0; i < prob.nnz; ++i)
         prob.R[i].r *= scale;
 }
 
@@ -570,10 +604,10 @@ void Utility::scale_model(mf_model &model, mf_float scale)
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(static)
 #endif
-        for(mf_int i = 0; i < size; i++)
+        for(mf_int i = 0; i < size; ++i)
         {
             mf_float *ptr1 = ptr+(mf_long)i*model.k;
-            for(mf_int d = 0; d < k; d++)
+            for(mf_int d = 0; d < k; ++d)
                 ptr1[d] *= factor_scale;
         }
     };
@@ -589,8 +623,8 @@ mf_float Utility::inner_product(mf_float *p, mf_float *q, mf_int k)
     for(mf_int d = 0; d < k; d += 4)
         XMM = _mm_add_ps(XMM, _mm_mul_ps(
                   _mm_load_ps(p+d), _mm_load_ps(q+d)));
-    XMM = _mm_hadd_ps(XMM, XMM);
-    XMM = _mm_hadd_ps(XMM, XMM);
+    __m128 XMMtmp = _mm_add_ps(XMM, _mm_movehl_ps(XMM, XMM));
+    XMM = _mm_add_ps(XMM, _mm_shuffle_ps(XMMtmp, XMMtmp, 1));
     mf_float product;
     _mm_store_ss(&product, XMM);
     return product;
@@ -618,14 +652,14 @@ mf_double Utility::calc_reg1(mf_model &model,
                                vector<mf_int> &omega)
     {
         mf_double reg = 0;
-        for(mf_int i = 0; i < size; i++)
+        for(mf_int i = 0; i < size; ++i)
         {
             if(omega[i] <= 0)
                 continue;
 
             mf_float tmp = 0;
-            for(mf_int j = 0; j < model.k; j++)
-                tmp += abs(ptr[i*model.k+j]);
+            for(mf_int j = 0; j < model.k; ++j)
+                tmp += abs(ptr[(mf_long)i*model.k+j]);
             reg += omega[i]*tmp;
         }
         return reg;
@@ -646,7 +680,7 @@ mf_double Utility::calc_reg2(mf_model &model,
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:reg)
 #endif
-        for(mf_int i = 0; i < size; i++)
+        for(mf_int i = 0; i < size; ++i)
         {
             if(omega[i] <= 0)
                 continue;
@@ -674,7 +708,7 @@ mf_double Utility::calc_error(
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
 #endif
-        for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); i++)
+        for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); ++i)
         {
             BlockBase *block = blocks[cv_block_ids[i]];
             block->reload();
@@ -729,7 +763,7 @@ mf_double Utility::calc_error(
 // #if defined USEOMP
 // #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
 // #endif
-                for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); i++)
+                for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); ++i)
                 {
                     BlockBase *block = blocks[cv_block_ids[i]];
                     block->reload();
@@ -751,7 +785,7 @@ mf_double Utility::calc_error(
 // #if defined USEOMP
 // #pragma omp parallel for num_threads(nr_threads) schedule(static) reduction(+:error)
 // #endif
-                for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); i++)
+                for(mf_int i = 0; i < (mf_long)cv_block_ids.size(); ++i)
                 {
                     BlockBase *block = blocks[cv_block_ids[i]];
                     block->reload();
@@ -778,7 +812,7 @@ mf_double Utility::calc_error(
     return error;
 }
 
-string Utility::get_error_legend()
+string Utility::get_error_legend() const
 {
     switch(fun)
     {
@@ -816,7 +850,7 @@ void Utility::shuffle_problem(
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(static)
 #endif
-    for(mf_long i = 0; i < prob.nnz; i++)
+    for(mf_long i = 0; i < prob.nnz; ++i)
     {
         mf_node &N = prob.R[i];
         if(N.u < (mf_long)p_map.size())
@@ -843,43 +877,43 @@ vector<mf_node*> Utility::grid_problem(
         return (u/seg_p)*nr_bins+v/seg_q;
     };
 
-    for(mf_long i = 0; i < prob.nnz; i++)
+    for(mf_long i = 0; i < prob.nnz; ++i)
     {
         mf_node &N = prob.R[i];
         mf_int block = get_block_id(N.u, N.v);
-        counts[block]++;
-        omega_p[N.u]++;
-        omega_q[N.v]++;
+        counts[block] += 1;
+        omega_p[N.u] += 1;
+        omega_q[N.v] += 1;
     }
 
     vector<mf_node*> ptrs(nr_bins*nr_bins+1);
     mf_node *ptr = prob.R;
     ptrs[0] = ptr;
-    for(mf_int block = 0; block < nr_bins*nr_bins; block++)
+    for(mf_int block = 0; block < nr_bins*nr_bins; ++block)
         ptrs[block+1] = ptrs[block] + counts[block];
 
     vector<mf_node*> pivots(ptrs.begin(), ptrs.end()-1);
-    for(mf_int block = 0; block < nr_bins*nr_bins; block++)
+    for(mf_int block = 0; block < nr_bins*nr_bins; ++block)
     {
         for(mf_node* pivot = pivots[block]; pivot != ptrs[block+1];)
         {
             mf_int curr_block = get_block_id(pivot->u, pivot->v);
             if(curr_block == block)
             {
-                pivot++;
+                ++pivot;
                 continue;
             }
 
             mf_node *next = pivots[curr_block];
             swap(*pivot, *next);
-            pivots[curr_block]++;
+            pivots[curr_block] += 1;
         }
     }
 
 #if defined USEOMP
 #pragma omp parallel for num_threads(nr_threads) schedule(dynamic)
 #endif
-    for(mf_int block = 0; block < nr_bins*nr_bins; block++)
+    for(mf_int block = 0; block < nr_bins*nr_bins; ++block)
     {
         if(prob.m > prob.n)
             sort(ptrs[block], ptrs[block+1], sort_node_by_p());
@@ -887,7 +921,7 @@ vector<mf_node*> Utility::grid_problem(
             sort(ptrs[block], ptrs[block+1], sort_node_by_q());
     }
 
-    for(mf_int i = 0; i < (mf_long)blocks.size(); i++)
+    for(mf_int i = 0; i < (mf_long)blocks.size(); ++i)
         blocks[i].tie_to(ptrs[i], ptrs[i+1]);
 
     return ptrs;
@@ -923,12 +957,12 @@ void Utility::grid_shuffle_scale_problem_on_disk(
         N.u = p_map[N.u];
         N.v = q_map[N.v];
         mf_int bid = get_block_id(N.u, N.v);
-        omega_p[N.u]++;
-        omega_q[N.v]++;
-        counts[bid+1]++;
+        omega_p[N.u] += 1;
+        omega_q[N.v] += 1;
+        counts[bid+1] += 1;
     }
 
-    for(mf_int i = 1; i < nr_bins*nr_bins+1; i++)
+    for(mf_int i = 1; i < nr_bins*nr_bins+1; ++i)
     {
         counts[i] += counts[i-1];
         pivots[i-1] = counts[i-1];
@@ -944,12 +978,12 @@ void Utility::grid_shuffle_scale_problem_on_disk(
         mf_int bid = get_block_id(N.u, N.v);
         buffer.seekp(pivots[bid]*sizeof(mf_node));
         buffer.write((char*)&N, sizeof(mf_node));
-        pivots[bid]++;
+        pivots[bid] += 1;
     }
 
-    for(mf_int i = 0; i < nr_bins*nr_bins; i++)
+    for(mf_int i = 0; i < nr_bins*nr_bins; ++i)
     {
-        vector<mf_node> nodes(counts[i+1]-counts[i]);
+        vector<mf_node> nodes(static_cast<size_t>(counts[i+1]-counts[i]));
         buffer.clear();
         buffer.seekg(counts[i]*sizeof(mf_node));
         buffer.read((char*)nodes.data(), sizeof(mf_node)*nodes.size());
@@ -965,15 +999,22 @@ void Utility::grid_shuffle_scale_problem_on_disk(
         buffer.read((char*)nodes.data(), sizeof(mf_node)*nodes.size());
     }
 
-    for(mf_int i = 0; i < (mf_long)blocks.size(); i++)
+    for(mf_int i = 0; i < (mf_long)blocks.size(); ++i)
         blocks[i].tie_to(buffer_path, counts[i], counts[i+1]);
 }
 
 mf_float* Utility::malloc_aligned_float(mf_long size)
 {
-    void *ptr;
+    // Check if conversion from mf_long to size_t causes overflow.
+    if (size >= 0 && sizeof(unsigned long) >= sizeof(mf_long) &&
+        (unsigned long)size > numeric_limits<std::size_t>::max() / sizeof(mf_float) + 1)
+        throw bad_alloc();
+    // [REVIEW] I hope one day we can use C11 aligned_alloc to replace
+    // platform-depedent functions below. Both of Windows and OSX currently
+    // don't support that function.
+    void *ptr = nullptr;
 #ifdef _WIN32
-    ptr = _aligned_malloc(size*sizeof(mf_float), kALIGNByte);
+    ptr = _aligned_malloc(static_cast<size_t>(size*sizeof(mf_float)), kALIGNByte);
     if(ptr == nullptr)
         throw bad_alloc();
 #elif defined(posix_memalign)
@@ -983,10 +1024,25 @@ mf_float* Utility::malloc_aligned_float(mf_long size)
 #else
     ptr = Reco::malloc_aligned(kALIGNByte, size*sizeof(mf_float));
     if(ptr == nullptr)
-        throw bad_alloc();
+      throw bad_alloc();
 #endif
+    if(ptr == nullptr)
+        throw bad_alloc();
 
     return (mf_float*)ptr;
+}
+
+void Utility::free_aligned_float(mf_float *ptr)
+{
+#ifdef _WIN32
+    // Unfortunately, Visual Studio doesn't want to support the
+    // cross-platform allocation below.
+    _aligned_free(ptr);
+#elif defined(posix_memalign)
+    free(ptr);
+#else
+    Reco::free_aligned(ptr);
+#endif
 }
 
 mf_model* Utility::init_model(mf_int fun,
@@ -1030,17 +1086,18 @@ mf_model* Utility::init_model(mf_int fun,
 
     auto init1 = [&](mf_float *start_ptr, mf_long size, vector<mf_int> counts)
     {
-        memset(start_ptr, 0, sizeof(mf_float)*size*model->k);
-        for(mf_long i = 0; i < size; i++)
+        memset(start_ptr, 0, static_cast<size_t>(
+                    sizeof(mf_float) * size*model->k));
+        for(mf_long i = 0; i < size; ++i)
         {
             mf_float * ptr = start_ptr + i*model->k;
-            if(counts[i] > 0)
-                for(mf_long d = 0; d < k_real; d++, ptr++)
+            if(counts[static_cast<size_t>(i)] > 0)
+                for(mf_long d = 0; d < k_real; ++d, ++ptr)
                     // *ptr = (mf_float)(distribution(generator)*scale);
                     *ptr = (mf_float)(R::unif_rand()*scale);
             else
                 if(fun != P_ROW_BPR_MFOC && fun != P_COL_BPR_MFOC) // unseen for bpr is 0
-                    for(mf_long d = 0; d < k_real; d++, ptr++)
+                    for(mf_long d = 0; d < k_real; ++d, ++ptr)
                         *ptr = numeric_limits<mf_float>::quiet_NaN();
         }
     };
@@ -1053,11 +1110,11 @@ mf_model* Utility::init_model(mf_int fun,
 
 vector<mf_int> Utility::gen_random_map(mf_int size)
 {
-    // srand(0);
+    // default_random_engine generator;
     vector<mf_int> map(size, 0);
-    for(mf_int i = 0; i < size; i++)
+    for(mf_int i = 0; i < size; ++i)
         map[i] = i;
-    // random_shuffle(map.begin(), map.end());
+    // shuffle(map.begin(), map.end(), generator);
     random_shuffle(map.begin(), map.end(), Reco::rand_less_than);
     return map;
 }
@@ -1065,7 +1122,7 @@ vector<mf_int> Utility::gen_random_map(mf_int size)
 vector<mf_int> Utility::gen_inv_map(vector<mf_int> &map)
 {
     vector<mf_int> inv_map(map.size());
-    for(mf_int i = 0; i < (mf_long)map.size(); i++)
+    for(mf_int i = 0; i < (mf_long)map.size(); ++i)
       inv_map[map[i]] = i;
     return inv_map;
 }
@@ -1088,7 +1145,7 @@ void Utility::shuffle_model(
 
             mf_int next = map[pivot];
 
-            for(mf_int d = 0; d < k; d++)
+            for(mf_int d = 0; d < k; ++d)
                 swap(*(vec+(mf_long)pivot*k+d), *(vec+(mf_long)next*k+d));
 
             map[pivot] = map[next];
@@ -1107,7 +1164,7 @@ void Utility::shrink_model(mf_model &model, mf_int k_new)
 
     auto shrink1 = [&] (mf_float *ptr, mf_int size)
     {
-        for(mf_int i = 0; i < size; i++)
+        for(mf_int i = 0; i < size; ++i)
         {
             mf_float *src = ptr+(mf_long)i*k_old;
             mf_float *dst = ptr+(mf_long)i*k_new;
@@ -1141,7 +1198,7 @@ mf_problem* Utility::copy_problem(mf_problem const *prob, bool copy_data)
     {
         try
         {
-            new_prob->R = new mf_node[prob->nnz];
+            new_prob->R = new mf_node[static_cast<size_t>(prob->nnz)];
             copy(prob->R, prob->R+prob->nnz, new_prob->R);
         }
         catch(...)
@@ -1173,6 +1230,9 @@ public:
     void run();
     SolverBase(const SolverBase&) = delete;
     SolverBase& operator=(const SolverBase&) = delete;
+    // Solver is stateless functor, so default destructor should be
+    // good enough.
+    virtual ~SolverBase() = default;
 
 protected:
 #if defined USESSE
@@ -1214,7 +1274,7 @@ protected:
     virtual void finalize();
     static float qrsqrt(float x);
 #endif
-    virtual void update() { pG++; qG++; };
+    virtual void update() { ++pG; ++qG; };
 
     Scheduler &scheduler;
     vector<BlockBase*> &blocks;
@@ -1314,8 +1374,12 @@ inline void SolverBase::calc_z(
     for(mf_int d = 0; d < k; d += 4)
         XMMz = _mm_add_ps(XMMz, _mm_mul_ps(
                _mm_load_ps(p+d), _mm_load_ps(q+d)));
-    XMMz = _mm_hadd_ps(XMMz, XMMz);
-    XMMz = _mm_hadd_ps(XMMz, XMMz);
+    // Bit-wise representation of 177 is {1,0}+{1,1}+{0,0}+{0,1} from
+    // high-bit to low-bit, where "+" means concatenating two arrays.
+    __m128 XMMtmp = _mm_add_ps(XMMz, _mm_shuffle_ps(XMMz, XMMz, 177));
+    // Bit-wise representation of 78 is {0,1}+{0,0}+{1,1}+{1,0} from
+    // high-bit to low-bit, where "+" means concatenating two arrays.
+    XMMz = _mm_add_ps(XMMtmp, _mm_shuffle_ps(XMMtmp, XMMtmp, 78));
 }
 
 void SolverBase::finalize(__m128d XMMloss, __m128d XMMerror)
@@ -1465,7 +1529,7 @@ void SolverBase::arrange_block()
 inline void SolverBase::calc_z(mf_float &z, mf_int k, mf_float *p, mf_float *q)
 {
     z = 0;
-    for(mf_int d = 0; d < k; d++)
+    for(mf_int d = 0; d < k; ++d)
         z += p[d]*q[d];
 }
 
@@ -1581,15 +1645,14 @@ void MFSolver::sg_update(mf_int d_begin, mf_int d_end, __m128 XMMz,
         }
     }
 
-    XMMpG1 = _mm_hadd_ps(XMMpG1, XMMpG1);
-    XMMpG1 = _mm_hadd_ps(XMMpG1, XMMpG1);
-    XMMqG1 = _mm_hadd_ps(XMMqG1, XMMqG1);
-    XMMqG1 = _mm_hadd_ps(XMMqG1, XMMqG1);
-
+    __m128 XMMtmp = _mm_add_ps(XMMpG1, _mm_movehl_ps(XMMpG1, XMMpG1));
+    XMMpG1 = _mm_add_ps(XMMpG1, _mm_shuffle_ps(XMMtmp, XMMtmp, 1));
     XMMpG = _mm_add_ps(XMMpG, _mm_mul_ps(XMMpG1, XMMrk));
-    XMMqG = _mm_add_ps(XMMqG, _mm_mul_ps(XMMqG1, XMMrk));
-
     _mm_store_ss(pG, XMMpG);
+
+    XMMtmp = _mm_add_ps(XMMqG1, _mm_movehl_ps(XMMqG1, XMMqG1));
+    XMMqG1 = _mm_add_ps(XMMqG1, _mm_shuffle_ps(XMMtmp, XMMtmp, 1));
+    XMMqG = _mm_add_ps(XMMqG, _mm_mul_ps(XMMqG1, XMMrk));
     _mm_store_ss(qG, XMMqG);
 }
 #elif defined USEAVX
@@ -1699,7 +1762,7 @@ void MFSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
     mf_float pG1 = 0;
     mf_float qG1 = 0;
 
-    for(mf_int d = d_begin; d < d_end; d++)
+    for(mf_int d = d_begin; d < d_end; ++d)
     {
         mf_float gp = -z*q[d]+lambda_p2*p[d];
         mf_float gq = -z*p[d]+lambda_q2*q[d];
@@ -1713,7 +1776,7 @@ void MFSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
 
     if(lambda_p1 > 0)
     {
-        for(mf_int d = d_begin; d < d_end; d++)
+        for(mf_int d = d_begin; d < d_end; ++d)
         {
             mf_float p1 = max(abs(p[d])-lambda_p1*eta_p, 0.0f);
             p[d] = p[d] >= 0? p1: -p1;
@@ -1722,7 +1785,7 @@ void MFSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
 
     if(lambda_q1 > 0)
     {
-        for(mf_int d = d_begin; d < d_end; d++)
+        for(mf_int d = d_begin; d < d_end; ++d)
         {
             mf_float q1 = max(abs(q[d])-lambda_q1*eta_q, 0.0f);
             q[d] = q[d] >= 0? q1: -q1;
@@ -1731,7 +1794,7 @@ void MFSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
 
     if(param.do_nmf)
     {
-        for(mf_int d = d_begin; d < d_end; d++)
+        for(mf_int d = d_begin; d < d_end; ++d)
         {
             p[d] = max(p[d], (mf_float)0.0f);
             q[d] = max(q[d], (mf_float)0.0f);
@@ -2214,7 +2277,7 @@ protected:
     void sg_update(mf_int d_begin, mf_int d_end, mf_float rk);
     void finalize();
 #endif
-    void update() { pG++; qG++; wG++; };
+    void update() { ++pG; ++qG; ++wG; };
     virtual void prepare_negative() = 0;
 
     bool is_column_oriented;
@@ -2232,8 +2295,12 @@ inline void BPRSolver::calc_z(
     for(mf_int d = 0; d < k; d += 4)
         XMMz = _mm_add_ps(XMMz, _mm_mul_ps(_mm_load_ps(p+d),
                _mm_sub_ps(_mm_load_ps(q+d), _mm_load_ps(w+d))));
-    XMMz = _mm_hadd_ps(XMMz, XMMz);
-    XMMz = _mm_hadd_ps(XMMz, XMMz);
+    // Bit-wise representation of 177 is {1,0}+{1,1}+{0,0}+{0,1} from
+    // high-bit to low-bit, where "+" means concatenating two arrays.
+    __m128 XMMtmp = _mm_add_ps(XMMz, _mm_shuffle_ps(XMMz, XMMz, 177));
+    // Bit-wise representation of 78 is {0,1}+{0,0}+{1,1}+{1,0} from
+    // high-bit to low-bit, where "+" means concatenating two arrays.
+    XMMz = _mm_add_ps(XMMz, _mm_shuffle_ps(XMMtmp, XMMtmp, 78));
 }
 
 void BPRSolver::arrange_block(__m128d &XMMloss, __m128d &XMMerror)
@@ -2313,7 +2380,7 @@ void BPRSolver::sg_update(mf_int d_begin, mf_int d_end, __m128 XMMz,
     }
 
     _mm_store_ss(&tmp, XMMlambda_q1);
-    if (tmp > 0)
+    if(tmp > 0)
     {
         for(mf_int d = d_begin; d < d_end; d += 4)
         {
@@ -2352,19 +2419,24 @@ void BPRSolver::sg_update(mf_int d_begin, mf_int d_end, __m128 XMMz,
         }
     }
 
-    XMMpG1 = _mm_hadd_ps(XMMpG1, XMMpG1);
-    XMMpG1 = _mm_hadd_ps(XMMpG1, XMMpG1);
-    XMMqG1 = _mm_hadd_ps(XMMqG1, XMMqG1);
-    XMMqG1 = _mm_hadd_ps(XMMqG1, XMMqG1);
-    XMMwG1 = _mm_hadd_ps(XMMwG1, XMMwG1);
-    XMMwG1 = _mm_hadd_ps(XMMwG1, XMMwG1);
-
+    // Update learning rate of latent vector p. Squared derivatives along all
+    // latent dimensions will be computed above. Here their average will be
+    // added into the associated squared-gradient sum.
+    __m128 XMMtmp = _mm_add_ps(XMMpG1, _mm_movehl_ps(XMMpG1, XMMpG1));
+    XMMpG1 = _mm_add_ps(XMMpG1, _mm_shuffle_ps(XMMtmp, XMMtmp, 1));
     XMMpG = _mm_add_ps(XMMpG, _mm_mul_ps(XMMpG1, XMMrk));
-    XMMqG = _mm_add_ps(XMMqG, _mm_mul_ps(XMMqG1, XMMrk));
-    XMMwG = _mm_add_ps(XMMwG, _mm_mul_ps(XMMwG1, XMMrk));
-
     _mm_store_ss(pG, XMMpG);
+
+    // Similar code is used to update learning rate of latent vector q.
+    XMMtmp = _mm_add_ps(XMMqG1, _mm_movehl_ps(XMMqG1, XMMqG1));
+    XMMqG1 = _mm_add_ps(XMMqG1, _mm_shuffle_ps(XMMtmp, XMMtmp, 1));
+    XMMqG = _mm_add_ps(XMMqG, _mm_mul_ps(XMMqG1, XMMrk));
     _mm_store_ss(qG, XMMqG);
+
+    // Similar code is used to update learning rate of latent vector w.
+    XMMtmp = _mm_add_ps(XMMwG1, _mm_movehl_ps(XMMwG1, XMMwG1));
+    XMMwG1 = _mm_add_ps(XMMwG1, _mm_shuffle_ps(XMMtmp, XMMtmp, 1));
+    XMMwG = _mm_add_ps(XMMwG, _mm_mul_ps(XMMwG1, XMMrk));
     _mm_store_ss(wG, XMMwG);
 }
 
@@ -2475,7 +2547,7 @@ void BPRSolver::sg_update(mf_int d_begin, mf_int d_end, __m256 XMMz,
     }
 
     _mm_store_ss(&tmp, _mm256_castps256_ps128(XMMlambda_q1));
-    if (tmp > 0)
+    if(tmp > 0)
     {
         for(mf_int d = d_begin; d < d_end; d += 8)
         {
@@ -2560,7 +2632,7 @@ inline void BPRSolver::calc_z(
     mf_float &z, mf_int k, mf_float *p, mf_float *q, mf_float *w)
 {
     z = 0;
-    for(mf_int d = 0; d < k; d++)
+    for(mf_int d = 0; d < k; ++d)
         z += p[d]*(q[d]-w[d]);
 }
 
@@ -2590,7 +2662,7 @@ void BPRSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
     mf_float qG1 = 0;
     mf_float wG1 = 0;
 
-    for(mf_int d = d_begin; d < d_end; d++)
+    for(mf_int d = d_begin; d < d_end; ++d)
     {
         mf_float gp = z*(w[d]-q[d]) + lambda_p2*p[d];
         mf_float gq = -z*p[d] + lambda_q2*q[d];
@@ -2607,16 +2679,16 @@ void BPRSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
 
     if(lambda_p1 > 0)
     {
-        for(mf_int d = d_begin; d < d_end; d++)
+        for(mf_int d = d_begin; d < d_end; ++d)
         {
             mf_float p1 = max(abs(p[d])-lambda_p1*eta_p, 0.0f);
             p[d] = p[d] >= 0? p1: -p1;
         }
     }
 
-    if (lambda_q1 > 0)
+    if(lambda_q1 > 0)
     {
-        for(mf_int d = d_begin; d < d_end; d++)
+        for(mf_int d = d_begin; d < d_end; ++d)
         {
             mf_float q1 = max(abs(w[d])-lambda_q1*eta_w, 0.0f);
             w[d] = w[d] >= 0? q1: -q1;
@@ -2627,7 +2699,7 @@ void BPRSolver::sg_update(mf_int d_begin, mf_int d_end, mf_float rk)
 
     if(param.do_nmf)
     {
-        for(mf_int d = d_begin; d < d_end; d++)
+        for(mf_int d = d_begin; d < d_end; ++d)
         {
             p[d] = max(p[d], (mf_float)0.0);
             q[d] = max(q[d], (mf_float)0.0);
@@ -2883,7 +2955,7 @@ void fpsg_core(
     vector<shared_ptr<SolverBase>> solvers(param.nr_threads);
     vector<thread> threads;
     threads.reserve(param.nr_threads);
-    for(mf_int i = 0; i < param.nr_threads; i++)
+    for(mf_int i = 0; i < param.nr_threads; ++i)
     {
         solvers[i] = SolverFactory::get_solver(sched, block_ptrs,
                                                PG.data(), QG.data(),
@@ -2891,7 +2963,7 @@ void fpsg_core(
         threads.emplace_back(&SolverBase::run, solvers[i].get());
     }
 
-    for(mf_int iter = 0; iter < param.nr_iters; iter++)
+    for(mf_int iter = 0; iter < param.nr_iters; ++iter)
     {
         sched.wait_for_jobs_done();
 
@@ -2955,10 +3027,10 @@ void fpsg_core(
 
         if(iter == 0)
             slow_only = false;
-
+        if(iter == param.nr_iters - 1)
+            sched.terminate();
         sched.resume();
     }
-    sched.terminate();
 
     for(auto &thread : threads)
         thread.join();
@@ -3017,15 +3089,6 @@ try
 
     if(param.copy_data)
     {
-        struct deleter
-        {
-            void operator() (mf_problem *prob)
-            {
-                delete[] prob->R;
-                delete prob;
-            }
-        };
-
         tr = shared_ptr<mf_problem>(
                 Utility::copy_problem(tr_, true), deleter());
         va = shared_ptr<mf_problem>(
@@ -3061,7 +3124,7 @@ try
                 tr->m, tr->n, param.k, avg/scale, omega_p, omega_q),
                 [] (mf_model *ptr) { mf_destroy_model(&ptr); });
 
-    for(mf_int i = 0; i < (mf_long)blocks.size(); i++)
+    for(mf_int i = 0; i < (mf_long)blocks.size(); ++i)
         block_ptrs[i] = &blocks[i];
 
     fpsg_core(util, sched, tr.get(), va.get(), param, scale,
@@ -3139,7 +3202,7 @@ try
                 tr.m, tr.n, param.k, avg/scale, omega_p, omega_q),
                 [] (mf_model *ptr) { mf_destroy_model(&ptr); });
 
-    for(mf_int i = 0; i < (mf_long)blocks.size(); i++)
+    for(mf_int i = 0; i < (mf_long)blocks.size(); ++i)
         block_ptrs[i] = &blocks[i];
 
     fpsg_core(util, sched, &tr, &va, param, scale,
@@ -3272,10 +3335,10 @@ CrossValidatorBase::CrossValidatorBase(mf_parameter param_, mf_int nr_folds_)
 mf_double CrossValidatorBase::do_cross_validation()
 {
     vector<mf_int> cv_blocks;
-    // srand(0);
-    for(mf_int block = 0; block < nr_bins*nr_bins; block++)
+    // default_random_engine generator;
+    for(mf_int block = 0; block < nr_bins*nr_bins; ++block)
         cv_blocks.push_back(block);
-    // random_shuffle(cv_blocks.begin(), cv_blocks.end());
+    // shuffle(cv_blocks.begin(), cv_blocks.end(), generator);
     random_shuffle(cv_blocks.begin(), cv_blocks.end(), Reco::rand_less_than);
 
     if(!quiet)
@@ -3289,7 +3352,7 @@ mf_double CrossValidatorBase::do_cross_validation()
 
     cv_error = 0;
 
-    for(mf_int fold = 0; fold < nr_folds; fold++)
+    for(mf_int fold = 0; fold < nr_folds; ++fold)
     {
         mf_int begin = fold*nr_blocks_per_fold;
         mf_int end = min((fold+1)*nr_blocks_per_fold, nr_bins*nr_bins);
@@ -3471,9 +3534,9 @@ mf_problem read_problem(string path)
 
     string line;
     while(getline(f, line))
-        prob.nnz++;
+        prob.nnz += 1;
 
-    mf_node *R = new mf_node[prob.nnz];
+    mf_node *R = new mf_node[static_cast<size_t>(prob.nnz)];
 
     f.close();
     f.open(path);
@@ -3486,7 +3549,7 @@ mf_problem read_problem(string path)
         if(N.v+1 > prob.n)
             prob.n = N.v+1;
         R[idx] = N;
-        idx++;
+        ++idx;
     }
     prob.R = R;
 
@@ -3509,20 +3572,20 @@ mf_int mf_save_model(mf_model const *model, char const *path)
 
     auto write = [&] (mf_float *ptr, mf_int size, char prefix)
     {
-        for(mf_int i = 0; i < size; i++)
+        for(mf_int i = 0; i < size; ++i)
         {
             mf_float *ptr1 = ptr + (mf_long)i*model->k;
             f << prefix << i << " ";
             if(isnan(ptr1[0]))
             {
                 f << "F ";
-                for(mf_int d = 0; d < model->k; d++)
+                for(mf_int d = 0; d < model->k; ++d)
                     f << 0 << " ";
             }
             else
             {
                 f << "T ";
-                for(mf_int d = 0; d < model->k; d++)
+                for(mf_int d = 0; d < model->k; ++d)
                     f << ptr1[d] << " ";
             }
             f << endl;
@@ -3563,7 +3626,7 @@ mf_model* mf_load_model(char const *path)
         // cerr << e.what() << endl;
         // mf_destroy_model(&model);
         // return nullptr;
-        
+
         mf_destroy_model(&model);
         Rcpp::stop(e.what());
         return nullptr;
@@ -3571,18 +3634,18 @@ mf_model* mf_load_model(char const *path)
 
     auto read = [&] (mf_float *ptr, mf_int size)
     {
-        for(mf_int i = 0; i < size; i++)
+        for(mf_int i = 0; i < size; ++i)
         {
             mf_float *ptr1 = ptr + (mf_long)i*model->k;
             f >> dummy >> dummy;
             if(dummy.compare("F") == 0) // nan vector starts with "F"
-                for(mf_int d = 0; d < model->k; d++)
+                for(mf_int d = 0; d < model->k; ++d)
                 {
                     f >> dummy;
                     ptr1[d] = numeric_limits<mf_float>::quiet_NaN();
                 }
             else
-                for(mf_int d = 0; d < model->k; d++)
+                for(mf_int d = 0; d < model->k; ++d)
                     f >> ptr1[d];
         }
     };
@@ -3599,16 +3662,8 @@ void mf_destroy_model(mf_model **model)
 {
     if(model == nullptr || *model == nullptr)
         return;
-#ifdef _WIN32
-    _aligned_free((*model)->P);
-    _aligned_free((*model)->Q);
-#elif defined(posix_memalign)
-    free((*model)->P);
-    free((*model)->Q);
-#else
-    Reco::free_aligned((*model)->P);
-    Reco::free_aligned((*model)->Q);
-#endif
+    Utility::free_aligned_float((*model)->P);
+    Utility::free_aligned_float((*model)->Q);
     delete *model;
     *model = nullptr;
 }
@@ -3626,8 +3681,8 @@ mf_float mf_predict(mf_model const *model, mf_int u, mf_int v)
     if(isnan(z))
         z = model->b;
 
-    if(model->fun == P_L2_MFC &&
-       model->fun == P_L1_MFC &&
+    if(model->fun == P_L2_MFC ||
+       model->fun == P_L1_MFC ||
        model->fun == P_LR_MFC)
         z = z > 0.0f? 1.0f: -1.0f;
 
@@ -3642,7 +3697,7 @@ mf_double calc_rmse(mf_problem *prob, mf_model *model)
 #if defined USEOMP
 #pragma omp parallel for schedule(static) reduction(+:loss)
 #endif
-    for(mf_long i = 0; i < prob->nnz; i++)
+    for(mf_long i = 0; i < prob->nnz; ++i)
     {
         mf_node &N = prob->R[i];
         mf_float e = N.r - mf_predict(model, N.u, N.v);
@@ -3659,7 +3714,7 @@ mf_double calc_mae(mf_problem *prob, mf_model *model)
 #if defined USEOMP
 #pragma omp parallel for schedule(static) reduction(+:loss)
 #endif
-    for(mf_long i = 0; i < prob->nnz; i++)
+    for(mf_long i = 0; i < prob->nnz; ++i)
     {
         mf_node &N = prob->R[i];
         loss += abs(N.r - mf_predict(model, N.u, N.v));
@@ -3675,7 +3730,7 @@ mf_double calc_gkl(mf_problem *prob, mf_model *model)
 #if defined USEOMP
 #pragma omp parallel for schedule(static) reduction(+:loss)
 #endif
-    for(mf_long i = 0; i < prob->nnz; i++)
+    for(mf_long i = 0; i < prob->nnz; ++i)
     {
         mf_node &N = prob->R[i];
         mf_float z = mf_predict(model, N.u, N.v);
@@ -3692,7 +3747,7 @@ mf_double calc_logloss(mf_problem *prob, mf_model *model)
 #if defined USEOMP
 #pragma omp parallel for schedule(static) reduction(+:logloss)
 #endif
-    for(mf_long i = 0; i < prob->nnz; i++)
+    for(mf_long i = 0; i < prob->nnz; ++i)
     {
         mf_node &N = prob->R[i];
         mf_float z = mf_predict(model, N.u, N.v);
@@ -3712,7 +3767,7 @@ mf_double calc_accuracy(mf_problem *prob, mf_model *model)
 #if defined USEOMP
 #pragma omp parallel for schedule(static) reduction(+:acc)
 #endif
-    for(mf_long i = 0; i < prob->nnz; i++)
+    for(mf_long i = 0; i < prob->nnz; ++i)
     {
         mf_node &N = prob->R[i];
         mf_float z = mf_predict(model, N.u, N.v);
@@ -3757,9 +3812,9 @@ pair<mf_double, mf_double> calc_mpr_auc(mf_problem *prob,
         pair<mf_node, mf_float> const &rhs) { return lhs.second < rhs.second; };
 
     vector<mf_int> pos_cnts(m+1, 0);
-    for(mf_int i = 0; i < prob->nnz; i++)
-        pos_cnts[prob->R[i].*row_ptr+1]++;
-    for(mf_int i = 1; i < m+1; i++)
+    for(mf_int i = 0; i < prob->nnz; ++i)
+        pos_cnts[prob->R[i].*row_ptr+1] += 1;
+    for(mf_int i = 1; i < m+1; ++i)
         pos_cnts[i] += pos_cnts[i-1];
 
     mf_int total_m = 0;
@@ -3769,14 +3824,14 @@ pair<mf_double, mf_double> calc_mpr_auc(mf_problem *prob,
 #if defined USEOMP
 #pragma omp parallel for schedule(static) reduction(+: total_m, total_pos, all_u_mpr, all_u_auc)
 #endif
-    for(mf_int i = 0; i < m; i++)
+    for(mf_int i = 0; i < m; ++i)
     {
         if(pos_cnts[i+1]-pos_cnts[i] < 1)
             continue;
 
         vector<pair<mf_node, mf_float>> row(n);
 
-        for(mf_int j = 0; j < n; j++)
+        for(mf_int j = 0; j < n; ++j)
         {
             mf_node N;
             N.*row_ptr = i;
@@ -3787,7 +3842,7 @@ pair<mf_double, mf_double> calc_mpr_auc(mf_problem *prob,
 
         mf_int pos = 0;
         vector<mf_int> index(pos_cnts[i+1]-pos_cnts[i], 0);
-        for(mf_int j = pos_cnts[i]; j < pos_cnts[i+1]; j++)
+        for(mf_int j = pos_cnts[i]; j < pos_cnts[i+1]; ++j)
         {
             if(prob->R[j].r <= 0)
                 continue;
@@ -3795,26 +3850,26 @@ pair<mf_double, mf_double> calc_mpr_auc(mf_problem *prob,
             mf_int col = prob->R[j].*col_ptr;
             row[col].first.r = prob->R[j].r;
             index[pos] = col;
-            pos++;
+            pos += 1;
         }
 
         if(n-pos < 1 || pos < 1)
             continue;
 
-        total_m++;
+        ++total_m;
         total_pos += pos;
 
         mf_int count = 0;
-        for(mf_int k = 0; k < pos; k++)
+        for(mf_int k = 0; k < pos; ++k)
         {
             swap(row[count], row[index[k]]);
-            count++;
+            ++count;
         }
         sort(row.begin(), row.begin()+pos, sort_by_pred);
 
         mf_double u_mpr = 0;
         mf_double u_auc = 0;
-        for(auto neg_it = row.begin()+pos; neg_it != row.end(); neg_it++)
+        for(auto neg_it = row.begin()+pos; neg_it != row.end(); ++neg_it)
         {
             if(row[pos-1].second <= neg_it->second)
             {
