@@ -18,7 +18,7 @@ setClass("Output",
 #' @return An object of class "Output" as required by
 #' \code{$\link{output}()} and \code{$\link{predict}()}.
 #' 
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{output}()}, \code{$\link{predict}()}
 #' 
 #' @rdname output_format

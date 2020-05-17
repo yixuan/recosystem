@@ -13,7 +13,7 @@ RecoSys = setRefClass("RecoSys",
 #' and \code{$\link{predict}()}, which describe the typical process of
 #' building and tuning model, exporting factorization matrices, and
 #' predicting results. See their help documents for details.
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{output}()},
 #' \code{$\link{predict}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
@@ -134,7 +134,7 @@ Reco = function()
 #' r$train(train_src, opts = res$min)
 #' }
 #' 
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{train}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -307,7 +307,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #'         opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1)
 #' )
 #' 
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -431,7 +431,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' head(res$P)
 #' head(res$Q)
 #'
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{train}()}, \code{$\link{predict}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.
@@ -546,7 +546,7 @@ use out_file(path) for argument 'out_Q' instead")
 #' head(pred2, 10)
 #' }
 #' 
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{train}()}
 #' @references W.-S. Chin, Y. Zhuang, Y.-C. Juan, and C.-J. Lin.
 #' A Fast Parallel Stochastic Gradient Method for Matrix Factorization in Shared Memory Systems.

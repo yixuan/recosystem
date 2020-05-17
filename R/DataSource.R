@@ -52,7 +52,7 @@ setClass("DataSource",
 #' @return An object of class "DataSource" as required by
 #' \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
 #' 
-#' @author Yixuan Qiu <\url{http://statr.me}>
+#' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{predict}()}
 #' 
 #' @rdname data_source
