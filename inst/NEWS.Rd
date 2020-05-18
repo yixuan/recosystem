@@ -1,15 +1,22 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.4.3}{
+  \itemize{
+    \item Updated LIBMF to the newest version (403153c) in the upstream repository.
+    \item Fixed a logical operation bug and a virtual destructor bug detected by CRAN.
+  }
+}
+
 \section{Changes in recosystem version 0.4.2}{
   \itemize{
     \item Added the missing "\code{nbin}" parameter in \code{$train()} and
           \code{$tune()}. (\href{https://github.com/yixuan/recosystem/issues/6}{#6},
-          reported by \href{https://github.com/Tutuchan}{@Tutuchan})
+          reported by \href{https://github.com/Tutuchan}{@Tutuchan}).
     \item Added a progress bar for model tuning, controlled by the "\code{progress}"
           parameter in \code{$tune()}.
           (\href{https://github.com/yixuan/recosystem/issues/5}{#5},
-          suggested by \href{https://github.com/talegari}{@talegari})
+          suggested by \href{https://github.com/talegari}{@talegari}).
   }
 }
 
@@ -25,7 +32,7 @@
 
 \section{Changes in recosystem version 0.4}{
   \itemize{
-    \item Update LIBMF to version 2.01.
+    \item Updated LIBMF to version 2.01.
     \item API change from LIBMF 2.01:
           \itemize{
             \item The \code{cost} option in \code{$train()} and \code{$tune()}
