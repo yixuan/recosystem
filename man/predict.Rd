@@ -77,5 +77,5 @@ Technical report, 2015.
 \code{$\link{train}()}
 }
 \author{
-Yixuan Qiu <\url{http://statr.me}>
+Yixuan Qiu <\url{https://statr.me}>
 }

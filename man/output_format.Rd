@@ -35,5 +35,5 @@ the result is not needed and will not be returned.
 \code{$\link{output}()}, \code{$\link{predict}()}
 }
 \author{
-Yixuan Qiu <\url{http://statr.me}>
+Yixuan Qiu <\url{https://statr.me}>
 }

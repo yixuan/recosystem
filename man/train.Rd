@@ -110,5 +110,5 @@ Technical report, 2015.
 \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
 }
 \author{
-Yixuan Qiu <\url{http://statr.me}>
+Yixuan Qiu <\url{https://statr.me}>
 }

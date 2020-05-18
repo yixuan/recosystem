@@ -70,5 +70,5 @@ package shows an example of testing data file.
 \code{$\link{tune}()}, \code{$\link{train}()}, \code{$\link{predict}()}
 }
 \author{
-Yixuan Qiu <\url{http://statr.me}>
+Yixuan Qiu <\url{https://statr.me}>
 }
