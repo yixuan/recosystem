@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.4.4}{
+  \itemize{
+    \item Fixed the problem that \pkg{recosystem} gives different results on Windows
+          compared with other OS, reported by Prof. Michael Trusov.
+  }
+}
+
 \section{Changes in recosystem version 0.4.3}{
   \itemize{
     \item Updated LIBMF to the newest version (403153c) in the upstream repository.
