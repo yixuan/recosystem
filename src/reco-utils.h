@@ -2,6 +2,7 @@
 #define RECO_UTILS_H
 
 #include <cstdlib>
+#include <cstdint>
 #include <Rcpp.h>
 
 namespace Reco
@@ -58,8 +59,12 @@ inline void free_aligned(void *ptr)
 // Used in random_shuffle()
 inline int rand_less_than(int i)
 {
-    int r = int(R::unif_rand() * RAND_MAX);
-    return r % i;
+    // Typically on Linux and MacOS, RAND_MAX == 2147483647
+    // Windows has different definition, RAND_MAX == 32767
+    // We manually set the limit to make sure that different OS are compatible
+    std::int32_t rand_max = std::numeric_limits<std::int32_t>::max();
+    std::int32_t r = std::int32_t(R::unif_rand() * rand_max);
+    return int(r % i);
 }
 
 
