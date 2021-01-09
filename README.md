@@ -20,7 +20,7 @@
 
 `recosystem` is an R wrapper of the `LIBMF` library developed by
 Yu-Chin Juan, Wei-Sheng Chin, Yong Zhuang, Bo-Wen Yuan, Meng-Yuan Yang,
-and Chih-Jen Lin (http://www.csie.ntu.edu.tw/~cjlin/libmf/),
+and Chih-Jen Lin (https://www.csie.ntu.edu.tw/~cjlin/libmf/),
 an open source library for recommender system using parallel matrix
 factorization.
 
@@ -277,13 +277,13 @@ achieve the best performance:
 1. The default `Makevars` provides generic options that should apply to most
 CPUs.
 2. If your CPU supports SSE3
-([a list of supported CPUs](http://en.wikipedia.org/wiki/SSE3)), add
+([a list of supported CPUs](https://en.wikipedia.org/wiki/SSE3)), add
 ```
 PKG_CPPFLAGS += -DUSESSE
 PKG_CXXFLAGS += -msse3
 ```
 3. If not only SSE3 is supported but also AVX
-([a list of supported CPUs](http://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), add
+([a list of supported CPUs](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions)), add
 ```
 PKG_CPPFLAGS += -DUSEAVX
 PKG_CXXFLAGS += -mavx

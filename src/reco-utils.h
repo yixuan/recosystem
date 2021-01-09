@@ -8,7 +8,7 @@
 namespace Reco
 {
 
-// http://stackoverflow.com/questions/6563120/what-does-posix-memalign-memalign-do
+// https://stackoverflow.com/questions/6563120/what-does-posix-memalign-memalign-do
 inline void *malloc_aligned(size_t align, size_t len)
 {
     // align == 0, or not a power of 2

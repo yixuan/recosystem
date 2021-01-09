@@ -7,6 +7,6 @@ The original authors of LIBMF are:
     Meng-Yuan Yang
 
 The functions malloc_aligned() and free_aligned() in file src/reco-utils.h are
-based on an answer in Stack Overflow: http://stackoverflow.com/a/6563989/3152208
+based on an answer in Stack Overflow: https://stackoverflow.com/a/6563989/3152208
 Credit goes to the author of this answer, "Node"
-(http://stackoverflow.com/users/754373/node).
+(https://stackoverflow.com/users/754373/node).
