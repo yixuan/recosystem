@@ -139,7 +139,7 @@ public:
 
 
 
-RcppExport SEXP reco_predict(SEXP test_data_, SEXP model_path_, SEXP output_)
+RcppExport SEXP reco_predict(SEXP test_data_, SEXP model_path_, SEXP output_, SEXP model_inmemory_)
 {
 BEGIN_RCPP
 
@@ -177,11 +177,29 @@ BEGIN_RCPP
         Rcpp::stop("unsupported output format");
     }
 
-    // Read model file
-    std::string model_path = Rcpp::as<std::string>(model_path_);
-    mf_model* model = mf_load_model(model_path.c_str());
-    if(model == nullptr)
-        Rcpp::stop("cannot load model from " + model_path);
+    // Read model file or in-memory contents
+    mf_model* model;
+    mf_model model_;
+    Rcpp::List model_inmemory = model_inmemory_;
+    if (model_inmemory.size()) {
+        model_ = {
+            Rf_asInteger(model_inmemory["fun"]),
+            Rf_asInteger(model_inmemory["m"]),
+            Rf_asInteger(model_inmemory["n"]),
+            Rf_asInteger(model_inmemory["k"]),
+            *((float*)(INTEGER(model_inmemory["b"]))),
+            (float*)INTEGER(model_inmemory["P"]),
+            (float*)INTEGER(model_inmemory["Q"])
+        };
+        model = &model_;
+    }
+
+    else {
+        std::string model_path = Rcpp::as<std::string>(model_path_);
+        model = mf_load_model(model_path.c_str());
+        if(model == nullptr)
+            Rcpp::stop("cannot load model from " + model_path);
+    }
 
     // Prediction
     mf_int u, v;
@@ -205,7 +223,8 @@ BEGIN_RCPP
     }
     reader->close();
 
-    mf_destroy_model(&model);
+    if (!model_inmemory.size())
+        mf_destroy_model(&model);
     delete exporter;
     delete reader;
 

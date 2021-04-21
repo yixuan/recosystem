@@ -8,7 +8,12 @@
 
 \item{train_data}{An object of class "DataSource" that describes the source
 of training data, typically returned by function
-\code{\link{data_file}()} or \code{\link{data_memory}()}.}
+\code{\link{data_file}()} or \code{\link{data_memory}()}.
+
+Alternatively, can pass a sparse matrix from the `Matrix` package
+in triplets/COO format (class `dgTMatrix` if it has ratings/values,
+class `ngTMatrix` if it's binary), with users corresponding to rows
+and items corresponding to columns.}
 
 \item{opts}{A number of candidate tuning parameter values and extra options in the
 model tuning procedure. See section \strong{Parameters and Options}

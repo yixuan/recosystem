@@ -6,9 +6,18 @@
 \arguments{
 \item{r}{Object returned by \code{\link{Reco}()}.}
 
-\item{train_data}{An object of class "DataSource" that describes the source
+\item{test_data}{An object of class "DataSource" that describes the source
 of testing data, typically returned by function
-\code{\link{data_file}()} or \code{\link{data_memory}()}.}
+\code{\link{data_file}()} or \code{\link{data_memory}()}.
+
+Alternatively, can pass a sparse matrix from the `Matrix` package
+in triplets/COO format (class `dgTMatrix` if it has ratings/values,
+class `ngTMatrix` if it's binary), with users corresponding to rows
+and items corresponding to columns.
+
+If passing a sparse matrix, the results will be output as another
+sparse matrix with the values of the input replaced with those of
+the predictions.}
 
 \item{out_pred}{An object of class \code{Output} that specifies the
 output format of prediction, typically returned by function
@@ -19,7 +28,10 @@ file, \code{\link{out_memory}()} exports the vector of
 predicted values into the return value of \code{$predict()},
 and \code{\link{out_nothing}()} means the result will be
 neither returned nor written into a file (but computation will
-still be conducted).}
+still be conducted).
+
+If passing `NULL`, will output predictions to memory as if passing
+\code{\link{out_memory}()}.}
 }
 \description{
 This method is a member function of class "\code{RecoSys}"

@@ -4,7 +4,7 @@ static R_CallMethodDef callMethods[] = {
     {"reco_tune",    (DL_FUNC) &reco_tune,    3},
     {"reco_train",   (DL_FUNC) &reco_train,   3},
     {"reco_output",  (DL_FUNC) &reco_output,  3},
-    {"reco_predict", (DL_FUNC) &reco_predict, 3},
+    {"reco_predict", (DL_FUNC) &reco_predict, 4},
     {NULL, NULL, 0}
 };
 

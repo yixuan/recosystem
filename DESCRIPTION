@@ -24,9 +24,10 @@ Depends:
     R (>= 3.3.0),
     methods
 Imports:
-    Rcpp (>= 0.11.0)
+    Rcpp (>= 0.11.0),
+    float
 Suggests:
-    knitr, prettydoc
+    knitr, prettydoc, Matrix
 LinkingTo: Rcpp, RcppProgress
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1

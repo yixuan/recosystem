@@ -2,7 +2,8 @@ RecoModel = setRefClass("RecoModel",
                         fields = list(path  = "character",
                                       nuser = "integer",
                                       nitem = "integer",
-                                      nfac  = "integer"))
+                                      nfac  = "integer",
+                                      matrices = "list"))
 
 RecoModel$methods(
     initialize = function()
@@ -11,6 +12,7 @@ RecoModel$methods(
         .self$nuser = 0L
         .self$nitem = 0L
         .self$nfac  = 0L
+        .self$matrices = list()
     }
 )
 
@@ -24,5 +26,8 @@ RecoModel$methods(
         catl("Number of users",    .self$nuser)
         catl("Number of items",    .self$nitem)
         catl("Number of factors",  .self$nfac)
+
+        if (length(.self$matrices))
+            cat("(Contains model matrices in-memory)")
     }
 )
