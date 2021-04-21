@@ -1,8 +1,8 @@
 CXX_STD = CXX11
 
+PKG_CPPFLAGS = @SIMD_CPP_FLAG@
 PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
-
 
 ######## Use SSE #########
 ## Uncomment the lines below if your machine
