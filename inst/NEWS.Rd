@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.4.5}{
+  \itemize{
+    \item Fixed the dependence on \pkg{rmarkdown}, thanks to Kurt Hornik.
+  }
+}
+
 \section{Changes in recosystem version 0.4.4}{
   \itemize{
     \item Fixed the problem that \pkg{recosystem} gives different results on Windows

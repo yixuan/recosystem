@@ -1,8 +1,8 @@
 Package: recosystem
 Type: Package
 Title: Recommender System using Matrix Factorization
-Version: 0.4.4
-Date: 2021-01-09
+Version: 0.4.5
+Date: 2021-05-14
 Author: Yixuan Qiu, Chih-Jen Lin, Yu-Chin Juan, Wei-Sheng Chin,
     Yong Zhuang, Bo-Wen Yuan, Meng-Yuan Yang, and other
     contributors. See file AUTHORS for details.
@@ -26,7 +26,7 @@ Depends:
 Imports:
     Rcpp (>= 0.11.0)
 Suggests:
-    knitr, prettydoc
+    knitr, rmarkdown, prettydoc
 LinkingTo: Rcpp, RcppProgress
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
