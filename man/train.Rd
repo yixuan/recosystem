@@ -46,6 +46,9 @@ The \code{opts} argument is a list that can supply any of the following paramete
 \item{\code{costq_l2}}{Numeric, L2 regularization parameter for item factors. Default is 0.1.}
 \item{\code{lrate}}{Numeric, the learning rate, which can be thought
                     of as the step size in gradient descent. Default is 0.1.}
+\item{\code{c}}{Float, value of negative entries (default 0.0001).
+                Every positive entry is assumed to be 1.
+                This is only relevant for one-class factorization.}           
 \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 \item{\code{nthread}}{Integer, the number of threads for parallel
                       computing. Default is 1.}
@@ -80,6 +83,7 @@ For one-class matrix factorization,
 \describe{
 \item{\code{"row_log"}}{Row-oriented pair-wise logarithmic loss}
 \item{\code{"col_log"}}{Column-oriented pair-wise logarithmic loss}
+\item{\code{"sse"}}{Sum of squared errors}
 }
 }
 

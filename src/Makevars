@@ -15,6 +15,6 @@ PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
 ######## Use AVX #########
 ## Uncomment the lines below and comment flags
 ## in "Use SSE" section if your machine has AVX support
-#PKG_CPPFLAGS += -DUSEAVX
-#PKG_CXXFLAGS += -mavx
+PKG_CPPFLAGS += -DUSEAVX
+PKG_CXXFLAGS += -mavx
 ##########################
