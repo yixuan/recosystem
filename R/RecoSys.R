@@ -58,6 +58,11 @@ Reco = function()
 #' @param train_data An object of class "DataSource" that describes the source
 #'                   of training data, typically returned by function
 #'                   \code{\link{data_file}()} or \code{\link{data_memory}()}.
+#'                   
+#'                   Alternatively, can pass a sparse matrix from the `Matrix` package
+#'                   in triplets/COO format (class `dgTMatrix` if it has ratings/values,
+#'                   class `ngTMatrix` if it's binary), with users corresponding to rows
+#'                   and items corresponding to columns.
 #' @param opts A number of candidate tuning parameter values and extra options in the
 #'             model tuning procedure. See section \strong{Parameters and Options}
 #'             for details.
@@ -168,8 +173,14 @@ use data_file(path) for argument 'train_data' instead")
             stop("the 'cost' parameter has been expanded to and replaced by
 costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         
+        if (inherits(train_data, "dgTMatrix")) {
+            train_data = data_memory(train_data@i, train_data@j, rating=train_data@x, index1=FALSE)
+        } else if (inherits(train_data, "ngTMatrix")) {
+            train_data = data_memory(train_data@i, train_data@j, index1=FALSE)
+        }
+        
         if(!inherits(train_data, "DataSource") || !isS4(train_data))
-            stop("'train_data' should be an object of class 'DataSource'")
+            stop("'train_data' should be an object of class 'DataSource' or a sparse matrix.")
         
         ## Tuning parameters: dim, costp_*, costq_*, lrate
         ## First set up default values
@@ -240,7 +251,14 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' @param train_data An object of class "DataSource" that describes the source
 #'                   of training data, typically returned by function
 #'                   \code{\link{data_file}()} or \code{\link{data_memory}()}.
+#'                   
+#'                   Alternatively, can pass a sparse matrix from the `Matrix` package
+#'                   in triplets/COO format (class `dgTMatrix` if it has ratings/values,
+#'                   class `ngTMatrix` if it's binary), with users corresponding to rows
+#'                   and items corresponding to columns.
 #' @param out_model Path to the model file that will be created.
+#' If passing `NULL`, will hold the model matrices in-memory in the same object. The
+#' matrices can then be accessed under `r$model$matrices`.
 #' @param opts A number of parameters and options for the model training.
 #'             See section \strong{Parameters and Options} for details.
 #'             
@@ -296,16 +314,25 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(data_file(train_set),
+#' r$train(data_file(train_set), out_model = file.path(tempdir(), "saved_model.txt"),
 #'         opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1)
 #' )
 #' 
 #' ## Training model from data in memory
 #' train_df = read.table(train_set, sep = " ", header = FALSE)
 #' set.seed(123)
-#' r$train(data_memory(train_df[, 1], train_df[, 2], train_df[, 3]),
+#' r$train(data_memory(train_df[, 1], train_df[, 2], train_df[, 3]), out_model = NULL,
 #'         opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1)
 #' )
+#' 
+#' ## Using sparse matrix objects
+#' if (require(Matrix)) {
+#'     X = Matrix::sparseMatrix(i=train_df[, 1], j=train_df[, 2], x=train_df[, 3],
+#'                              repr="T", index1=FALSE)
+#'     r$train(X, out_model=NULL,
+#'             opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1))
+#' }
+#' 
 #' 
 #' @author Yixuan Qiu <\url{https://statr.me}>
 #' @seealso \code{$\link{tune}()}, \code{$\link{output}()}, \code{$\link{predict}()}
@@ -323,7 +350,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 NULL
 
 RecoSys$methods(
-    train = function(train_data, out_model = file.path(tempdir(), "model.txt"),
+    train = function(train_data, out_model = NULL,
                      opts = list())
     {
         ## Backward compatibility for version 0.3
@@ -337,10 +364,20 @@ use data_file(path) for argument 'train_data' instead")
             stop("the 'cost' parameter has been expanded to and replaced by
 costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         
-        if(!inherits(train_data, "DataSource") || !isS4(train_data))
-            stop("'train_data' should be an object of class 'DataSource'")
+        if (inherits(train_data, "dgTMatrix")) {
+            train_data = data_memory(train_data@i, train_data@j, rating=train_data@x, index1=FALSE)
+        } else if (inherits(train_data, "ngTMatrix")) {
+            train_data = data_memory(train_data@i, train_data@j, index1=FALSE)
+        }
         
-        model_path = path.expand(out_model)
+        if(!inherits(train_data, "DataSource") || !isS4(train_data))
+            stop("'train_data' should be an object of class 'DataSource' or a sparse matrix.")
+        
+        if (!is.null(out_model)) {
+            model_path = path.expand(out_model)
+        } else {
+            model_path = NULL
+        }
         
         ## Parse options
         opts_train = list(loss = "l2",
@@ -366,11 +403,20 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         model_param = .Call("reco_train", train_data, model_path, opts_train,
                             PACKAGE = "recosystem")
         
-        .self$model$path  = model_path
+        if (!is.null(model_path))
+            .self$model$path  = model_path
         .self$model$nuser = model_param$nuser
         .self$model$nitem = model_param$nitem
         .self$model$nfac  = model_param$nfac
         .self$train_pars  = opts_train
+
+        if ("matrices" %in% names(model_param)) {
+            .self$model$matrices = list(
+                P = new("float32", Data=model_param$matrices$P),
+                Q = new("float32", Data=model_param$matrices$Q),
+                b = new("float32", Data=model_param$matrices$b)
+            )
+        }
         
         invisible(.self)
     }
@@ -414,7 +460,8 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' @examples train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
 #' r = Reco()
 #' set.seed(123) # This is a randomized algorithm
-#' r$train(data_file(train_set), opts = list(dim = 10, nmf = TRUE))
+#' r$train(data_file(train_set), file.path(tempdir(), "model.txt"),
+#'         opts = list(dim = 10, nmf = TRUE))
 #' 
 #' ## Write P and Q matrices to files
 #' P_file = out_file(tempfile())
@@ -462,6 +509,10 @@ use out_file(path) for argument 'out_P' instead")
 use out_file(path) for argument 'out_Q' instead")
             out_Q = out_file(out_Q)
         }
+
+        if (length(.self$model$matrices)) {
+            stop("Model already contains fitted matrices in-memory. Cannot export them elsewhere.")
+        }
         
         ## Check whether model has been trained
         model_path = .self$model$path
@@ -469,6 +520,11 @@ use out_file(path) for argument 'out_Q' instead")
         {
             stop("model not trained yet
 [Call $train() method to train model]")
+        }
+
+        ## In case the matrices are already in-memory and are meant to be returned in-memory
+        if (out_Q@type == "memory" && length(.self$model$matrices)) {
+            return(list(P = .self$model$matrices$P, Q = .self$model$matrices$Q))
         }
         
         res = .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
@@ -507,9 +563,18 @@ use out_file(path) for argument 'out_Q' instead")
 #' @name predict
 #' 
 #' @param r Object returned by \code{\link{Reco}()}.
-#' @param train_data An object of class "DataSource" that describes the source
-#'                   of testing data, typically returned by function
-#'                   \code{\link{data_file}()} or \code{\link{data_memory}()}.
+#' @param test_data An object of class "DataSource" that describes the source
+#'                  of testing data, typically returned by function
+#'                  \code{\link{data_file}()} or \code{\link{data_memory}()}.
+#'                  
+#'                  Alternatively, can pass a sparse matrix from the `Matrix` package
+#'                  in triplets/COO format (class `dgTMatrix` if it has ratings/values,
+#'                  class `ngTMatrix` if it's binary), with users corresponding to rows
+#'                  and items corresponding to columns.
+#'                  
+#'                  If passing a sparse matrix, the results will be output as another
+#'                  sparse matrix with the values of the input replaced with those of
+#'                  the predictions.
 #' @param out_pred An object of class \code{Output} that specifies the
 #'                 output format of prediction, typically returned by function
 #'                 \code{\link{out_file}()}, \code{\link{out_memory}()} or
@@ -520,6 +585,9 @@ use out_file(path) for argument 'out_Q' instead")
 #'                 and \code{\link{out_nothing}()} means the result will be
 #'                 neither returned nor written into a file (but computation will
 #'                 still be conducted).
+#'                 
+#'                 If passing `NULL`, will output predictions to memory as if passing
+#'                 \code{\link{out_memory}()}.
 #'
 #' @examples \dontrun{
 #' train_file = data_file(system.file("dat", "smalltrain.txt", package = "recosystem"))
@@ -562,7 +630,7 @@ use out_file(path) for argument 'out_Q' instead")
 NULL
 
 RecoSys$methods(
-    predict = function(test_data, out_pred = out_file("predict.txt"))
+    predict = function(test_data, out_pred = out_memory())
     {
         ## Backward compatibility for version 0.3
         if(is.character(test_data))
@@ -577,25 +645,64 @@ use data_file(path) for argument 'test_data' instead")
 use out_file(path) for argument 'out_pred' instead")
             out_pred = out_file(out_pred)
         }
+
+        if (is.null(out_pred))
+            out_pred = out_memory()
+        
+        output_matrix = FALSE
+        if (inherits(test_data, "dgTMatrix")) {
+            output_matrix = TRUE
+            skeleton_matrix = test_data
+            test_data = data_memory(test_data@i, test_data@j, rating=test_data@x, index1=FALSE)
+        } else if (inherits(test_data, "ngTMatrix")) {
+            output_matrix = TRUE
+            skeleton_matrix = test_data
+            test_data = data_memory(test_data@i, test_data@j, index1=FALSE)
+        }
         
         if(!inherits(test_data, "DataSource") || !isS4(test_data))
-            stop("'test_data' should be an object of class 'DataSource'")
+            stop("'test_data' should be an object of class 'DataSource' or a sparse matrix.")
         
         ## Check whether model has been trained
         model_path = .self$model$path
-        if(!file.exists(model_path))
+        if(!file.exists(model_path) && !length(.self$model$matrices))
         {
             stop("model not trained yet
 [Call $train() method to train model]")
         }
+
+        model_inmemory = list()
+        if (length(.self$model$matrices)) {
+            model_inmemory = list(
+                P = .self$model$matrices$P@Data,
+                Q = .self$model$matrices$Q@Data,
+                b = .self$model$matrices$b@Data,
+                m = .self$model$nuser,
+                n = .self$model$nitem,
+                k = .self$model$nfac,
+                fun = .self$train_pars$loss
+            )
+        }
         
-        res = .Call("reco_predict", test_data, model_path, out_pred, PACKAGE = "recosystem")
+        res = .Call("reco_predict", test_data, model_path, out_pred, model_inmemory, PACKAGE = "recosystem")
         
         if(out_pred@type == "file")
             cat(sprintf("prediction output generated at %s\n", out_pred@dest))
         
         if(out_pred@type != "memory")
             return(invisible(NULL))
+        
+        if (output_matrix) {
+            if (inherits(skeleton_matrix, "ngTMatrix")) {
+                temp = attributes(skeleton_matrix)
+                temp$class = "dgTMatrix"
+                temp$x = res
+                attributes(skeleton_matrix) = temp
+            } else if (inherits(skeleton_matrix, "dgTMatrix")) {
+                skeleton_matrix@x = res
+            }
+            res = skeleton_matrix
+        }
         
         return(res)
     }

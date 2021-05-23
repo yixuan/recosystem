@@ -40,7 +40,8 @@ r$output(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
 train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
 r = Reco()
 set.seed(123) # This is a randomized algorithm
-r$train(data_file(train_set), opts = list(dim = 10, nmf = TRUE))
+r$train(data_file(train_set), file.path(tempdir(), "model.txt"),
+        opts = list(dim = 10, nmf = TRUE))
 
 ## Write P and Q matrices to files
 P_file = out_file(tempfile())

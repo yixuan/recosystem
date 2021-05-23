@@ -1,6 +1,8 @@
 useDynLib(recosystem)
 import(methods)
 import(Rcpp)
+importClassesFrom(float,float32)
+importFrom(float,float)
 export(Reco)
 export(data_file, data_memory)
 export(out_file, out_memory, out_nothing)

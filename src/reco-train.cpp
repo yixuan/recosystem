@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <Rcpp.h>
+#include <Rcpp/unwindProtect.h>
 #include "mf.h"
 #include "reco-read-data.h"
 
@@ -66,7 +67,16 @@ mf_parameter parse_train_option(SEXP opts_)
     return param;
 }
 
+SEXP safe_mat(void *size_)
+{
+    int *size = (int*)size_;
+    return Rcpp::IntegerMatrix(size[0], size[1]);
+}
 
+SEXP safe_scalar(void *size_)
+{
+    return Rcpp::IntegerVector(1);
+}
 
 RcppExport SEXP reco_train(SEXP train_data_, SEXP model_path_, SEXP opts_)
 {
@@ -74,12 +84,16 @@ BEGIN_RCPP
 
     DataReader* data_reader = get_reader(train_data_);
 
-    std::string model_path = Rcpp::as<std::string>(model_path_);
+    std::string model_path;
+    if (model_path_ != R_NilValue)
+        model_path = Rcpp::as<std::string>(model_path_);
     mf_parameter param = parse_train_option(opts_);
 
     mf_problem tr = read_data(data_reader);
     mf_model* model = mf_train(&tr, param);
-    mf_int status = mf_save_model(model, model_path.c_str());
+    mf_int status = 0;
+    if (model_path_ != R_NilValue)
+        status = mf_save_model(model, model_path.c_str());
 
     if(status != 0)
     {
@@ -95,6 +109,31 @@ BEGIN_RCPP
         Rcpp::Named("nitem") = Rcpp::wrap(model->n),
         Rcpp::Named("nfac")  = Rcpp::wrap(model->k)
     );
+
+    if (model_path_ == R_NilValue) {
+        try
+        {
+            int size_P[] = {model->k, model->m};
+            int size_Q[] = {model->k, model->n};
+            Rcpp::List matrices = Rcpp::List::create(
+                Rcpp::_["P"] = Rcpp::unwindProtect(safe_mat, &size_P),
+                Rcpp::_["Q"] = Rcpp::unwindProtect(safe_mat, &size_Q),
+                Rcpp::_["b"] = Rcpp::unwindProtect(safe_scalar, (void*)nullptr)
+            );
+            memcpy((float*)INTEGER(matrices["P"]), model->P, (size_t)model->k*(size_t)model->m*sizeof(float));
+            memcpy((float*)INTEGER(matrices["Q"]), model->Q, (size_t)model->k*(size_t)model->n*sizeof(float));
+            *((float*)INTEGER(matrices["b"])) = model->b;
+            model_param["matrices"] = matrices;
+        }
+
+        catch(const std::exception& e)
+        {
+            mf_destroy_model(&model);
+            delete [] tr.R;
+            delete data_reader;
+            throw e;
+        }
+    }
 
     mf_destroy_model(&model);
     delete [] tr.R;
