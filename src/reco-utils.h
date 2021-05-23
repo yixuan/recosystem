@@ -67,6 +67,22 @@ inline int rand_less_than(int i)
     return int(r % i);
 }
 
+// On Mac, std::random_shuffle() uses a "backward" implementation,
+// which leads to different results from Windows and Linux
+// Therefore, we use a consistent implementation based on GCC
+template <typename RandomAccessIterator, typename RandomNumberGenerator>
+void random_shuffle(RandomAccessIterator first, RandomAccessIterator last, RandomNumberGenerator& gen)
+{
+    if(first == last)
+        return;
+    for(RandomAccessIterator i = first + 1; i != last; ++i)
+    {
+        RandomAccessIterator j = first + gen((i - first) + 1);
+        if(i != j)
+            std::iter_swap(i, j);
+    }
+}
+
 
 } // namespace Reco
 

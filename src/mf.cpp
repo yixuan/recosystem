@@ -1115,7 +1115,7 @@ vector<mf_int> Utility::gen_random_map(mf_int size)
     for(mf_int i = 0; i < size; ++i)
         map[i] = i;
     // shuffle(map.begin(), map.end(), generator);
-    random_shuffle(map.begin(), map.end(), Reco::rand_less_than);
+    Reco::random_shuffle(map.begin(), map.end(), Reco::rand_less_than);
     return map;
 }
 
@@ -3339,7 +3339,7 @@ mf_double CrossValidatorBase::do_cross_validation()
     for(mf_int block = 0; block < nr_bins*nr_bins; ++block)
         cv_blocks.push_back(block);
     // shuffle(cv_blocks.begin(), cv_blocks.end(), generator);
-    random_shuffle(cv_blocks.begin(), cv_blocks.end(), Reco::rand_less_than);
+    Reco::random_shuffle(cv_blocks.begin(), cv_blocks.end(), Reco::rand_less_than);
 
     if(!quiet)
     {
