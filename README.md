@@ -84,6 +84,7 @@ training or testing), which can be created by the following two functions:
 
 - `data_file()`: Specifies a data set from a file in the hard disk
 - `data_memory()`: Specifies a data set from R objects
+- `data_matrix()`: Specifies a data set from a sparse matrix
 
 And an object of class `Output` describes how the result should be output,
 typically returned by the functions below:

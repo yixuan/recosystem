@@ -108,13 +108,13 @@ collaborative filtering, matrix completion, matrix recovery, etc.
 A popular technique to solve the recommender system problem is the matrix
 factorization method. The idea is to approximate the whole rating matrix
 $R_{m\times n}$ by the product of two matrices of lower dimensions,
-$P_{k\times m}$ and $Q_{k\times n}$, such that
+$P_{n\times k}$ and $Q_{n\times k}$, such that
 
-$$R\approx P'Q$$
+$$R\approx PQ'$$
 
-Let $p_u$ be the $u$-th column of $P$, and $q_v$ be the
-$v$-th column of $Q$, then the rating given by user $u$ on item $v$
-would be predicted as $p'_u q_v$.
+Let $p_u$ be the $u$-th row of $P$, and $q_v$ be the
+$v$-th row of $Q$, then the rating given by user $u$ on item $v$
+would be predicted as $p_u q'_v$.
 
 A typical solution for $P$ and $Q$ is given by the following optimization
 problem [@FPSG2015; @LRSG]:
@@ -155,6 +155,7 @@ training or testing), which can be created by the following two functions:
 
 - `data_file()`: Specifies a data set from a file in the hard disk
 - `data_memory()`: Specifies a data set from R objects
+- `data_matrix()`: Specifies a data set from a sparse matrix
 
 And an object of class `Output` describes how the result should be output,
 typically returned by the functions below:
