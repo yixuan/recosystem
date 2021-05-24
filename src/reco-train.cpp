@@ -26,6 +26,9 @@ mf_parameter parse_train_option(SEXP opts_)
     if(param.lambda_p1 < 0 || param.lambda_p2 < 0 ||
        param.lambda_q1 < 0 || param.lambda_q2 < 0)
         throw std::invalid_argument("regularization parameters should not be negative");
+
+    // For one-class factorization
+    param.c = Rcpp::as<mf_float>(opts["c"]);
     
     // Loss function
     param.fun = Rcpp::as<mf_int>(opts["loss"]);
