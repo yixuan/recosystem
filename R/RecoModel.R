@@ -26,8 +26,7 @@ RecoModel$methods(
         catl("Number of users",    .self$nuser)
         catl("Number of items",    .self$nitem)
         catl("Number of factors",  .self$nfac)
-
-        if (length(.self$matrices))
-            cat("(Contains model matrices in-memory)")
+        if(length(.self$matrices))
+            cat("(Contains in-memory model matrices)")
     }
 )

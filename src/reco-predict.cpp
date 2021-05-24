@@ -181,20 +181,19 @@ BEGIN_RCPP
     mf_model* model;
     mf_model model_;
     Rcpp::List model_inmemory = model_inmemory_;
-    if (model_inmemory.size()) {
+    if(model_inmemory.size())
+    {
         model_ = {
-            Rf_asInteger(model_inmemory["fun"]),
-            Rf_asInteger(model_inmemory["m"]),
-            Rf_asInteger(model_inmemory["n"]),
-            Rf_asInteger(model_inmemory["k"]),
-            *((float*)(INTEGER(model_inmemory["b"]))),
-            (float*)INTEGER(model_inmemory["P"]),
-            (float*)INTEGER(model_inmemory["Q"])
+            Rcpp::as<mf_int>(model_inmemory["fun"]),
+            Rcpp::as<mf_int>(model_inmemory["m"]),
+            Rcpp::as<mf_int>(model_inmemory["n"]),
+            Rcpp::as<mf_int>(model_inmemory["k"]),
+            *((float*) INTEGER(model_inmemory["b"])),
+            (float*) INTEGER(model_inmemory["P"]),
+            (float*) INTEGER(model_inmemory["Q"])
         };
         model = &model_;
-    }
-
-    else {
+    } else {
         std::string model_path = Rcpp::as<std::string>(model_path_);
         model = mf_load_model(model_path.c_str());
         if(model == nullptr)
@@ -223,7 +222,7 @@ BEGIN_RCPP
     }
     reader->close();
 
-    if (!model_inmemory.size())
+    if(!model_inmemory.size())
         mf_destroy_model(&model);
     delete exporter;
     delete reader;

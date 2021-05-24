@@ -69,7 +69,7 @@ mf_parameter parse_train_option(SEXP opts_)
 
 SEXP safe_mat(void *size_)
 {
-    int *size = (int*)size_;
+    int *size = (int*) size_;
     return Rcpp::IntegerMatrix(size[0], size[1]);
 }
 
@@ -85,20 +85,24 @@ BEGIN_RCPP
     DataReader* data_reader = get_reader(train_data_);
 
     std::string model_path;
-    if (model_path_ != R_NilValue)
+    // If model_path_ is NULL, the model matrices will be stored in memory,
+    // and the path is not used
+    if(model_path_ != R_NilValue)
         model_path = Rcpp::as<std::string>(model_path_);
     mf_parameter param = parse_train_option(opts_);
 
     mf_problem tr = read_data(data_reader);
     mf_model* model = mf_train(&tr, param);
     mf_int status = 0;
-    if (model_path_ != R_NilValue)
+    // If model_path_ is not NULL, save the model matrices to hard disk
+    if(model_path_ != R_NilValue)
         status = mf_save_model(model, model_path.c_str());
 
     if(status != 0)
     {
         mf_destroy_model(&model);
         delete[] tr.R;
+        delete data_reader;
 
         std::string msg = "cannot save model to " + model_path;
         Rcpp::stop(msg.c_str());
@@ -107,25 +111,32 @@ BEGIN_RCPP
     Rcpp::List model_param = Rcpp::List::create(
         Rcpp::Named("nuser") = Rcpp::wrap(model->m),
         Rcpp::Named("nitem") = Rcpp::wrap(model->n),
-        Rcpp::Named("nfac")  = Rcpp::wrap(model->k)
+        Rcpp::Named("nfac")  = Rcpp::wrap(model->k),
+        Rcpp::Named("matrices") = Rcpp::List::create()
     );
 
-    if (model_path_ == R_NilValue) {
+    // Store model matrices in memory
+    if(model_path_ == R_NilValue)
+    {
         try
         {
             int size_P[] = {model->k, model->m};
             int size_Q[] = {model->k, model->n};
+            // The "matrices" entry in RecoModel
             Rcpp::List matrices = Rcpp::List::create(
-                Rcpp::_["P"] = Rcpp::unwindProtect(safe_mat, &size_P),
-                Rcpp::_["Q"] = Rcpp::unwindProtect(safe_mat, &size_Q),
-                Rcpp::_["b"] = Rcpp::unwindProtect(safe_scalar, (void*)nullptr)
+                Rcpp::Named("P") = Rcpp::unwindProtect(safe_mat, &size_P),
+                Rcpp::Named("Q") = Rcpp::unwindProtect(safe_mat, &size_Q),
+                Rcpp::Named("b") = Rcpp::unwindProtect(safe_scalar, (void*)nullptr)
             );
-            memcpy((float*)INTEGER(matrices["P"]), model->P, (size_t)model->k*(size_t)model->m*sizeof(float));
-            memcpy((float*)INTEGER(matrices["Q"]), model->Q, (size_t)model->k*(size_t)model->n*sizeof(float));
-            *((float*)INTEGER(matrices["b"])) = model->b;
+            std::size_t k = model->k;
+            std::size_t m = model->m;
+            std::size_t n = model->n;
+            std::memcpy((float*) INTEGER(matrices["P"]), model->P, k * m * sizeof(float));
+            std::memcpy((float*) INTEGER(matrices["Q"]), model->Q, k * n * sizeof(float));
+            *((float*) INTEGER(matrices["b"])) = model->b;
+
             model_param["matrices"] = matrices;
         }
-
         catch(const std::exception& e)
         {
             mf_destroy_model(&model);
