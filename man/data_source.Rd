@@ -4,11 +4,14 @@
 \alias{data_source}
 \alias{data_file}
 \alias{data_memory}
+\alias{data_matrix}
 \title{Specifying Data Source}
 \usage{
 data_file(path, index1 = FALSE, ...)
 
 data_memory(user_index, item_index, rating = NULL, index1 = FALSE, ...)
+
+data_matrix(mat, ...)
 }
 \arguments{
 \item{path}{Path to the data file.}
@@ -25,6 +28,10 @@ data_memory(user_index, item_index, rating = NULL, index1 = FALSE, ...)
 \item{rating}{A numeric vector of the observed entries in the rating matrix.
 Can be specified as \code{NULL} for testing data, in which case
 it is ignored.}
+
+\item{mat}{A \code{dgTMatrix} (if it has ratings/values) or \code{ngTMatrix}
+(if it is binary) sparse matrix, with users corresponding to rows
+and items corresponding to columns.}
 }
 \value{
 An object of class "DataSource" as required by
@@ -34,13 +41,15 @@ An object of class "DataSource" as required by
 Functions in this page are used to specify the source of data in the recommender system.
 They are intended to provide the input argument of functions such as
 \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
-Currently two data formats are supported: data file (via function \code{data_file()}),
-and data in memory as R objects (via function \code{data_memory()}).
+Currently three data formats are supported: data file (via function \code{data_file()}),
+data in memory as R objects (via function \code{data_memory()}), and data stored as a
+sparse matrix (via function \code{data_matrix()}).
 }
 \details{
 In \code{$\link{tune}()} and \code{$\link{train}()}, functions in this page
-are used to specify the source of training data. \code{data_file()}
-expects a text file that describes a sparse matrix
+are used to specify the source of training data.
+
+\code{data_file()} expects a text file that describes a sparse matrix
 in triplet form, i.e., each line in the file contains three numbers
 \preformatted{row col value}
 representing a number in the rating matrix
@@ -49,16 +58,20 @@ with its location. In real applications, it typically looks like
 The \file{smalltrain.txt} file in the \file{dat} directory of this package
 shows an example of training data file.
 
-From version 0.4 \pkg{recosystem} supports two special types of matrix
-factorization: the binary matrix factorization (BMF), and the one-class
-matrix factorization (OCMF). BMF requires ratings to take value from
-\eqn{{-1, 1}}, and OCMF requires all the ratings to be positive.
+If the sparse matrix is given as a \code{dgTMatrix} or \code{ngTMatrix} object
+(triplets/COO format defined in the \pkg{Matrix} package), then the function
+\code{data_matrix()} can be used to specify the data source.
 
 If user index, item index, and ratings are stored as R vectors in memory,
 they can be passed to \code{data_memory()} to form the training data source.
 
 By default the user index and item index start with zeros, and the option
 \code{index1 = TRUE} can be set if they start with ones.
+
+From version 0.4 \pkg{recosystem} supports two special types of matrix
+factorization: the binary matrix factorization (BMF), and the one-class
+matrix factorization (OCMF). BMF requires ratings to take value from
+\eqn{{-1, 1}}, and OCMF requires all the ratings to be positive.
 
 In \code{$\link{predict}()}, functions in this page provide the source of
 testing data. The testing data have the same format as training data, except

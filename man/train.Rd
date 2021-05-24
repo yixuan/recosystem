@@ -8,16 +8,12 @@
 
 \item{train_data}{An object of class "DataSource" that describes the source
 of training data, typically returned by function
-\code{\link{data_file}()} or \code{\link{data_memory}()}.
-
-Alternatively, can pass a sparse matrix from the `Matrix` package
-in triplets/COO format (class `dgTMatrix` if it has ratings/values,
-class `ngTMatrix` if it's binary), with users corresponding to rows
-and items corresponding to columns.}
+\code{\link{data_file}()}, \code{\link{data_memory}()},
+or \code{\link{data_matrix}()}.}
 
 \item{out_model}{Path to the model file that will be created.
-If passing `NULL`, will hold the model matrices in-memory in the same object. The
-matrices can then be accessed under `r$model$matrices`.}
+If passing \code{NULL}, the model will be stored in-memory, and
+model matrices can then be accessed under \code{r$model$matrices}.}
 
 \item{opts}{A number of parameters and options for the model training.
 See section \strong{Parameters and Options} for details.}
@@ -86,27 +82,32 @@ For one-class matrix factorization,
 \examples{
 ## Training model from a data file
 train_set = system.file("dat", "smalltrain.txt", package = "recosystem")
+train_data = data_file(train_set)
 r = Reco()
 set.seed(123) # This is a randomized algorithm
-r$train(data_file(train_set), out_model = file.path(tempdir(), "saved_model.txt"),
+# The model will be saved to a file
+r$train(train_data, out_model = file.path(tempdir(), "model.txt"),
         opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1)
 )
 
 ## Training model from data in memory
 train_df = read.table(train_set, sep = " ", header = FALSE)
+train_data = data_memory(train_df[, 1], train_df[, 2], rating = train_df[, 3])
 set.seed(123)
-r$train(data_memory(train_df[, 1], train_df[, 2], train_df[, 3]), out_model = NULL,
+# The model will be stored in memory
+r$train(train_data, out_model = NULL,
         opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1)
 )
 
-## Using sparse matrix objects
-if (require(Matrix)) {
-    X = Matrix::sparseMatrix(i=train_df[, 1], j=train_df[, 2], x=train_df[, 3],
-                             repr="T", index1=FALSE)
-    r$train(X, out_model=NULL,
+## Training model from data in a sparse matrix
+if(require(Matrix))
+{
+    mat = Matrix::sparseMatrix(i = train_df[, 1], j = train_df[, 2], x = train_df[, 3],
+                               repr = "T", index1 = FALSE)
+    train_data = data_matrix(mat)
+    r$train(train_data, out_model = NULL,
             opts = list(dim = 20, costp_l2 = 0.01, costq_l2 = 0.01, nthread = 1))
 }
-
 
 }
 \references{
