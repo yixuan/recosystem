@@ -9,12 +9,14 @@ setClass("DataSource",
 #' Functions in this page are used to specify the source of data in the recommender system.
 #' They are intended to provide the input argument of functions such as
 #' \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
-#' Currently two data formats are supported: data file (via function \code{data_file()}),
-#' and data in memory as R objects (via function \code{data_memory()}).
+#' Currently three data formats are supported: data file (via function \code{data_file()}),
+#' data in memory as R objects (via function \code{data_memory()}), and data stored as a
+#' sparse matrix (via function \code{data_matrix()}).
 #' 
 #' In \code{$\link{tune}()} and \code{$\link{train}()}, functions in this page
-#' are used to specify the source of training data. \code{data_file()}
-#' expects a text file that describes a sparse matrix
+#' are used to specify the source of training data.
+#' 
+#' \code{data_file()} expects a text file that describes a sparse matrix
 #' in triplet form, i.e., each line in the file contains three numbers
 #' \preformatted{row col value}
 #' representing a number in the rating matrix
@@ -23,16 +25,20 @@ setClass("DataSource",
 #' The \file{smalltrain.txt} file in the \file{dat} directory of this package
 #' shows an example of training data file.
 #' 
-#' From version 0.4 \pkg{recosystem} supports two special types of matrix
-#' factorization: the binary matrix factorization (BMF), and the one-class
-#' matrix factorization (OCMF). BMF requires ratings to take value from
-#' \eqn{{-1, 1}}, and OCMF requires all the ratings to be positive.
+#' If the sparse matrix is given as a \code{dgTMatrix} or \code{ngTMatrix} object
+#' (triplets/COO format defined in the \pkg{Matrix} package), then the function
+#' \code{data_matrix()} can be used to specify the data source.
 #' 
 #' If user index, item index, and ratings are stored as R vectors in memory,
 #' they can be passed to \code{data_memory()} to form the training data source.
 #' 
 #' By default the user index and item index start with zeros, and the option
 #' \code{index1 = TRUE} can be set if they start with ones.
+#' 
+#' From version 0.4 \pkg{recosystem} supports two special types of matrix
+#' factorization: the binary matrix factorization (BMF), and the one-class
+#' matrix factorization (OCMF). BMF requires ratings to take value from
+#' \eqn{{-1, 1}}, and OCMF requires all the ratings to be positive.
 #' 
 #' In \code{$\link{predict}()}, functions in this page provide the source of
 #' testing data. The testing data have the same format as training data, except
@@ -48,6 +54,9 @@ setClass("DataSource",
 #'               it is ignored.
 #' @param index1 Whether the user indices and item indices start with 1
 #'               (\code{index1 = TRUE}) or 0 (\code{index1 = FALSE}).
+#' @param mat A \code{dgTMatrix} (if it has ratings/values) or \code{ngTMatrix}
+#'            (if it is binary) sparse matrix, with users corresponding to rows
+#'            and items corresponding to columns.
 #' @param \dots Currently unused.
 #' @return An object of class "DataSource" as required by
 #' \code{$\link{tune}()}, \code{$\link{train}()}, and \code{$\link{predict}()}.
@@ -88,4 +97,18 @@ data_memory = function(user_index, item_index, rating = NULL, index1 = FALSE, ..
     
     new("DataSource", source = list(user_index, item_index, rating),
                       index1 = index1, type = "memory")
+}
+
+#' @rdname data_source
+#' @export
+data_matrix = function(mat, ...)
+{
+    if(inherits(mat, "dgTMatrix"))
+    {
+        data_memory(mat@i, mat@j, rating = mat@x, index1 = FALSE)
+    } else if(inherits(mat, "ngTMatrix")) {
+        data_memory(mat@i, mat@j, index1 = FALSE)
+    } else {
+        stop("unsupported matrix type")
+    }
 }
