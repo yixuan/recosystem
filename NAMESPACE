@@ -1,4 +1,4 @@
-useDynLib(recosystem)
+useDynLib(recosystem, .registration = TRUE)
 import(methods)
 import(Rcpp)
 importClassesFrom(float, float32)

@@ -206,8 +206,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
             stop("nmf must be TRUE if loss == 'kl'")
         opts_train$loss = as.integer(loss_fun[opts_train$loss])
 
-        loss_fun = .Call("reco_tune", train_data, opts_tune, opts_train,
-                         PACKAGE = "recosystem")
+        loss_fun = .Call(reco_tune, train_data, opts_tune, opts_train)
 
         opts_tune$loss_fun = loss_fun
         opts_tune = na.omit(opts_tune)
@@ -380,7 +379,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 
         ## `model_path = NULL` indicates that the model will not be saved to hard disk
         model_path = if(is.null(out_model)) NULL else path.expand(out_model)
-        model_param = .Call("reco_train", train_data, model_path, opts_train, PACKAGE = "recosystem")
+        model_param = .Call(reco_train, train_data, model_path, opts_train)
 
         .self$model$path = if(is.null(out_model)) "" else model_path
         .self$model$nuser = model_param$nuser
@@ -529,7 +528,7 @@ use out_file(path) for argument 'out_Q' instead")
         }
 
         ## Otherwise, first read model file, and then output matrices
-        res = .Call("reco_output", model_path, out_P, out_Q, PACKAGE = "recosystem")
+        res = .Call(reco_output, model_path, out_P, out_Q)
 
         if(out_P@type == "file")
             cat(sprintf("P matrix generated at %s\n", out_P@dest))
@@ -672,7 +671,7 @@ use out_file(path) for argument 'out_pred' instead")
                 fun = .self$train_pars$loss
             )
         }
-        res = .Call("reco_predict", test_data, model_path, out_pred, model_inmemory, PACKAGE = "recosystem")
+        res = .Call(reco_predict, test_data, model_path, out_pred, model_inmemory)
 
         if(out_pred@type == "file")
             cat(sprintf("prediction output generated at %s\n", out_pred@dest))
