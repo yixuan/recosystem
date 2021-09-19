@@ -1,6 +1,16 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.5}{
+  \itemize{
+    \item Added function \code{data_matrix()} to support data from a sparse
+          matrix object in R, contributed by David Cortes
+          (\href{https://github.com/david-cortes}{@david-cortes},
+          \href{https://github.com/yixuan/recosystem/pull/17}{#17}).
+    \item Fixed the different result on macOS.
+  }
+}
+
 \section{Changes in recosystem version 0.4.5}{
   \itemize{
     \item Fixed the dependence on \pkg{rmarkdown}, thanks to Kurt Hornik.
@@ -126,5 +136,5 @@
     \item Initial version.
   }
 }
- 
-  
+
+
