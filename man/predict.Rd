@@ -32,7 +32,7 @@ Prior to calling this method, model needs to be trained using member function
 The common usage of this method is
 \preformatted{r = Reco()
 r$train(...)
-r$predict(test_data, out_pred = data_file("predict.txt")}
+r$predict(test_data, out_pred = out_file("predict.txt")}
 }
 \examples{
 \dontrun{

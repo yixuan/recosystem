@@ -34,7 +34,7 @@ Prior to calling this method, model needs to be trained using member function
 The common usage of this method is
 \preformatted{r = Reco()
 r$train(...)
-r$output(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
+r$output(out_P = out_file("mat_P.txt"), out_Q = out_file("mat_Q.txt"))}
 }
 \examples{
 train_set = system.file("dat", "smalltrain.txt", package = "recosystem")

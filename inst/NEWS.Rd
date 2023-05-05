@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{News for Package "recosystem"}
 
+\section{Changes in recosystem version 0.5.1}{
+  \itemize{
+    \item Fixed incorrect use of \code{data_file()} functions in the documentation, pointed out by Michael Lai.
+  }
+}
+
 \section{Changes in recosystem version 0.5}{
   \itemize{
     \item Added function \code{data_matrix()} to support data from a sparse

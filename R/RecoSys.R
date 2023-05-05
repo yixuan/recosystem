@@ -412,7 +412,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' The common usage of this method is
 #' \preformatted{r = Reco()
 #' r$train(...)
-#' r$output(out_P = data_file("mat_P.txt"), out_Q = data_file("mat_Q.txt"))}
+#' r$output(out_P = out_file("mat_P.txt"), out_Q = out_file("mat_Q.txt"))}
 #'
 #' @name output
 #'
@@ -557,7 +557,7 @@ use out_file(path) for argument 'out_Q' instead")
 #' The common usage of this method is
 #' \preformatted{r = Reco()
 #' r$train(...)
-#' r$predict(test_data, out_pred = data_file("predict.txt")}
+#' r$predict(test_data, out_pred = out_file("predict.txt")}
 #'
 #' @name predict
 #'
