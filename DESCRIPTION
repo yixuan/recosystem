@@ -19,7 +19,6 @@ License: BSD_3_clause + file LICENSE
 Copyright: see file COPYRIGHTS
 URL: https://github.com/yixuan/recosystem
 BugReports: https://github.com/yixuan/recosystem/issues
-SystemRequirements: C++11
 Depends:
     R (>= 3.3.0),
     methods
