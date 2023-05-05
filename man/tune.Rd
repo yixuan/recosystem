@@ -76,6 +76,9 @@ See below for the list of available parameters and options:
 \item{\code{loss}}{Character string, the loss function. Default is "l2", see
                    section \strong{Parameters and Options} in \code{$\link{train}()}
                    for details.}
+\item{\code{c}}{Float, value of negative entries (default 0.0001).
+                Every positive entry is assumed to be 1.
+                This is only relevant for one-class factorization.}
 \item{\code{nfold}}{Integer, the number of folds in cross validation. Default is 5.}
 \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 \item{\code{nthread}}{Integer, the number of threads for parallel

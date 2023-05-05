@@ -108,6 +108,9 @@ Reco = function()
 #' \item{\code{loss}}{Character string, the loss function. Default is "l2", see
 #'                    section \strong{Parameters and Options} in \code{$\link{train}()}
 #'                    for details.}
+#' \item{\code{c}}{Float, value of negative entries (default 0.0001).
+#'                 Every positive entry is assumed to be 1.
+#'                 This is only relevant for one-class factorization.}
 #' \item{\code{nfold}}{Integer, the number of folds in cross validation. Default is 5.}
 #' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 #' \item{\code{nthread}}{Integer, the number of threads for parallel
@@ -192,14 +195,14 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
         opts_tune = expand.grid(opts_tune)
 
         ## Other options
-        opts_train = list(loss = "l2", nfold = 5L, niter = 20L, nthread = 1L,
+        opts_train = list(loss = "l2", nfold = 5L, niter = 20L, nthread = 1L, c = 0.0001,
                           nbin = 20L, nmf = FALSE, verbose = FALSE, progress = TRUE)
         opts_common = intersect(names(opts_train), names(opts))
         opts_train[opts_common] = opts[opts_common]
 
         loss_fun = c("l2" = 0, "l1" = 1, "kl" = 2,
                      "log" = 5, "squared_hinge" = 6, "hinge" = 7,
-                     "row_log" = 10, "col_log" = 11)
+                     "row_log" = 10, "col_log" = 11, "sse" = 12)
         if(!(opts_train$loss %in% names(loss_fun)))
             stop(paste("'loss' must be one of", paste(names(loss_fun), collapse = ", "), sep = "\n"))
         if(opts_train$loss == "kl" && (!opts_train$nmf))
@@ -259,6 +262,9 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' \item{\code{costq_l2}}{Numeric, L2 regularization parameter for item factors. Default is 0.1.}
 #' \item{\code{lrate}}{Numeric, the learning rate, which can be thought
 #'                     of as the step size in gradient descent. Default is 0.1.}
+#' \item{\code{c}}{Float, value of negative entries (default 0.0001).
+#'                 Every positive entry is assumed to be 1.
+#'                 This is only relevant for one-class factorization.}           
 #' \item{\code{niter}}{Integer, the number of iterations. Default is 20.}
 #' \item{\code{nthread}}{Integer, the number of threads for parallel
 #'                       computing. Default is 1.}
@@ -293,6 +299,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 #' \describe{
 #' \item{\code{"row_log"}}{Row-oriented pair-wise logarithmic loss}
 #' \item{\code{"col_log"}}{Column-oriented pair-wise logarithmic loss}
+#' \item{\code{"sse"}}{Sum of squared errors}
 #' }
 #'
 #' @examples ## Training model from a data file
@@ -361,7 +368,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
                           dim = 10L,
                           costp_l1 = 0, costp_l2 = 0.1,
                           costq_l1 = 0, costq_l2 = 0.1,
-                          lrate = 0.1,
+                          lrate = 0.1, c = 0.0001,
                           niter = 20L, nthread = 1L, nbin = 20L,
                           nmf = FALSE, verbose = TRUE)
         opts = as.list(opts)
@@ -370,7 +377,7 @@ costp_l1, costp_l2, costq_l1, and costq_l2 since version 0.4")
 
         loss_fun = c("l2" = 0, "l1" = 1, "kl" = 2,
                      "log" = 5, "squared_hinge" = 6, "hinge" = 7,
-                     "row_log" = 10, "col_log" = 11)
+                     "row_log" = 10, "col_log" = 11, "sse" = 12)
         if(!(opts_train$loss %in% names(loss_fun)))
             stop(paste("'loss' must be one of", paste(names(loss_fun), collapse = ", "), sep = "\n"))
         if(opts_train$loss == "kl" && (!opts_train$nmf))
@@ -703,6 +710,7 @@ RecoSys$methods(
             "7" = "Hinge loss",
             "10" = "Row-oriented pair-wise logarithmic loss",
             "11" = "Column-oriented pair-wise logarithmic loss",
+            "12" = "Sum of squared errors",
             "Unknown"
         )
 
@@ -712,6 +720,7 @@ RecoSys$methods(
         catl("L1 penalty for Q",     .self$train_pars$costq_l1)
         catl("L2 penalty for Q",     .self$train_pars$costq_l2)
         catl("Learning rate",        .self$train_pars$lrate)
+        catl("Negative value",       .self$train_pars$c)
         catl("NMF",                  .self$train_pars$nmf)
         catl("Number of iterations", .self$train_pars$niter)
         catl("Number of threads",    .self$train_pars$nthread)
